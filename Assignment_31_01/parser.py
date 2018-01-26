@@ -5,10 +5,13 @@ import ply.lex as lex
 import ply.yacc as yacc
 
 
+numStatic= 0
+numPointer = 0
+numAssign =0
+
 tokens = ('DTYPE', 'EQUALS', 'LPAREN', 'RPAREN', 'LCPAREN', 'RCPAREN', 
 			'RETTYPE', 'FUNCNAME', 'SEMICOL', 'COMMA', 'AMP', 'WORD', 'REF', 'NUMBER')
 
-s =0
 
 t_ignore = " \t\n"
 t_ignore_comment = "//[^\n]*\n"
@@ -24,7 +27,17 @@ t_LCPAREN = r'{'
 t_RCPAREN = r'}'
 t_WORD = r'[a-zA-Z_][a-zA-Z0-9_]*'
 
+def incraseNumAssign(k):
+	global numAssign
+	numAssign = numAssign + k
 
+def assigner(p):
+	i =2 
+	p[0] = p[1]
+	while i<len(p):
+		p[0] = p[0] + p[i]
+		i=i+1	
+	return p[0]
 def t_DTYPE(t):
 	r'int'
 	return t
@@ -72,18 +85,29 @@ def p_expression_decl(p):
 	"""
 	DECL : DTYPE DECLIST
 	"""
+	p[0] =assigner(p)
+	split = p[2].split(',')
+	print(split)
+	for k in split:
+		if k.count('*')>0:
+			global numPointer
+			numPointer = numPointer + 1
+		else :
+			global numStatic
+			numStatic = numStatic + 1
 def p_expression_declist(p):
 	"""
 	DECLIST : ID COMMA DECLIST 
 			| ID
 	"""
+	p[0] =assigner(p)
 
 def p_expression_id(p) :
 	"""
 	ID : WORD
 	   | REF WORD
 	"""
-
+	p[0] =assigner(p)
 def p_expression_assign(p) :
 	"""
 	ASSIGN : PRIMWORD COMMA ASSIGN 
@@ -98,6 +122,7 @@ def p_prim_word(p) :
 			| WORD EQUALS WORD
 			| WORD EQUALS PRIMWORD
 	"""
+	incraseNumAssign(1)
 def p_prim_ref(p):
 	"""
 	PRIMREF : REF ID EQUALS NUMBER
@@ -106,6 +131,7 @@ def p_prim_ref(p):
 			| REF ID EQUALS PRIMREF
 			| REF ID EQUALS PRIMWORD
 	"""
+	incraseNumAssign(1)
 def p_error(p):
 	if p:
 		print("syntax error at {0}".format(p.value))
@@ -128,4 +154,7 @@ if __name__ == "__main__":
 		data = data + line
 	# print(data)
 	process(data)
+	print(numStatic)
+	print(numPointer)
+	print(numAssign)
 	# print(data)
