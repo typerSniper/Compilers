@@ -1,7 +1,6 @@
 void main ()
 {
-	int a;
-	int *p;
-
-        p = &a;
+	int a, *q;
+	//p
+    z= &a;
 }

@@ -8,9 +8,10 @@ import ply.yacc as yacc
 tokens = ('DTYPE', 'EQUALS', 'LPAREN', 'RPAREN', 'LCPAREN', 'RCPAREN', 
 			'RETTYPE', 'FUNCNAME', 'SEMICOL', 'COMMA', 'AMP', 'WORD', 'REF', 'NUMBER')
 
+s =0
 
 t_ignore = " \t\n"
-
+t_ignore_comment = "//[^\n]*\n"
 
 t_EQUALS = r'='
 t_LPAREN = r'\('
@@ -22,6 +23,7 @@ t_REF = r'\*'
 t_LCPAREN = r'{'
 t_RCPAREN = r'}'
 t_WORD = r'[a-zA-Z_][a-zA-Z0-9_]*'
+
 
 def t_DTYPE(t):
 	r'int'
@@ -42,7 +44,6 @@ def t_NUMBER(t):
         t.value = 0
     return t
 
-
 def t_error(t): 
 	print("Illegal character '%s'" % t.value[0])
 	t.lexer.skip(1)
@@ -56,7 +57,6 @@ def t_error(t):
 # )
 def p_expression_prog(p):
         'expression : RETTYPE FUNCNAME LPAREN RPAREN LCPAREN BODY RCPAREN'
-        print(p)
         try:
         	print("base identified!")
         except LookupError:
@@ -75,35 +75,36 @@ def p_expression_decl(p):
 def p_expression_declist(p):
 	"""
 	DECLIST : ID COMMA DECLIST 
-			| ID 
-			| DASSIGN_L EQUALS DASSIGN_R COMMA DECLIST
-			| DASSIGN_L EQUALS DASSIGN_R
+			| ID
 	"""
-def p_expression_dassign_l(p) :
-	"""
-	DASSIGN_L : REF ID
-	"""
-def p_expression_deassign_r(p):
-	"""
-	DASSIGN_R : AMP WORD 
-			  | REF ID
-	"""
+
 def p_expression_id(p) :
 	"""
 	ID : WORD
 	   | REF WORD
 	"""
+
 def p_expression_assign(p) :
 	"""
-	ASSIGN : PRIM COMMA ASSIGN 
-		   | PRIM
+	ASSIGN : PRIMWORD COMMA ASSIGN 
+		   | PRIMWORD
+		   | PRIMREF
+		   | PRIMREF COMMA ASSIGN
 	"""
 
-def p_expression_prim(p):
+def p_prim_word(p) :
 	"""
-	PRIM : WORD EQUALS AMP WORD 
-		| REF ID EQUALS NUMBER 
-		| REF ID EQUALS REF ID 
+	PRIMWORD : WORD EQUALS AMP WORD
+			| WORD EQUALS WORD
+			| WORD EQUALS PRIMWORD
+	"""
+def p_prim_ref(p):
+	"""
+	PRIMREF : REF ID EQUALS NUMBER
+			| REF ID EQUALS REF ID
+			| REF ID EQUALS WORD
+			| REF ID EQUALS PRIMREF
+			| REF ID EQUALS PRIMWORD
 	"""
 def p_error(p):
 	if p:
@@ -116,7 +117,6 @@ def process(data):
 	# lexer.input(data)
 	# for tok in lexer:
 	# 	print(tok)
-
 	lex.lex()
 	yacc.yacc()
 	yacc.parse(data)
@@ -126,6 +126,6 @@ data = ""
 if __name__ == "__main__":
 	for line in sys.stdin: 
 		data = data + line
-	print(data)
+	# print(data)
 	process(data)
 	# print(data)
