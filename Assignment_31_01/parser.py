@@ -8,12 +8,12 @@ import ply.yacc as yacc
 numStatic= 0
 numPointer = 0
 numAssign =0
-
+correct  = 1
 tokens = ('DTYPE', 'EQUALS', 'LPAREN', 'RPAREN', 'LCPAREN', 'RCPAREN', 
 			'RETTYPE', 'FUNCNAME', 'SEMICOL', 'COMMA', 'AMP', 'WORD', 'REF', 'NUMBER')
 
 
-t_ignore = " \t\n"
+t_ignore = " \t"
 t_ignore_comment = "//[^\n]*\n"
 
 t_EQUALS = r'='
@@ -26,6 +26,11 @@ t_REF = r'\*'
 t_LCPAREN = r'{'
 t_RCPAREN = r'}'
 t_WORD = r'[a-zA-Z_][a-zA-Z0-9_]*'
+
+def t_newline(t):
+    r'\n+'
+    t.lexer.lineno =  t.lexer.lineno + 1
+
 
 def incraseNumAssign(k):
 	global numAssign
@@ -70,11 +75,6 @@ def t_error(t):
 # )
 def p_expression_prog(p):
         'expression : RETTYPE FUNCNAME LPAREN RPAREN LCPAREN BODY RCPAREN'
-        try:
-        	print("base identified!")
-        except LookupError:
-            print("base pain '%s'" % p[1])
-            p[0] = 0
 def p_expression_body(p) :
 	"""
 	BODY : DECL SEMICOL BODY 
@@ -87,7 +87,7 @@ def p_expression_decl(p):
 	"""
 	p[0] =assigner(p)
 	split = p[2].split(',')
-	print(split)
+	# print(split)
 	for k in split:
 		if k.count('*')>0:
 			global numPointer
@@ -133,8 +133,10 @@ def p_prim_ref(p):
 	"""
 	incraseNumAssign(1)
 def p_error(p):
+	global correct 
+	correct = 0
 	if p:
-		print("syntax error at {0}".format(p.value))
+		print("syntax error at {0}{1}".format("line number ", p.lineno))
 	else:
 		print("syntax error at EOF")		
 
@@ -151,10 +153,11 @@ def process(data):
 data = ""
 if __name__ == "__main__":
 	for line in sys.stdin: 
-		data = data + line
+		data = data + line+"\n"
 	# print(data)
 	process(data)
-	print(numStatic)
-	print(numPointer)
-	print(numAssign)
+	if(correct==1):
+		print(numStatic)
+		print(numPointer)
+		print(numAssign)
 	# print(data)
