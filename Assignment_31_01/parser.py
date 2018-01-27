@@ -12,8 +12,6 @@ correct  = 1
 tokens = ('DTYPE', 'EQUALS', 'LPAREN', 'RPAREN', 'LCPAREN', 'RCPAREN', 
 			'RETTYPE', 'FUNCNAME', 'SEMICOL', 'COMMA', 'AMP', 'WORD', 'REF', 'NUMBER')
 
-
-
 t_ignore = " \t"
 t_ignore_comment = "//[^\n]*\n"
 
@@ -136,9 +134,9 @@ def p_error(p):
 	global correct 
 	correct = 0
 	if p:
-		print("syntax error at {0}{1}".format("line number ", p.lineno))
+		print("syntax error at {0} on {1}{2}".format(p.value, "line number ", p.lineno))
 	else:
-		print("syntax error at EOF")		
+		print("syntax error at EOF")
 
 def process(data):
 	# lexer = lex.lex()
@@ -149,15 +147,12 @@ def process(data):
 	yacc.yacc()
 	yacc.parse(data)
 
-# data = []
 data = ""
 if __name__ == "__main__":
-	for line in sys.stdin: 
+	for line in sys.stdin:
 		data = data + line
-	# print(data)
 	process(data)
 	if(correct==1):
 		print(numStatic)
 		print(numPointer)
 		print(numAssign)
-	# print(data)
