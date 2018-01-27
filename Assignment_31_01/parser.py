@@ -13,6 +13,7 @@ tokens = ('DTYPE', 'EQUALS', 'LPAREN', 'RPAREN', 'LCPAREN', 'RCPAREN',
 			'RETTYPE', 'FUNCNAME', 'SEMICOL', 'COMMA', 'AMP', 'WORD', 'REF', 'NUMBER')
 
 
+
 t_ignore = " \t"
 t_ignore_comment = "//[^\n]*\n"
 
@@ -29,8 +30,7 @@ t_WORD = r'[a-zA-Z_][a-zA-Z0-9_]*'
 
 def t_newline(t):
     r'\n+'
-    t.lexer.lineno =  t.lexer.lineno + 1
-
+    t.lexer.lineno =  t.lexer.lineno + len(t.value)
 
 def incraseNumAssign(k):
 	global numAssign
@@ -153,7 +153,7 @@ def process(data):
 data = ""
 if __name__ == "__main__":
 	for line in sys.stdin: 
-		data = data + line+"\n"
+		data = data + line
 	# print(data)
 	process(data)
 	if(correct==1):
