@@ -103,7 +103,7 @@ def p_expression_declist(p):
 def p_expression_id(p) :
 	"""
 	ID : WORD
-	   | REF WORD
+	   | REF ID
 	"""
 	p[0] =assigner(p)
 def p_expression_assign(p) :
