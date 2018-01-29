@@ -134,7 +134,7 @@ def p_error(p):
 	global correct 
 	correct = 0
 	if p:
-		print("syntax error at {0} on {1}{2}".format(p.value, "line number ", p.lineno))
+		print("syntax error at '{0}' on {1}'{2}'".format(p.value, "line number ", p.lineno))
 	else:
 		print("syntax error at EOF")
 
@@ -149,8 +149,8 @@ def process(data):
 
 data = ""
 if __name__ == "__main__":
-	for line in sys.stdin:
-		data = data + line
+	f = open(sys.argv[1], 'r')
+	data = f.read()
 	process(data)
 	if(correct==1):
 		print(numStatic)
