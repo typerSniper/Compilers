@@ -30,7 +30,7 @@ def t_newline(t):
     r'\n+'
     t.lexer.lineno =  t.lexer.lineno + len(t.value)
 
-def incraseNumAssign(k):
+def increaseNumAssign(k):
 	global numAssign
 	numAssign = numAssign + k
 
@@ -52,7 +52,7 @@ def t_RETTYPE(t):
 	r'void' 
 	return t
 def t_NUMBER(t):
-    r'\d+'
+    r'\d+|-\d+'
     try:
         t.value = int(t.value)
     except ValueError:
@@ -106,30 +106,27 @@ def p_expression_id(p) :
 	   | REF ID
 	"""
 	p[0] =assigner(p)
+
+def p_expression_lhs(p) :
+	"""
+	LHS : WORD
+		| REF LHS
+		| AMP LHS
+		| LPAREN LHS RPAREN
+	"""
 def p_expression_assign(p) :
 	"""
-	ASSIGN : PRIMWORD COMMA ASSIGN 
-		   | PRIMWORD
-		   | PRIMREF
-		   | PRIMREF COMMA ASSIGN
+	ASSIGN : PRIM COMMA ASSIGN 
+		   | PRIM
 	"""
+def p_prim(p) :
+	"""
+	PRIM : LHS EQUALS LHS
+		| LHS EQUALS NUMBER
 
-def p_prim_word(p) :
-	"""
-	PRIMWORD : WORD EQUALS AMP WORD
-			| WORD EQUALS WORD
-			| WORD EQUALS PRIMWORD
-	"""
-	incraseNumAssign(1)
-def p_prim_ref(p):
-	"""
-	PRIMREF : REF ID EQUALS NUMBER
-			| REF ID EQUALS REF ID
-			| REF ID EQUALS WORD
-			| REF ID EQUALS PRIMREF
-			| REF ID EQUALS PRIMWORD
-	"""
-	incraseNumAssign(1)
+	"""	
+	increaseNumAssign(1)
+
 def p_error(p):
 	global correct 
 	correct = 0
@@ -139,10 +136,6 @@ def p_error(p):
 		print("syntax error at EOF")
 
 def process(data):
-	# lexer = lex.lex()
-	# lexer.input(data)
-	# for tok in lexer:
-	# 	print(tok)
 	lex.lex()
 	yacc.yacc()
 	yacc.parse(data)
