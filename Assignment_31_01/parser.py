@@ -85,7 +85,6 @@ def p_expression_decl(p):
 	"""
 	p[0] =assigner(p)
 	split = p[2].split(',')
-	# print(split)
 	for k in split:
 		if k.count('*')>0:
 			global numPointer
@@ -110,9 +109,15 @@ def p_expression_id(p) :
 def p_expression_lhs(p) :
 	"""
 	LHS : WORD
-		| REF LHS
 		| AMP LHS
+		| AMP LHS_POINT
 		| LPAREN LHS RPAREN
+	"""
+def p_expression_lhspointer(p):
+	"""
+	LHS_POINT : REF LHS
+		| REF LHS_POINT
+		| LPAREN LHS_POINT RPAREN
 	"""
 def p_expression_assign(p) :
 	"""
@@ -122,8 +127,10 @@ def p_expression_assign(p) :
 def p_prim(p) :
 	"""
 	PRIM : LHS EQUALS LHS
-		| LHS EQUALS NUMBER
-
+		| LHS EQUALS LHS_POINT
+		| LHS_POINT EQUALS LHS
+		| LHS_POINT EQUALS LHS_POINT
+		| LHS_POINT EQUALS NUMBER
 	"""	
 	increaseNumAssign(1)
 
@@ -145,7 +152,7 @@ if __name__ == "__main__":
 	f = open(sys.argv[1], 'r')
 	data = f.read()
 	process(data)
-	if(correct==1):
+	if correct==1 :
 		print(numStatic)
 		print(numPointer)
 		print(numAssign)
