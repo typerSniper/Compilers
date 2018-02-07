@@ -10,7 +10,8 @@ numPointer = 0
 numAssign =0
 correct  = 1
 tokens = ('DTYPE', 'EQUALS', 'LPAREN', 'RPAREN', 'LCPAREN', 'RCPAREN', 
-			'RETTYPE', 'FUNCNAME', 'SEMICOL', 'COMMA', 'AMP', 'WORD', 'REF', 'NUMBER')
+			'RETTYPE', 'FUNCNAME', 'SEMICOL', 'COMMA', 'AMP', 'WORD', 'REF', 'NUMBER',
+			'PLUS', 'MINUS', 'DIV')
 
 t_ignore = " \t"
 t_ignore_comment = "//[^\n]*\n"
@@ -22,9 +23,12 @@ t_SEMICOL = r';'
 t_COMMA = r','
 t_AMP = r'&'
 t_REF = r'\*'
+t_PLUS = r'\+'
+t_MINUS = r'-'
+t_DIV = r'/'
 t_LCPAREN = r'{'
 t_RCPAREN = r'}'
-t_WORD = r'[a-zA-Z_][a-zA-Z0-9_]*'
+t_WORD = r'[a-zA-Z_][a-zA-Z0-9_]*' 
 
 def t_newline(t):
     r'\n+'
@@ -106,11 +110,6 @@ def p_expression_id(p) :
 	"""
 	p[0] = assigner(p)
 
-
-
-
-
-
 def p_expression_lhs(p) :
 	"""
 	LHS : WORD
@@ -126,18 +125,55 @@ def p_expression_lhspointer(p):
 	"""
 def p_expression_assign(p) :
 	"""
-	ASSIGN : PRIM COMMA ASSIGN 
-		   | PRIM
+	ASSIGN : PRIM
 	"""
+
 def p_prim(p) :
 	"""
-	PRIM : LHS EQUALS LHS
-		| LHS EQUALS LHS_POINT
-		| LHS_POINT EQUALS LHS
-		| LHS_POINT EQUALS LHS_POINT
-		| LHS_POINT EQUALS NUMBER
+	PRIM : LHS EQUALS rhs
+		| LHS_POINT EQUALS rhs
+		| LHS_POINT EQUALS Nrhs
 	"""	
 	increaseNumAssign(1)
+
+
+def p_expression_rhs(p):
+	"""
+		rhs : rhs PLUS rhs
+			| rhs MINUS rhs
+			| MINUS rhs
+			| rhs REF rhs
+			| rhs DIV rhs 
+			| LPAREN  rhs RPAREN
+			| LHS 
+			| LHS_POINT 
+	"""
+
+def p_expression_Nrhs(p):
+
+
+
+
+
+
+
+	"""
+		Nrhs : Nrhs PLUS rhs
+			| Nrhs MINUS rhs
+			| Nrhs REF rhs
+			| Nrhs DIV rhs 
+			|Nrhs PLUS Nhrs
+			| Nrhs MINUS Nrhs
+			| MINUS Nrhs
+			| Nrhs REF Nrhs
+			| Nrhs DIV Nrhs
+			|rhs PLUS Nrhs
+			| rhs MINUS Nrhs
+			| rhs REF Nrhs
+			| rhs DIV Nrhs
+			| LPAREN  Nrhs RPAREN
+			| NUMBER
+	"""
 
 def p_error(p):
 	global correct 
