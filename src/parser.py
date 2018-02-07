@@ -3,7 +3,7 @@
 import sys
 import ply.lex as lex
 import ply.yacc as yacc
-
+from Abstree import Abstree
 
 numStatic= 0
 numPointer = 0
@@ -97,14 +97,19 @@ def p_expression_declist(p):
 	DECLIST : ID COMMA DECLIST 
 			| ID
 	"""
-	p[0] =assigner(p)
+	p[0] = assigner(p)
 
 def p_expression_id(p) :
 	"""
 	ID : WORD
 	   | REF ID
 	"""
-	p[0] =assigner(p)
+	p[0] = assigner(p)
+
+
+
+
+
 
 def p_expression_lhs(p) :
 	"""
