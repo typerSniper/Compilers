@@ -3,7 +3,7 @@
 import sys
 import ply.lex as lex
 import ply.yacc as yacc
-from Abstree import Abstree
+# from Abstree import Abstree
 
 numStatic= 0
 numPointer = 0
@@ -110,18 +110,16 @@ def p_expression_id(p) :
 	"""
 	p[0] = assigner(p)
 
-def p_expression_lhs(p) :
-	"""
-	LHS : WORD
-		| AMP LHS
-		| AMP LHS_POINT
-		| LPAREN LHS RPAREN
-	"""
+# def p_expression_lhs(p) :
+# 	"""
+# 	LHS : WORD
+# 		| AMP LHS
+# 		| AMP LHS_POINT
+# 	"""
+
 def p_expression_lhspointer(p):
 	"""
-	LHS_POINT : REF LHS
-		| REF LHS_POINT
-		| LPAREN LHS_POINT RPAREN
+	LHS_POINT : REF aID
 	"""
 def p_expression_assign(p) :
 	"""
@@ -130,49 +128,74 @@ def p_expression_assign(p) :
 
 def p_prim(p) :
 	"""
-	PRIM : LHS EQUALS rhs
-		| LHS_POINT EQUALS rhs
+	PRIM : WORD EQUALS Wrhs
+		| LHS_POINT EQUALS Wrhs
 		| LHS_POINT EQUALS Nrhs
 	"""	
 	increaseNumAssign(1)
 
 
-def p_expression_rhs(p):
+def p_expression_assignId(p) :
 	"""
-		rhs : rhs PLUS rhs
-			| rhs MINUS rhs
-			| MINUS rhs
-			| rhs REF rhs
-			| rhs DIV rhs 
-			| LPAREN  rhs RPAREN
-			| LHS 
-			| LHS_POINT 
+	aID : WORD
+		| AMP aID
+		| REF aID
+	"""
+
+# def p_expression_rhs(p):
+# 	"""
+# 		rhs : 
+# 			| rhs PLUS Wrhs
+# 			| rhs MINUS Wrhs
+# 			| rhs REF Wrhs
+# 			| rhs DIV Wrhs
+# 			| rhs PLUS Nrhs
+# 			| rhs MINUS Nrhs
+# 			| rhs REF Nrhs
+# 			| rhs DIV Nrhs
+# 			| MINUS rhs
+# 			| LPAREN rhs RPAREN  
+# 			| Nrhs
+# 			| Wrhs
+# 	"""
+
+def p_expression_RWatom(p) :
+	"""
+	RWatom : aID
+		  | MINUS RWatom
+	"""
+def p_expression_Natom(p) :
+	"""
+	Natom : NUMBER
+		  | MINUS Natom
+	"""
+
+def p_expression_Wrhs(p):
+	"""
+		Wrhs : RWatom 
+			 | Wrhs PLUS RWatom
+			 | Wrhs MINUS RWatom
+			 | Wrhs REF RWatom
+			 | Wrhs DIV RWatom
+			 | Wrhs PLUS Nrhs
+			 | Wrhs MINUS Nrhs
+			 | Wrhs REF Nrhs
+			 | Wrhs DIV Nrhs
+			 | Nrhs PLUS Wrhs
+			 | Nrhs MINUS Wrhs
+			 | Nrhs REF Wrhs
+			 | Nrhs DIV Wrhs
+			 | LPAREN Wrhs RPAREN
 	"""
 
 def p_expression_Nrhs(p):
-
-
-
-
-
-
-
 	"""
-		Nrhs : Nrhs PLUS rhs
-			| Nrhs MINUS rhs
-			| Nrhs REF rhs
-			| Nrhs DIV rhs 
-			|Nrhs PLUS Nhrs
-			| Nrhs MINUS Nrhs
-			| MINUS Nrhs
-			| Nrhs REF Nrhs
-			| Nrhs DIV Nrhs
-			|rhs PLUS Nrhs
-			| rhs MINUS Nrhs
-			| rhs REF Nrhs
-			| rhs DIV Nrhs
-			| LPAREN  Nrhs RPAREN
-			| NUMBER
+		Nrhs : Natom 
+			 | Nrhs PLUS Natom
+			 | Nrhs MINUS Natom
+			 | Nrhs REF Natom
+			 | Nrhs DIV Natom
+			 | LPAREN Nrhs RPAREN
 	"""
 
 def p_error(p):
