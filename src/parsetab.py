@@ -5,9 +5,9 @@ _tabversion = '3.10'
 
 _lr_method = 'LALR'
 
-_lr_signature = 'DTYPE EQUALS LPAREN RPAREN LCPAREN RCPAREN RETTYPE FUNCNAME SEMICOL COMMA AMP WORD REF NUMBER PLUS MINUS DIVexpression : RETTYPE FUNCNAME LPAREN RPAREN LCPAREN BODY RCPAREN\n\tBODY : DECL SEMICOL BODY \n\t\t\t| ASSIGN SEMICOL BODY\n\t\t\t| \n\t\n\tDECL : DTYPE DECLIST\n\t\n\tDECLIST : ID COMMA DECLIST \n\t\t\t| ID\n\t\n\tID : WORD\n\t   | REF ID\n\t\n\tLHS_POINT : REF aID\n\t\n\tASSIGN : PRIM\n\t\n\tPRIM : WORD EQUALS Wrhs\n\t\t| LHS_POINT EQUALS Wrhs\n\t\t| LHS_POINT EQUALS Nrhs\n\t\n\taID : WORD\n\t\t| AMP aID\n\t\t| REF aID\n\t\n\tRWatom : aID\n\t\t  | MINUS RWatom\n\t\n\tNatom : NUMBER\n\t\t  | MINUS Natom\n\t\n\t\tWrhs : RWatom \n\t\t\t | Wrhs PLUS RWatom\n\t\t\t | Wrhs MINUS RWatom\n\t\t\t | Wrhs REF RWatom\n\t\t\t | Wrhs DIV RWatom\n\t\t\t | Wrhs PLUS Nrhs\n\t\t\t | Wrhs MINUS Nrhs\n\t\t\t | Wrhs REF Nrhs\n\t\t\t | Wrhs DIV Nrhs\n\t\t\t | Nrhs PLUS Wrhs\n\t\t\t | Nrhs MINUS Wrhs\n\t\t\t | Nrhs REF Wrhs\n\t\t\t | Nrhs DIV Wrhs\n\t\t\t | LPAREN Wrhs RPAREN\n\t\n\t\tNrhs : Natom \n\t\t\t | Nrhs PLUS Natom\n\t\t\t | Nrhs MINUS Natom\n\t\t\t | Nrhs REF Natom\n\t\t\t | Nrhs DIV Natom\n\t\t\t | LPAREN Nrhs RPAREN\n\t'
+_lr_signature = 'leftPLUSMINUSleftREFDIVrightUMINUSDTYPE EQUALS LPAREN RPAREN LCPAREN RCPAREN RETTYPE FUNCNAME SEMICOL COMMA AMP WORD REF NUMBER PLUS MINUS DIVexpression : RETTYPE FUNCNAME LPAREN RPAREN LCPAREN BODY RCPAREN\n\tBODY : DECL SEMICOL BODY \n\t\t\t| ASSIGN SEMICOL BODY\n\t\t\t| \n\t\n\tDECL : DTYPE DECLIST\n\t\n\tDECLIST : ID COMMA DECLIST \n\t\t\t| ID\n\t\n\tID : WORD\n\t   | REF ID\n\t\n\taID : WORD\n\t\t| AMP aID\n\t\t| REF aID\n\t\n\tLHS_POINT : REF aID\n\t\n\tASSIGN : PRIM\n\t\n\tPRIM : WORD EQUALS Wrhs\n\t\t| LHS_POINT EQUALS Nrhs\n\t\t| LHS_POINT EQUALS Wrhs\n\t\n\t\tWrhs : Wrhs PLUS Wrhs\n\t\t\t | Wrhs MINUS Wrhs\n\t\t\t | Wrhs REF Wrhs\n\t\t\t | Wrhs DIV Wrhs\n\t\n\t\tWrhs : aID\n\t\t\t| Wrhs PLUS Natom\n\t\t\t | Wrhs MINUS Natom\n\t\t\t | Wrhs REF Natom\n\t\t\t | Wrhs DIV Natom\n\t\t\t | Natom PLUS Wrhs\n\t\t\t | Natom MINUS Wrhs\n\t\t\t | Natom REF Wrhs\n\t\t\t | Natom DIV Wrhs\n\t\n\t\tWrhs : MINUS Wrhs %prec UMINUS\n\t\n\tNatom : NUMBER\n\t\n\t\tNrhs : Natom\n\t\t\t | Nrhs PLUS Natom\n\t\t\t | Nrhs MINUS Natom\n\t\t\t | Nrhs REF Natom\n\t\t\t | Nrhs DIV Natom\n\t\t\t | LPAREN Nrhs RPAREN\n\t\n\tNatom : MINUS Natom %prec UMINUS\n\n\t'
     
-_lr_action_items = {'NUMBER':([21,22,33,38,47,48,49,50,51,52,53,54,59,70,78,79,80,81,82,],[31,31,31,31,31,31,31,31,31,31,31,31,31,31,31,31,31,31,31,]),'EQUALS':([11,12,24,26,42,43,],[21,22,-15,-10,-16,-17,]),'MINUS':([21,22,24,31,32,33,34,35,36,37,38,39,40,42,43,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,],[38,38,-15,-20,-18,38,48,52,-22,-36,38,48,52,-16,-17,48,52,38,38,38,38,70,70,70,70,-21,-19,-35,-41,78,80,-23,80,-24,80,-26,80,-25,48,-36,70,48,-36,48,-36,48,-36,80,78,78,78,78,78,-37,-38,-40,-39,]),'RETTYPE':([0,],[2,]),'LPAREN':([3,21,22,33,47,48,49,50,51,52,53,54,59,],[4,33,33,33,59,59,59,59,33,33,33,33,59,]),'DTYPE':([6,16,23,],[9,9,9,]),'DIV':([24,31,32,34,35,36,37,39,40,42,43,45,46,55,56,57,58,60,61,62,63,64,65,66,67,68,69,71,72,73,74,75,76,77,83,84,85,86,],[-15,-20,-18,49,53,-22,-36,49,53,-16,-17,49,53,-21,-19,-35,-41,81,-23,81,-24,81,-26,81,-25,49,-36,49,-36,49,-36,49,-36,81,-37,-38,-40,-39,]),'WORD':([6,9,14,16,17,21,22,23,25,27,30,33,38,47,48,49,50,51,52,53,54,70,],[12,19,24,12,19,24,24,12,24,24,19,24,24,24,24,24,24,24,24,24,24,24,]),'RCPAREN':([6,7,16,23,28,41,],[-4,15,-4,-4,-2,-3,]),'COMMA':([19,20,29,],[-8,30,-9,]),'FUNCNAME':([2,],[3,]),'SEMICOL':([8,10,13,18,19,20,24,29,31,32,34,35,36,37,39,42,43,44,55,56,57,58,60,61,62,63,64,65,66,67,68,69,71,72,73,74,75,76,83,84,85,86,],[16,-11,23,-5,-8,-7,-15,-9,-20,-18,-13,-14,-22,-36,-12,-16,-17,-6,-21,-19,-35,-41,-27,-23,-28,-24,-30,-26,-29,-25,-31,-37,-32,-38,-34,-40,-33,-39,-37,-38,-40,-39,]),'PLUS':([24,31,32,34,35,36,37,39,40,42,43,45,46,55,56,57,58,60,61,62,63,64,65,66,67,68,69,71,72,73,74,75,76,77,83,84,85,86,],[-15,-20,-18,47,51,-22,-36,47,51,-16,-17,47,51,-21,-19,-35,-41,79,-23,79,-24,79,-26,79,-25,47,-36,47,-36,47,-36,47,-36,79,-37,-38,-40,-39,]),'RPAREN':([4,24,31,32,36,37,42,43,45,46,55,56,57,58,60,61,62,63,64,65,66,67,68,69,71,72,73,74,75,76,77,83,84,85,86,],[5,-15,-20,-18,-22,-36,-16,-17,57,58,-21,-19,-35,-41,-27,-23,-28,-24,-30,-26,-29,-25,-31,-37,-32,-38,-34,-40,-33,-39,58,-37,-38,-40,-39,]),'$end':([1,15,],[0,-1,]),'LCPAREN':([5,],[6,]),'AMP':([14,21,22,25,27,33,38,47,48,49,50,51,52,53,54,70,],[25,25,25,25,25,25,25,25,25,25,25,25,25,25,25,25,]),'REF':([6,9,14,16,17,21,22,23,24,25,27,30,31,32,33,34,35,36,37,38,39,40,42,43,45,46,47,48,49,50,51,52,53,54,55,56,57,58,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,83,84,85,86,],[14,17,27,14,17,27,27,14,-15,27,27,17,-20,-18,27,50,54,-22,-36,27,50,54,-16,-17,50,54,27,27,27,27,27,27,27,27,-21,-19,-35,-41,82,-23,82,-24,82,-26,82,-25,50,-36,27,50,-36,50,-36,50,-36,82,-37,-38,-40,-39,]),}
+_lr_action_items = {'RETTYPE':([0,],[2,]),'$end':([1,15,],[0,-1,]),'FUNCNAME':([2,],[3,]),'LPAREN':([3,23,40,],[4,40,40,]),'RPAREN':([4,36,58,59,73,74,75,76,77,78,],[5,-32,77,-33,-34,-35,-36,-37,-38,-39,]),'LCPAREN':([5,],[6,]),'RCPAREN':([6,7,16,17,28,29,],[-4,15,-4,-4,-2,-3,]),'DTYPE':([6,16,17,],[10,10,10,]),'WORD':([6,10,14,16,17,21,22,23,24,27,30,33,44,45,46,47,50,51,52,53,],[12,20,26,12,12,20,26,26,26,26,20,26,26,26,26,26,26,26,26,26,]),'REF':([6,10,14,16,17,21,22,23,24,26,27,30,32,33,34,35,36,37,38,39,41,42,44,45,46,47,48,49,50,51,52,53,58,59,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,],[14,21,24,14,14,21,24,24,24,-10,24,21,46,24,-22,52,-32,56,46,52,-12,-11,24,24,24,24,-31,-39,24,24,24,24,56,-33,46,52,46,52,-20,-25,-21,-26,46,46,-29,-30,-34,-35,-36,-37,-38,-39,]),'SEMICOL':([8,9,11,18,19,20,26,31,32,34,36,37,38,39,41,42,43,48,49,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,],[16,17,-14,-5,-7,-8,-10,-9,-15,-22,-32,-16,-17,-33,-12,-11,-6,-31,-39,-18,-23,-19,-24,-20,-25,-21,-26,-27,-28,-29,-30,-34,-35,-36,-37,-38,-39,]),'EQUALS':([12,13,25,26,41,42,],[22,23,-13,-10,-12,-11,]),'AMP':([14,22,23,24,27,33,44,45,46,47,50,51,52,53,],[27,27,27,27,27,27,27,27,27,27,27,27,27,27,]),'COMMA':([19,20,31,],[30,-8,-9,]),'MINUS':([22,23,26,32,33,34,35,36,37,38,39,40,41,42,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,],[33,33,-10,45,33,-22,51,-32,55,45,51,60,-12,-11,33,33,33,33,-31,-39,33,33,33,33,60,60,60,60,55,-33,60,-18,-23,-19,-24,-20,-25,-21,-26,-27,-28,-29,-30,-34,-35,-36,-37,-38,-39,]),'NUMBER':([22,23,33,40,44,45,46,47,50,51,52,53,54,55,56,57,60,],[36,36,36,36,36,36,36,36,36,36,36,36,36,36,36,36,36,]),'PLUS':([26,32,34,35,36,37,38,39,41,42,48,49,58,59,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,],[-10,44,-22,50,-32,54,44,50,-12,-11,-31,-39,54,-33,-18,-23,-19,-24,-20,-25,-21,-26,-27,-28,-29,-30,-34,-35,-36,-37,-38,-39,]),'DIV':([26,32,34,35,36,37,38,39,41,42,48,49,58,59,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,],[-10,47,-22,53,-32,57,47,53,-12,-11,-31,-39,57,-33,47,53,47,53,-20,-25,-21,-26,47,47,-29,-30,-34,-35,-36,-37,-38,-39,]),}
 
 _lr_action = {}
 for _k, _v in _lr_action_items.items():
@@ -16,7 +16,7 @@ for _k, _v in _lr_action_items.items():
       _lr_action[_x][_k] = _y
 del _lr_action_items
 
-_lr_goto_items = {'BODY':([6,16,23,],[7,28,41,]),'LHS_POINT':([6,16,23,],[11,11,11,]),'Natom':([21,22,33,38,47,48,49,50,51,52,53,54,59,70,78,79,80,81,82,],[37,37,37,55,37,37,37,37,69,72,74,76,37,55,55,83,84,85,86,]),'DECL':([6,16,23,],[8,8,8,]),'ASSIGN':([6,16,23,],[13,13,13,]),'expression':([0,],[1,]),'ID':([9,17,30,],[20,29,20,]),'Wrhs':([21,22,33,51,52,53,54,],[34,39,45,68,71,73,75,]),'Nrhs':([21,22,33,47,48,49,50,51,52,53,54,59,],[35,40,46,60,62,64,66,40,40,40,40,77,]),'aID':([14,21,22,25,27,33,38,47,48,49,50,51,52,53,54,70,],[26,32,32,42,43,32,32,32,32,32,32,32,32,32,32,32,]),'RWatom':([21,22,33,38,47,48,49,50,51,52,53,54,70,],[36,36,36,56,61,63,65,67,36,36,36,36,56,]),'DECLIST':([9,30,],[18,44,]),'PRIM':([6,16,23,],[10,10,10,]),}
+_lr_goto_items = {'expression':([0,],[1,]),'BODY':([6,16,17,],[7,28,29,]),'DECL':([6,16,17,],[8,8,8,]),'ASSIGN':([6,16,17,],[9,9,9,]),'PRIM':([6,16,17,],[11,11,11,]),'LHS_POINT':([6,16,17,],[13,13,13,]),'DECLIST':([10,30,],[18,43,]),'ID':([10,21,30,],[19,31,19,]),'aID':([14,22,23,24,27,33,44,45,46,47,50,51,52,53,],[25,34,34,41,42,34,34,34,34,34,34,34,34,34,]),'Wrhs':([22,23,33,44,45,46,47,50,51,52,53,],[32,38,48,61,63,65,67,69,70,71,72,]),'Natom':([22,23,33,40,44,45,46,47,50,51,52,53,54,55,56,57,60,],[35,39,49,59,62,64,66,68,35,35,35,35,73,74,75,76,78,]),'Nrhs':([23,40,],[37,58,]),}
 
 _lr_goto = {}
 for _k, _v in _lr_goto_items.items():
@@ -26,45 +26,43 @@ for _k, _v in _lr_goto_items.items():
 del _lr_goto_items
 _lr_productions = [
   ("S' -> expression","S'",1,None,None,None),
-  ('expression -> RETTYPE FUNCNAME LPAREN RPAREN LCPAREN BODY RCPAREN','expression',7,'p_expression_prog','parser.py',79),
-  ('BODY -> DECL SEMICOL BODY','BODY',3,'p_expression_body','parser.py',82),
-  ('BODY -> ASSIGN SEMICOL BODY','BODY',3,'p_expression_body','parser.py',83),
-  ('BODY -> <empty>','BODY',0,'p_expression_body','parser.py',84),
-  ('DECL -> DTYPE DECLIST','DECL',2,'p_expression_decl','parser.py',88),
-  ('DECLIST -> ID COMMA DECLIST','DECLIST',3,'p_expression_declist','parser.py',101),
-  ('DECLIST -> ID','DECLIST',1,'p_expression_declist','parser.py',102),
-  ('ID -> WORD','ID',1,'p_expression_id','parser.py',108),
-  ('ID -> REF ID','ID',2,'p_expression_id','parser.py',109),
-  ('LHS_POINT -> REF aID','LHS_POINT',2,'p_expression_lhspointer','parser.py',122),
-  ('ASSIGN -> PRIM','ASSIGN',1,'p_expression_assign','parser.py',126),
-  ('PRIM -> WORD EQUALS Wrhs','PRIM',3,'p_prim','parser.py',131),
-  ('PRIM -> LHS_POINT EQUALS Wrhs','PRIM',3,'p_prim','parser.py',132),
-  ('PRIM -> LHS_POINT EQUALS Nrhs','PRIM',3,'p_prim','parser.py',133),
-  ('aID -> WORD','aID',1,'p_expression_assignId','parser.py',140),
-  ('aID -> AMP aID','aID',2,'p_expression_assignId','parser.py',141),
-  ('aID -> REF aID','aID',2,'p_expression_assignId','parser.py',142),
-  ('RWatom -> aID','RWatom',1,'p_expression_RWatom','parser.py',164),
-  ('RWatom -> MINUS RWatom','RWatom',2,'p_expression_RWatom','parser.py',165),
-  ('Natom -> NUMBER','Natom',1,'p_expression_Natom','parser.py',169),
-  ('Natom -> MINUS Natom','Natom',2,'p_expression_Natom','parser.py',170),
-  ('Wrhs -> RWatom','Wrhs',1,'p_expression_Wrhs','parser.py',175),
-  ('Wrhs -> Wrhs PLUS RWatom','Wrhs',3,'p_expression_Wrhs','parser.py',176),
-  ('Wrhs -> Wrhs MINUS RWatom','Wrhs',3,'p_expression_Wrhs','parser.py',177),
-  ('Wrhs -> Wrhs REF RWatom','Wrhs',3,'p_expression_Wrhs','parser.py',178),
-  ('Wrhs -> Wrhs DIV RWatom','Wrhs',3,'p_expression_Wrhs','parser.py',179),
-  ('Wrhs -> Wrhs PLUS Nrhs','Wrhs',3,'p_expression_Wrhs','parser.py',180),
-  ('Wrhs -> Wrhs MINUS Nrhs','Wrhs',3,'p_expression_Wrhs','parser.py',181),
-  ('Wrhs -> Wrhs REF Nrhs','Wrhs',3,'p_expression_Wrhs','parser.py',182),
-  ('Wrhs -> Wrhs DIV Nrhs','Wrhs',3,'p_expression_Wrhs','parser.py',183),
-  ('Wrhs -> Nrhs PLUS Wrhs','Wrhs',3,'p_expression_Wrhs','parser.py',184),
-  ('Wrhs -> Nrhs MINUS Wrhs','Wrhs',3,'p_expression_Wrhs','parser.py',185),
-  ('Wrhs -> Nrhs REF Wrhs','Wrhs',3,'p_expression_Wrhs','parser.py',186),
-  ('Wrhs -> Nrhs DIV Wrhs','Wrhs',3,'p_expression_Wrhs','parser.py',187),
-  ('Wrhs -> LPAREN Wrhs RPAREN','Wrhs',3,'p_expression_Wrhs','parser.py',188),
-  ('Nrhs -> Natom','Nrhs',1,'p_expression_Nrhs','parser.py',193),
-  ('Nrhs -> Nrhs PLUS Natom','Nrhs',3,'p_expression_Nrhs','parser.py',194),
-  ('Nrhs -> Nrhs MINUS Natom','Nrhs',3,'p_expression_Nrhs','parser.py',195),
-  ('Nrhs -> Nrhs REF Natom','Nrhs',3,'p_expression_Nrhs','parser.py',196),
-  ('Nrhs -> Nrhs DIV Natom','Nrhs',3,'p_expression_Nrhs','parser.py',197),
-  ('Nrhs -> LPAREN Nrhs RPAREN','Nrhs',3,'p_expression_Nrhs','parser.py',198),
+  ('expression -> RETTYPE FUNCNAME LPAREN RPAREN LCPAREN BODY RCPAREN','expression',7,'p_expression_prog','parser.py',78),
+  ('BODY -> DECL SEMICOL BODY','BODY',3,'p_expression_body','parser.py',81),
+  ('BODY -> ASSIGN SEMICOL BODY','BODY',3,'p_expression_body','parser.py',82),
+  ('BODY -> <empty>','BODY',0,'p_expression_body','parser.py',83),
+  ('DECL -> DTYPE DECLIST','DECL',2,'p_expression_decl','parser.py',87),
+  ('DECLIST -> ID COMMA DECLIST','DECLIST',3,'p_expression_declist','parser.py',100),
+  ('DECLIST -> ID','DECLIST',1,'p_expression_declist','parser.py',101),
+  ('ID -> WORD','ID',1,'p_expression_id','parser.py',107),
+  ('ID -> REF ID','ID',2,'p_expression_id','parser.py',108),
+  ('aID -> WORD','aID',1,'p_expression_assignId','parser.py',121),
+  ('aID -> AMP aID','aID',2,'p_expression_assignId','parser.py',122),
+  ('aID -> REF aID','aID',2,'p_expression_assignId','parser.py',123),
+  ('LHS_POINT -> REF aID','LHS_POINT',2,'p_expression_lhspointer','parser.py',128),
+  ('ASSIGN -> PRIM','ASSIGN',1,'p_expression_assign','parser.py',132),
+  ('PRIM -> WORD EQUALS Wrhs','PRIM',3,'p_prim','parser.py',137),
+  ('PRIM -> LHS_POINT EQUALS Nrhs','PRIM',3,'p_prim','parser.py',138),
+  ('PRIM -> LHS_POINT EQUALS Wrhs','PRIM',3,'p_prim','parser.py',139),
+  ('Wrhs -> Wrhs PLUS Wrhs','Wrhs',3,'p_expression_Wrhs1','parser.py',167),
+  ('Wrhs -> Wrhs MINUS Wrhs','Wrhs',3,'p_expression_Wrhs1','parser.py',168),
+  ('Wrhs -> Wrhs REF Wrhs','Wrhs',3,'p_expression_Wrhs1','parser.py',169),
+  ('Wrhs -> Wrhs DIV Wrhs','Wrhs',3,'p_expression_Wrhs1','parser.py',170),
+  ('Wrhs -> aID','Wrhs',1,'p_expression_Wrhs2','parser.py',174),
+  ('Wrhs -> Wrhs PLUS Natom','Wrhs',3,'p_expression_Wrhs2','parser.py',175),
+  ('Wrhs -> Wrhs MINUS Natom','Wrhs',3,'p_expression_Wrhs2','parser.py',176),
+  ('Wrhs -> Wrhs REF Natom','Wrhs',3,'p_expression_Wrhs2','parser.py',177),
+  ('Wrhs -> Wrhs DIV Natom','Wrhs',3,'p_expression_Wrhs2','parser.py',178),
+  ('Wrhs -> Natom PLUS Wrhs','Wrhs',3,'p_expression_Wrhs2','parser.py',179),
+  ('Wrhs -> Natom MINUS Wrhs','Wrhs',3,'p_expression_Wrhs2','parser.py',180),
+  ('Wrhs -> Natom REF Wrhs','Wrhs',3,'p_expression_Wrhs2','parser.py',181),
+  ('Wrhs -> Natom DIV Wrhs','Wrhs',3,'p_expression_Wrhs2','parser.py',182),
+  ('Wrhs -> MINUS Wrhs','Wrhs',2,'p_expression_Wrhs3','parser.py',186),
+  ('Natom -> NUMBER','Natom',1,'p_expression_Natom','parser.py',207),
+  ('Nrhs -> Natom','Nrhs',1,'p_expression_Nrhs','parser.py',211),
+  ('Nrhs -> Nrhs PLUS Natom','Nrhs',3,'p_expression_Nrhs','parser.py',212),
+  ('Nrhs -> Nrhs MINUS Natom','Nrhs',3,'p_expression_Nrhs','parser.py',213),
+  ('Nrhs -> Nrhs REF Natom','Nrhs',3,'p_expression_Nrhs','parser.py',214),
+  ('Nrhs -> Nrhs DIV Natom','Nrhs',3,'p_expression_Nrhs','parser.py',215),
+  ('Nrhs -> LPAREN Nrhs RPAREN','Nrhs',3,'p_expression_Nrhs','parser.py',216),
+  ('Natom -> MINUS Natom','Natom',2,'p_expression_Natom1','parser.py',220),
 ]

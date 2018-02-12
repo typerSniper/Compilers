@@ -12,58 +12,56 @@ Rule 6     DECLIST -> ID COMMA DECLIST
 Rule 7     DECLIST -> ID
 Rule 8     ID -> WORD
 Rule 9     ID -> REF ID
-Rule 10    LHS_POINT -> REF aID
-Rule 11    ASSIGN -> PRIM
-Rule 12    PRIM -> WORD EQUALS Wrhs
-Rule 13    PRIM -> LHS_POINT EQUALS Wrhs
-Rule 14    PRIM -> LHS_POINT EQUALS Nrhs
-Rule 15    aID -> WORD
-Rule 16    aID -> AMP aID
-Rule 17    aID -> REF aID
-Rule 18    RWatom -> aID
-Rule 19    RWatom -> MINUS RWatom
-Rule 20    Natom -> NUMBER
-Rule 21    Natom -> MINUS Natom
-Rule 22    Wrhs -> RWatom
-Rule 23    Wrhs -> Wrhs PLUS RWatom
-Rule 24    Wrhs -> Wrhs MINUS RWatom
-Rule 25    Wrhs -> Wrhs REF RWatom
-Rule 26    Wrhs -> Wrhs DIV RWatom
-Rule 27    Wrhs -> Wrhs PLUS Nrhs
-Rule 28    Wrhs -> Wrhs MINUS Nrhs
-Rule 29    Wrhs -> Wrhs REF Nrhs
-Rule 30    Wrhs -> Wrhs DIV Nrhs
-Rule 31    Wrhs -> Nrhs PLUS Wrhs
-Rule 32    Wrhs -> Nrhs MINUS Wrhs
-Rule 33    Wrhs -> Nrhs REF Wrhs
-Rule 34    Wrhs -> Nrhs DIV Wrhs
-Rule 35    Wrhs -> LPAREN Wrhs RPAREN
-Rule 36    Nrhs -> Natom
-Rule 37    Nrhs -> Nrhs PLUS Natom
-Rule 38    Nrhs -> Nrhs MINUS Natom
-Rule 39    Nrhs -> Nrhs REF Natom
-Rule 40    Nrhs -> Nrhs DIV Natom
-Rule 41    Nrhs -> LPAREN Nrhs RPAREN
+Rule 10    aID -> WORD
+Rule 11    aID -> AMP aID
+Rule 12    aID -> REF aID
+Rule 13    LHS_POINT -> REF aID
+Rule 14    ASSIGN -> PRIM
+Rule 15    PRIM -> WORD EQUALS Wrhs
+Rule 16    PRIM -> LHS_POINT EQUALS Nrhs
+Rule 17    PRIM -> LHS_POINT EQUALS Wrhs
+Rule 18    Wrhs -> Wrhs PLUS Wrhs
+Rule 19    Wrhs -> Wrhs MINUS Wrhs
+Rule 20    Wrhs -> Wrhs REF Wrhs
+Rule 21    Wrhs -> Wrhs DIV Wrhs
+Rule 22    Wrhs -> aID
+Rule 23    Wrhs -> Wrhs PLUS Natom
+Rule 24    Wrhs -> Wrhs MINUS Natom
+Rule 25    Wrhs -> Wrhs REF Natom
+Rule 26    Wrhs -> Wrhs DIV Natom
+Rule 27    Wrhs -> Natom PLUS Wrhs
+Rule 28    Wrhs -> Natom MINUS Wrhs
+Rule 29    Wrhs -> Natom REF Wrhs
+Rule 30    Wrhs -> Natom DIV Wrhs
+Rule 31    Wrhs -> MINUS Wrhs
+Rule 32    Natom -> NUMBER
+Rule 33    Nrhs -> Natom
+Rule 34    Nrhs -> Nrhs PLUS Natom
+Rule 35    Nrhs -> Nrhs MINUS Natom
+Rule 36    Nrhs -> Nrhs REF Natom
+Rule 37    Nrhs -> Nrhs DIV Natom
+Rule 38    Nrhs -> LPAREN Nrhs RPAREN
+Rule 39    Natom -> MINUS Natom
 
 Terminals, with rules where they appear
 
-AMP                  : 16
+AMP                  : 11
 COMMA                : 6
-DIV                  : 26 30 34 40
+DIV                  : 21 26 30 37
 DTYPE                : 5
-EQUALS               : 12 13 14
+EQUALS               : 15 16 17
 FUNCNAME             : 1
 LCPAREN              : 1
-LPAREN               : 1 35 41
-MINUS                : 19 21 24 28 32 38
-NUMBER               : 20
-PLUS                 : 23 27 31 37
+LPAREN               : 1 38
+MINUS                : 19 24 28 31 35 39
+NUMBER               : 32
+PLUS                 : 18 23 27 34
 RCPAREN              : 1
-REF                  : 9 10 17 25 29 33 39
+REF                  : 9 12 13 20 25 29 36
 RETTYPE              : 1
-RPAREN               : 1 35 41
+RPAREN               : 1 38
 SEMICOL              : 2 3
-WORD                 : 8 12 15
+WORD                 : 8 10 15
 error                : 
 
 Nonterminals, with rules where they appear
@@ -73,13 +71,12 @@ BODY                 : 1 2 3
 DECL                 : 2
 DECLIST              : 5 6
 ID                   : 6 7 9
-LHS_POINT            : 13 14
-Natom                : 21 36 37 38 39 40
-Nrhs                 : 14 27 28 29 30 31 32 33 34 37 38 39 40 41
-PRIM                 : 11
-RWatom               : 19 22 23 24 25 26
-Wrhs                 : 12 13 23 24 25 26 27 28 29 30 31 32 33 34 35
-aID                  : 10 16 17 18
+LHS_POINT            : 16 17
+Natom                : 23 24 25 26 27 28 29 30 33 34 35 36 37 39
+Nrhs                 : 16 34 35 36 37 38
+PRIM                 : 14
+Wrhs                 : 15 17 18 18 19 19 20 20 21 21 23 24 25 26 27 28 29 30 31
+aID                  : 11 12 13 22
 expression           : 0
 
 Parsing method: LALR
@@ -134,22 +131,22 @@ state 6
     (3) BODY -> . ASSIGN SEMICOL BODY
     (4) BODY -> .
     (5) DECL -> . DTYPE DECLIST
-    (11) ASSIGN -> . PRIM
-    (12) PRIM -> . WORD EQUALS Wrhs
-    (13) PRIM -> . LHS_POINT EQUALS Wrhs
-    (14) PRIM -> . LHS_POINT EQUALS Nrhs
-    (10) LHS_POINT -> . REF aID
+    (14) ASSIGN -> . PRIM
+    (15) PRIM -> . WORD EQUALS Wrhs
+    (16) PRIM -> . LHS_POINT EQUALS Nrhs
+    (17) PRIM -> . LHS_POINT EQUALS Wrhs
+    (13) LHS_POINT -> . REF aID
 
     RCPAREN         reduce using rule 4 (BODY -> .)
-    DTYPE           shift and go to state 9
+    DTYPE           shift and go to state 10
     WORD            shift and go to state 12
     REF             shift and go to state 14
 
     BODY                           shift and go to state 7
-    PRIM                           shift and go to state 10
-    LHS_POINT                      shift and go to state 11
     DECL                           shift and go to state 8
-    ASSIGN                         shift and go to state 13
+    ASSIGN                         shift and go to state 9
+    PRIM                           shift and go to state 11
+    LHS_POINT                      shift and go to state 13
 
 state 7
 
@@ -167,59 +164,59 @@ state 8
 
 state 9
 
+    (3) BODY -> ASSIGN . SEMICOL BODY
+
+    SEMICOL         shift and go to state 17
+
+
+state 10
+
     (5) DECL -> DTYPE . DECLIST
     (6) DECLIST -> . ID COMMA DECLIST
     (7) DECLIST -> . ID
     (8) ID -> . WORD
     (9) ID -> . REF ID
 
-    WORD            shift and go to state 19
-    REF             shift and go to state 17
+    WORD            shift and go to state 20
+    REF             shift and go to state 21
 
     DECLIST                        shift and go to state 18
-    ID                             shift and go to state 20
-
-state 10
-
-    (11) ASSIGN -> PRIM .
-
-    SEMICOL         reduce using rule 11 (ASSIGN -> PRIM .)
-
+    ID                             shift and go to state 19
 
 state 11
 
-    (13) PRIM -> LHS_POINT . EQUALS Wrhs
-    (14) PRIM -> LHS_POINT . EQUALS Nrhs
+    (14) ASSIGN -> PRIM .
 
-    EQUALS          shift and go to state 21
+    SEMICOL         reduce using rule 14 (ASSIGN -> PRIM .)
 
 
 state 12
 
-    (12) PRIM -> WORD . EQUALS Wrhs
+    (15) PRIM -> WORD . EQUALS Wrhs
 
     EQUALS          shift and go to state 22
 
 
 state 13
 
-    (3) BODY -> ASSIGN . SEMICOL BODY
+    (16) PRIM -> LHS_POINT . EQUALS Nrhs
+    (17) PRIM -> LHS_POINT . EQUALS Wrhs
 
-    SEMICOL         shift and go to state 23
+    EQUALS          shift and go to state 23
 
 
 state 14
 
-    (10) LHS_POINT -> REF . aID
-    (15) aID -> . WORD
-    (16) aID -> . AMP aID
-    (17) aID -> . REF aID
+    (13) LHS_POINT -> REF . aID
+    (10) aID -> . WORD
+    (11) aID -> . AMP aID
+    (12) aID -> . REF aID
 
-    WORD            shift and go to state 24
-    AMP             shift and go to state 25
-    REF             shift and go to state 27
+    WORD            shift and go to state 26
+    AMP             shift and go to state 27
+    REF             shift and go to state 24
 
-    aID                            shift and go to state 26
+    aID                            shift and go to state 25
 
 state 15
 
@@ -235,33 +232,46 @@ state 16
     (3) BODY -> . ASSIGN SEMICOL BODY
     (4) BODY -> .
     (5) DECL -> . DTYPE DECLIST
-    (11) ASSIGN -> . PRIM
-    (12) PRIM -> . WORD EQUALS Wrhs
-    (13) PRIM -> . LHS_POINT EQUALS Wrhs
-    (14) PRIM -> . LHS_POINT EQUALS Nrhs
-    (10) LHS_POINT -> . REF aID
+    (14) ASSIGN -> . PRIM
+    (15) PRIM -> . WORD EQUALS Wrhs
+    (16) PRIM -> . LHS_POINT EQUALS Nrhs
+    (17) PRIM -> . LHS_POINT EQUALS Wrhs
+    (13) LHS_POINT -> . REF aID
 
     RCPAREN         reduce using rule 4 (BODY -> .)
-    DTYPE           shift and go to state 9
+    DTYPE           shift and go to state 10
     WORD            shift and go to state 12
     REF             shift and go to state 14
 
-    BODY                           shift and go to state 28
-    PRIM                           shift and go to state 10
-    LHS_POINT                      shift and go to state 11
     DECL                           shift and go to state 8
-    ASSIGN                         shift and go to state 13
+    BODY                           shift and go to state 28
+    ASSIGN                         shift and go to state 9
+    PRIM                           shift and go to state 11
+    LHS_POINT                      shift and go to state 13
 
 state 17
 
-    (9) ID -> REF . ID
-    (8) ID -> . WORD
-    (9) ID -> . REF ID
+    (3) BODY -> ASSIGN SEMICOL . BODY
+    (2) BODY -> . DECL SEMICOL BODY
+    (3) BODY -> . ASSIGN SEMICOL BODY
+    (4) BODY -> .
+    (5) DECL -> . DTYPE DECLIST
+    (14) ASSIGN -> . PRIM
+    (15) PRIM -> . WORD EQUALS Wrhs
+    (16) PRIM -> . LHS_POINT EQUALS Nrhs
+    (17) PRIM -> . LHS_POINT EQUALS Wrhs
+    (13) LHS_POINT -> . REF aID
 
-    WORD            shift and go to state 19
-    REF             shift and go to state 17
+    RCPAREN         reduce using rule 4 (BODY -> .)
+    DTYPE           shift and go to state 10
+    WORD            shift and go to state 12
+    REF             shift and go to state 14
 
-    ID                             shift and go to state 29
+    ASSIGN                         shift and go to state 9
+    BODY                           shift and go to state 29
+    DECL                           shift and go to state 8
+    PRIM                           shift and go to state 11
+    LHS_POINT                      shift and go to state 13
 
 state 18
 
@@ -272,14 +282,6 @@ state 18
 
 state 19
 
-    (8) ID -> WORD .
-
-    COMMA           reduce using rule 8 (ID -> WORD .)
-    SEMICOL         reduce using rule 8 (ID -> WORD .)
-
-
-state 20
-
     (6) DECLIST -> ID . COMMA DECLIST
     (7) DECLIST -> ID .
 
@@ -287,164 +289,144 @@ state 20
     SEMICOL         reduce using rule 7 (DECLIST -> ID .)
 
 
+state 20
+
+    (8) ID -> WORD .
+
+    COMMA           reduce using rule 8 (ID -> WORD .)
+    SEMICOL         reduce using rule 8 (ID -> WORD .)
+
+
 state 21
 
-    (13) PRIM -> LHS_POINT EQUALS . Wrhs
-    (14) PRIM -> LHS_POINT EQUALS . Nrhs
-    (22) Wrhs -> . RWatom
-    (23) Wrhs -> . Wrhs PLUS RWatom
-    (24) Wrhs -> . Wrhs MINUS RWatom
-    (25) Wrhs -> . Wrhs REF RWatom
-    (26) Wrhs -> . Wrhs DIV RWatom
-    (27) Wrhs -> . Wrhs PLUS Nrhs
-    (28) Wrhs -> . Wrhs MINUS Nrhs
-    (29) Wrhs -> . Wrhs REF Nrhs
-    (30) Wrhs -> . Wrhs DIV Nrhs
-    (31) Wrhs -> . Nrhs PLUS Wrhs
-    (32) Wrhs -> . Nrhs MINUS Wrhs
-    (33) Wrhs -> . Nrhs REF Wrhs
-    (34) Wrhs -> . Nrhs DIV Wrhs
-    (35) Wrhs -> . LPAREN Wrhs RPAREN
-    (36) Nrhs -> . Natom
-    (37) Nrhs -> . Nrhs PLUS Natom
-    (38) Nrhs -> . Nrhs MINUS Natom
-    (39) Nrhs -> . Nrhs REF Natom
-    (40) Nrhs -> . Nrhs DIV Natom
-    (41) Nrhs -> . LPAREN Nrhs RPAREN
-    (18) RWatom -> . aID
-    (19) RWatom -> . MINUS RWatom
-    (20) Natom -> . NUMBER
-    (21) Natom -> . MINUS Natom
-    (15) aID -> . WORD
-    (16) aID -> . AMP aID
-    (17) aID -> . REF aID
+    (9) ID -> REF . ID
+    (8) ID -> . WORD
+    (9) ID -> . REF ID
 
-    LPAREN          shift and go to state 33
-    MINUS           shift and go to state 38
-    NUMBER          shift and go to state 31
-    WORD            shift and go to state 24
-    AMP             shift and go to state 25
-    REF             shift and go to state 27
+    WORD            shift and go to state 20
+    REF             shift and go to state 21
 
-    Wrhs                           shift and go to state 34
-    Nrhs                           shift and go to state 35
-    aID                            shift and go to state 32
-    Natom                          shift and go to state 37
-    RWatom                         shift and go to state 36
+    ID                             shift and go to state 31
 
 state 22
 
-    (12) PRIM -> WORD EQUALS . Wrhs
-    (22) Wrhs -> . RWatom
-    (23) Wrhs -> . Wrhs PLUS RWatom
-    (24) Wrhs -> . Wrhs MINUS RWatom
-    (25) Wrhs -> . Wrhs REF RWatom
-    (26) Wrhs -> . Wrhs DIV RWatom
-    (27) Wrhs -> . Wrhs PLUS Nrhs
-    (28) Wrhs -> . Wrhs MINUS Nrhs
-    (29) Wrhs -> . Wrhs REF Nrhs
-    (30) Wrhs -> . Wrhs DIV Nrhs
-    (31) Wrhs -> . Nrhs PLUS Wrhs
-    (32) Wrhs -> . Nrhs MINUS Wrhs
-    (33) Wrhs -> . Nrhs REF Wrhs
-    (34) Wrhs -> . Nrhs DIV Wrhs
-    (35) Wrhs -> . LPAREN Wrhs RPAREN
-    (18) RWatom -> . aID
-    (19) RWatom -> . MINUS RWatom
-    (36) Nrhs -> . Natom
-    (37) Nrhs -> . Nrhs PLUS Natom
-    (38) Nrhs -> . Nrhs MINUS Natom
-    (39) Nrhs -> . Nrhs REF Natom
-    (40) Nrhs -> . Nrhs DIV Natom
-    (41) Nrhs -> . LPAREN Nrhs RPAREN
-    (15) aID -> . WORD
-    (16) aID -> . AMP aID
-    (17) aID -> . REF aID
-    (20) Natom -> . NUMBER
-    (21) Natom -> . MINUS Natom
+    (15) PRIM -> WORD EQUALS . Wrhs
+    (18) Wrhs -> . Wrhs PLUS Wrhs
+    (19) Wrhs -> . Wrhs MINUS Wrhs
+    (20) Wrhs -> . Wrhs REF Wrhs
+    (21) Wrhs -> . Wrhs DIV Wrhs
+    (22) Wrhs -> . aID
+    (23) Wrhs -> . Wrhs PLUS Natom
+    (24) Wrhs -> . Wrhs MINUS Natom
+    (25) Wrhs -> . Wrhs REF Natom
+    (26) Wrhs -> . Wrhs DIV Natom
+    (27) Wrhs -> . Natom PLUS Wrhs
+    (28) Wrhs -> . Natom MINUS Wrhs
+    (29) Wrhs -> . Natom REF Wrhs
+    (30) Wrhs -> . Natom DIV Wrhs
+    (31) Wrhs -> . MINUS Wrhs
+    (10) aID -> . WORD
+    (11) aID -> . AMP aID
+    (12) aID -> . REF aID
+    (32) Natom -> . NUMBER
+    (39) Natom -> . MINUS Natom
 
-    LPAREN          shift and go to state 33
-    MINUS           shift and go to state 38
-    WORD            shift and go to state 24
-    AMP             shift and go to state 25
-    REF             shift and go to state 27
-    NUMBER          shift and go to state 31
+    MINUS           shift and go to state 33
+    WORD            shift and go to state 26
+    AMP             shift and go to state 27
+    REF             shift and go to state 24
+    NUMBER          shift and go to state 36
 
-    Wrhs                           shift and go to state 39
-    Nrhs                           shift and go to state 40
-    RWatom                         shift and go to state 36
-    Natom                          shift and go to state 37
-    aID                            shift and go to state 32
+    Wrhs                           shift and go to state 32
+    aID                            shift and go to state 34
+    Natom                          shift and go to state 35
 
 state 23
 
-    (3) BODY -> ASSIGN SEMICOL . BODY
-    (2) BODY -> . DECL SEMICOL BODY
-    (3) BODY -> . ASSIGN SEMICOL BODY
-    (4) BODY -> .
-    (5) DECL -> . DTYPE DECLIST
-    (11) ASSIGN -> . PRIM
-    (12) PRIM -> . WORD EQUALS Wrhs
-    (13) PRIM -> . LHS_POINT EQUALS Wrhs
-    (14) PRIM -> . LHS_POINT EQUALS Nrhs
-    (10) LHS_POINT -> . REF aID
+    (16) PRIM -> LHS_POINT EQUALS . Nrhs
+    (17) PRIM -> LHS_POINT EQUALS . Wrhs
+    (33) Nrhs -> . Natom
+    (34) Nrhs -> . Nrhs PLUS Natom
+    (35) Nrhs -> . Nrhs MINUS Natom
+    (36) Nrhs -> . Nrhs REF Natom
+    (37) Nrhs -> . Nrhs DIV Natom
+    (38) Nrhs -> . LPAREN Nrhs RPAREN
+    (18) Wrhs -> . Wrhs PLUS Wrhs
+    (19) Wrhs -> . Wrhs MINUS Wrhs
+    (20) Wrhs -> . Wrhs REF Wrhs
+    (21) Wrhs -> . Wrhs DIV Wrhs
+    (22) Wrhs -> . aID
+    (23) Wrhs -> . Wrhs PLUS Natom
+    (24) Wrhs -> . Wrhs MINUS Natom
+    (25) Wrhs -> . Wrhs REF Natom
+    (26) Wrhs -> . Wrhs DIV Natom
+    (27) Wrhs -> . Natom PLUS Wrhs
+    (28) Wrhs -> . Natom MINUS Wrhs
+    (29) Wrhs -> . Natom REF Wrhs
+    (30) Wrhs -> . Natom DIV Wrhs
+    (31) Wrhs -> . MINUS Wrhs
+    (32) Natom -> . NUMBER
+    (39) Natom -> . MINUS Natom
+    (10) aID -> . WORD
+    (11) aID -> . AMP aID
+    (12) aID -> . REF aID
 
-    RCPAREN         reduce using rule 4 (BODY -> .)
-    DTYPE           shift and go to state 9
-    WORD            shift and go to state 12
-    REF             shift and go to state 14
+    LPAREN          shift and go to state 40
+    MINUS           shift and go to state 33
+    NUMBER          shift and go to state 36
+    WORD            shift and go to state 26
+    AMP             shift and go to state 27
+    REF             shift and go to state 24
 
-    BODY                           shift and go to state 41
-    PRIM                           shift and go to state 10
-    LHS_POINT                      shift and go to state 11
-    DECL                           shift and go to state 8
-    ASSIGN                         shift and go to state 13
+    Nrhs                           shift and go to state 37
+    Wrhs                           shift and go to state 38
+    Natom                          shift and go to state 39
+    aID                            shift and go to state 34
 
 state 24
 
-    (15) aID -> WORD .
+    (12) aID -> REF . aID
+    (10) aID -> . WORD
+    (11) aID -> . AMP aID
+    (12) aID -> . REF aID
 
-    EQUALS          reduce using rule 15 (aID -> WORD .)
-    PLUS            reduce using rule 15 (aID -> WORD .)
-    MINUS           reduce using rule 15 (aID -> WORD .)
-    REF             reduce using rule 15 (aID -> WORD .)
-    DIV             reduce using rule 15 (aID -> WORD .)
-    SEMICOL         reduce using rule 15 (aID -> WORD .)
-    RPAREN          reduce using rule 15 (aID -> WORD .)
+    WORD            shift and go to state 26
+    AMP             shift and go to state 27
+    REF             shift and go to state 24
 
+    aID                            shift and go to state 41
 
 state 25
 
-    (16) aID -> AMP . aID
-    (15) aID -> . WORD
-    (16) aID -> . AMP aID
-    (17) aID -> . REF aID
+    (13) LHS_POINT -> REF aID .
 
-    WORD            shift and go to state 24
-    AMP             shift and go to state 25
-    REF             shift and go to state 27
+    EQUALS          reduce using rule 13 (LHS_POINT -> REF aID .)
 
-    aID                            shift and go to state 42
 
 state 26
 
-    (10) LHS_POINT -> REF aID .
+    (10) aID -> WORD .
 
-    EQUALS          reduce using rule 10 (LHS_POINT -> REF aID .)
+    EQUALS          reduce using rule 10 (aID -> WORD .)
+    PLUS            reduce using rule 10 (aID -> WORD .)
+    MINUS           reduce using rule 10 (aID -> WORD .)
+    REF             reduce using rule 10 (aID -> WORD .)
+    DIV             reduce using rule 10 (aID -> WORD .)
+    SEMICOL         reduce using rule 10 (aID -> WORD .)
 
 
 state 27
 
-    (17) aID -> REF . aID
-    (15) aID -> . WORD
-    (16) aID -> . AMP aID
-    (17) aID -> . REF aID
+    (11) aID -> AMP . aID
+    (10) aID -> . WORD
+    (11) aID -> . AMP aID
+    (12) aID -> . REF aID
 
-    WORD            shift and go to state 24
-    AMP             shift and go to state 25
-    REF             shift and go to state 27
+    WORD            shift and go to state 26
+    AMP             shift and go to state 27
+    REF             shift and go to state 24
 
-    aID                            shift and go to state 43
+    aID                            shift and go to state 42
 
 state 28
 
@@ -455,10 +437,9 @@ state 28
 
 state 29
 
-    (9) ID -> REF ID .
+    (3) BODY -> ASSIGN SEMICOL BODY .
 
-    COMMA           reduce using rule 9 (ID -> REF ID .)
-    SEMICOL         reduce using rule 9 (ID -> REF ID .)
+    RCPAREN         reduce using rule 3 (BODY -> ASSIGN SEMICOL BODY .)
 
 
 state 30
@@ -469,1177 +450,957 @@ state 30
     (8) ID -> . WORD
     (9) ID -> . REF ID
 
-    WORD            shift and go to state 19
-    REF             shift and go to state 17
+    WORD            shift and go to state 20
+    REF             shift and go to state 21
 
-    ID                             shift and go to state 20
-    DECLIST                        shift and go to state 44
+    ID                             shift and go to state 19
+    DECLIST                        shift and go to state 43
 
 state 31
 
-    (20) Natom -> NUMBER .
+    (9) ID -> REF ID .
 
-    RPAREN          reduce using rule 20 (Natom -> NUMBER .)
-    PLUS            reduce using rule 20 (Natom -> NUMBER .)
-    MINUS           reduce using rule 20 (Natom -> NUMBER .)
-    REF             reduce using rule 20 (Natom -> NUMBER .)
-    DIV             reduce using rule 20 (Natom -> NUMBER .)
-    SEMICOL         reduce using rule 20 (Natom -> NUMBER .)
+    COMMA           reduce using rule 9 (ID -> REF ID .)
+    SEMICOL         reduce using rule 9 (ID -> REF ID .)
 
 
 state 32
 
-    (18) RWatom -> aID .
+    (15) PRIM -> WORD EQUALS Wrhs .
+    (18) Wrhs -> Wrhs . PLUS Wrhs
+    (19) Wrhs -> Wrhs . MINUS Wrhs
+    (20) Wrhs -> Wrhs . REF Wrhs
+    (21) Wrhs -> Wrhs . DIV Wrhs
+    (23) Wrhs -> Wrhs . PLUS Natom
+    (24) Wrhs -> Wrhs . MINUS Natom
+    (25) Wrhs -> Wrhs . REF Natom
+    (26) Wrhs -> Wrhs . DIV Natom
 
-    PLUS            reduce using rule 18 (RWatom -> aID .)
-    MINUS           reduce using rule 18 (RWatom -> aID .)
-    REF             reduce using rule 18 (RWatom -> aID .)
-    DIV             reduce using rule 18 (RWatom -> aID .)
-    SEMICOL         reduce using rule 18 (RWatom -> aID .)
-    RPAREN          reduce using rule 18 (RWatom -> aID .)
+    SEMICOL         reduce using rule 15 (PRIM -> WORD EQUALS Wrhs .)
+    PLUS            shift and go to state 44
+    MINUS           shift and go to state 45
+    REF             shift and go to state 46
+    DIV             shift and go to state 47
 
 
 state 33
 
-    (35) Wrhs -> LPAREN . Wrhs RPAREN
-    (41) Nrhs -> LPAREN . Nrhs RPAREN
-    (22) Wrhs -> . RWatom
-    (23) Wrhs -> . Wrhs PLUS RWatom
-    (24) Wrhs -> . Wrhs MINUS RWatom
-    (25) Wrhs -> . Wrhs REF RWatom
-    (26) Wrhs -> . Wrhs DIV RWatom
-    (27) Wrhs -> . Wrhs PLUS Nrhs
-    (28) Wrhs -> . Wrhs MINUS Nrhs
-    (29) Wrhs -> . Wrhs REF Nrhs
-    (30) Wrhs -> . Wrhs DIV Nrhs
-    (31) Wrhs -> . Nrhs PLUS Wrhs
-    (32) Wrhs -> . Nrhs MINUS Wrhs
-    (33) Wrhs -> . Nrhs REF Wrhs
-    (34) Wrhs -> . Nrhs DIV Wrhs
-    (35) Wrhs -> . LPAREN Wrhs RPAREN
-    (36) Nrhs -> . Natom
-    (37) Nrhs -> . Nrhs PLUS Natom
-    (38) Nrhs -> . Nrhs MINUS Natom
-    (39) Nrhs -> . Nrhs REF Natom
-    (40) Nrhs -> . Nrhs DIV Natom
-    (41) Nrhs -> . LPAREN Nrhs RPAREN
-    (18) RWatom -> . aID
-    (19) RWatom -> . MINUS RWatom
-    (20) Natom -> . NUMBER
-    (21) Natom -> . MINUS Natom
-    (15) aID -> . WORD
-    (16) aID -> . AMP aID
-    (17) aID -> . REF aID
+    (31) Wrhs -> MINUS . Wrhs
+    (39) Natom -> MINUS . Natom
+    (18) Wrhs -> . Wrhs PLUS Wrhs
+    (19) Wrhs -> . Wrhs MINUS Wrhs
+    (20) Wrhs -> . Wrhs REF Wrhs
+    (21) Wrhs -> . Wrhs DIV Wrhs
+    (22) Wrhs -> . aID
+    (23) Wrhs -> . Wrhs PLUS Natom
+    (24) Wrhs -> . Wrhs MINUS Natom
+    (25) Wrhs -> . Wrhs REF Natom
+    (26) Wrhs -> . Wrhs DIV Natom
+    (27) Wrhs -> . Natom PLUS Wrhs
+    (28) Wrhs -> . Natom MINUS Wrhs
+    (29) Wrhs -> . Natom REF Wrhs
+    (30) Wrhs -> . Natom DIV Wrhs
+    (31) Wrhs -> . MINUS Wrhs
+    (32) Natom -> . NUMBER
+    (39) Natom -> . MINUS Natom
+    (10) aID -> . WORD
+    (11) aID -> . AMP aID
+    (12) aID -> . REF aID
 
-    LPAREN          shift and go to state 33
-    MINUS           shift and go to state 38
-    NUMBER          shift and go to state 31
-    WORD            shift and go to state 24
-    AMP             shift and go to state 25
-    REF             shift and go to state 27
+    MINUS           shift and go to state 33
+    NUMBER          shift and go to state 36
+    WORD            shift and go to state 26
+    AMP             shift and go to state 27
+    REF             shift and go to state 24
 
-    Wrhs                           shift and go to state 45
-    Nrhs                           shift and go to state 46
-    RWatom                         shift and go to state 36
-    aID                            shift and go to state 32
-    Natom                          shift and go to state 37
+    Wrhs                           shift and go to state 48
+    Natom                          shift and go to state 49
+    aID                            shift and go to state 34
 
 state 34
 
-    (13) PRIM -> LHS_POINT EQUALS Wrhs .
-    (23) Wrhs -> Wrhs . PLUS RWatom
-    (24) Wrhs -> Wrhs . MINUS RWatom
-    (25) Wrhs -> Wrhs . REF RWatom
-    (26) Wrhs -> Wrhs . DIV RWatom
-    (27) Wrhs -> Wrhs . PLUS Nrhs
-    (28) Wrhs -> Wrhs . MINUS Nrhs
-    (29) Wrhs -> Wrhs . REF Nrhs
-    (30) Wrhs -> Wrhs . DIV Nrhs
+    (22) Wrhs -> aID .
 
-    SEMICOL         reduce using rule 13 (PRIM -> LHS_POINT EQUALS Wrhs .)
-    PLUS            shift and go to state 47
-    MINUS           shift and go to state 48
-    REF             shift and go to state 50
-    DIV             shift and go to state 49
+    PLUS            reduce using rule 22 (Wrhs -> aID .)
+    MINUS           reduce using rule 22 (Wrhs -> aID .)
+    REF             reduce using rule 22 (Wrhs -> aID .)
+    DIV             reduce using rule 22 (Wrhs -> aID .)
+    SEMICOL         reduce using rule 22 (Wrhs -> aID .)
 
 
 state 35
 
-    (14) PRIM -> LHS_POINT EQUALS Nrhs .
-    (31) Wrhs -> Nrhs . PLUS Wrhs
-    (32) Wrhs -> Nrhs . MINUS Wrhs
-    (33) Wrhs -> Nrhs . REF Wrhs
-    (34) Wrhs -> Nrhs . DIV Wrhs
-    (37) Nrhs -> Nrhs . PLUS Natom
-    (38) Nrhs -> Nrhs . MINUS Natom
-    (39) Nrhs -> Nrhs . REF Natom
-    (40) Nrhs -> Nrhs . DIV Natom
+    (27) Wrhs -> Natom . PLUS Wrhs
+    (28) Wrhs -> Natom . MINUS Wrhs
+    (29) Wrhs -> Natom . REF Wrhs
+    (30) Wrhs -> Natom . DIV Wrhs
 
-    SEMICOL         reduce using rule 14 (PRIM -> LHS_POINT EQUALS Nrhs .)
-    PLUS            shift and go to state 51
-    MINUS           shift and go to state 52
-    REF             shift and go to state 54
+    PLUS            shift and go to state 50
+    MINUS           shift and go to state 51
+    REF             shift and go to state 52
     DIV             shift and go to state 53
 
 
 state 36
 
-    (22) Wrhs -> RWatom .
+    (32) Natom -> NUMBER .
 
-    PLUS            reduce using rule 22 (Wrhs -> RWatom .)
-    MINUS           reduce using rule 22 (Wrhs -> RWatom .)
-    REF             reduce using rule 22 (Wrhs -> RWatom .)
-    DIV             reduce using rule 22 (Wrhs -> RWatom .)
-    SEMICOL         reduce using rule 22 (Wrhs -> RWatom .)
-    RPAREN          reduce using rule 22 (Wrhs -> RWatom .)
+    PLUS            reduce using rule 32 (Natom -> NUMBER .)
+    MINUS           reduce using rule 32 (Natom -> NUMBER .)
+    REF             reduce using rule 32 (Natom -> NUMBER .)
+    DIV             reduce using rule 32 (Natom -> NUMBER .)
+    SEMICOL         reduce using rule 32 (Natom -> NUMBER .)
+    RPAREN          reduce using rule 32 (Natom -> NUMBER .)
 
 
 state 37
 
-    (36) Nrhs -> Natom .
+    (16) PRIM -> LHS_POINT EQUALS Nrhs .
+    (34) Nrhs -> Nrhs . PLUS Natom
+    (35) Nrhs -> Nrhs . MINUS Natom
+    (36) Nrhs -> Nrhs . REF Natom
+    (37) Nrhs -> Nrhs . DIV Natom
 
-    PLUS            reduce using rule 36 (Nrhs -> Natom .)
-    MINUS           reduce using rule 36 (Nrhs -> Natom .)
-    REF             reduce using rule 36 (Nrhs -> Natom .)
-    DIV             reduce using rule 36 (Nrhs -> Natom .)
-    SEMICOL         reduce using rule 36 (Nrhs -> Natom .)
-    RPAREN          reduce using rule 36 (Nrhs -> Natom .)
+    SEMICOL         reduce using rule 16 (PRIM -> LHS_POINT EQUALS Nrhs .)
+    PLUS            shift and go to state 54
+    MINUS           shift and go to state 55
+    REF             shift and go to state 56
+    DIV             shift and go to state 57
 
 
 state 38
 
-    (19) RWatom -> MINUS . RWatom
-    (21) Natom -> MINUS . Natom
-    (18) RWatom -> . aID
-    (19) RWatom -> . MINUS RWatom
-    (20) Natom -> . NUMBER
-    (21) Natom -> . MINUS Natom
-    (15) aID -> . WORD
-    (16) aID -> . AMP aID
-    (17) aID -> . REF aID
+    (17) PRIM -> LHS_POINT EQUALS Wrhs .
+    (18) Wrhs -> Wrhs . PLUS Wrhs
+    (19) Wrhs -> Wrhs . MINUS Wrhs
+    (20) Wrhs -> Wrhs . REF Wrhs
+    (21) Wrhs -> Wrhs . DIV Wrhs
+    (23) Wrhs -> Wrhs . PLUS Natom
+    (24) Wrhs -> Wrhs . MINUS Natom
+    (25) Wrhs -> Wrhs . REF Natom
+    (26) Wrhs -> Wrhs . DIV Natom
 
-    MINUS           shift and go to state 38
-    NUMBER          shift and go to state 31
-    WORD            shift and go to state 24
-    AMP             shift and go to state 25
-    REF             shift and go to state 27
+    SEMICOL         reduce using rule 17 (PRIM -> LHS_POINT EQUALS Wrhs .)
+    PLUS            shift and go to state 44
+    MINUS           shift and go to state 45
+    REF             shift and go to state 46
+    DIV             shift and go to state 47
 
-    RWatom                         shift and go to state 56
-    aID                            shift and go to state 32
-    Natom                          shift and go to state 55
 
 state 39
 
-    (12) PRIM -> WORD EQUALS Wrhs .
-    (23) Wrhs -> Wrhs . PLUS RWatom
-    (24) Wrhs -> Wrhs . MINUS RWatom
-    (25) Wrhs -> Wrhs . REF RWatom
-    (26) Wrhs -> Wrhs . DIV RWatom
-    (27) Wrhs -> Wrhs . PLUS Nrhs
-    (28) Wrhs -> Wrhs . MINUS Nrhs
-    (29) Wrhs -> Wrhs . REF Nrhs
-    (30) Wrhs -> Wrhs . DIV Nrhs
+    (33) Nrhs -> Natom .
+    (27) Wrhs -> Natom . PLUS Wrhs
+    (28) Wrhs -> Natom . MINUS Wrhs
+    (29) Wrhs -> Natom . REF Wrhs
+    (30) Wrhs -> Natom . DIV Wrhs
 
-    SEMICOL         reduce using rule 12 (PRIM -> WORD EQUALS Wrhs .)
-    PLUS            shift and go to state 47
-    MINUS           shift and go to state 48
-    REF             shift and go to state 50
-    DIV             shift and go to state 49
+  ! shift/reduce conflict for PLUS resolved as shift
+  ! shift/reduce conflict for MINUS resolved as shift
+  ! shift/reduce conflict for REF resolved as shift
+  ! shift/reduce conflict for DIV resolved as shift
+    SEMICOL         reduce using rule 33 (Nrhs -> Natom .)
+    PLUS            shift and go to state 50
+    MINUS           shift and go to state 51
+    REF             shift and go to state 52
+    DIV             shift and go to state 53
+
+  ! PLUS            [ reduce using rule 33 (Nrhs -> Natom .) ]
+  ! MINUS           [ reduce using rule 33 (Nrhs -> Natom .) ]
+  ! REF             [ reduce using rule 33 (Nrhs -> Natom .) ]
+  ! DIV             [ reduce using rule 33 (Nrhs -> Natom .) ]
 
 
 state 40
 
-    (31) Wrhs -> Nrhs . PLUS Wrhs
-    (32) Wrhs -> Nrhs . MINUS Wrhs
-    (33) Wrhs -> Nrhs . REF Wrhs
-    (34) Wrhs -> Nrhs . DIV Wrhs
-    (37) Nrhs -> Nrhs . PLUS Natom
-    (38) Nrhs -> Nrhs . MINUS Natom
-    (39) Nrhs -> Nrhs . REF Natom
-    (40) Nrhs -> Nrhs . DIV Natom
+    (38) Nrhs -> LPAREN . Nrhs RPAREN
+    (33) Nrhs -> . Natom
+    (34) Nrhs -> . Nrhs PLUS Natom
+    (35) Nrhs -> . Nrhs MINUS Natom
+    (36) Nrhs -> . Nrhs REF Natom
+    (37) Nrhs -> . Nrhs DIV Natom
+    (38) Nrhs -> . LPAREN Nrhs RPAREN
+    (32) Natom -> . NUMBER
+    (39) Natom -> . MINUS Natom
 
-    PLUS            shift and go to state 51
-    MINUS           shift and go to state 52
-    REF             shift and go to state 54
-    DIV             shift and go to state 53
+    LPAREN          shift and go to state 40
+    NUMBER          shift and go to state 36
+    MINUS           shift and go to state 60
 
+    Nrhs                           shift and go to state 58
+    Natom                          shift and go to state 59
 
 state 41
 
-    (3) BODY -> ASSIGN SEMICOL BODY .
+    (12) aID -> REF aID .
 
-    RCPAREN         reduce using rule 3 (BODY -> ASSIGN SEMICOL BODY .)
+    EQUALS          reduce using rule 12 (aID -> REF aID .)
+    PLUS            reduce using rule 12 (aID -> REF aID .)
+    MINUS           reduce using rule 12 (aID -> REF aID .)
+    REF             reduce using rule 12 (aID -> REF aID .)
+    DIV             reduce using rule 12 (aID -> REF aID .)
+    SEMICOL         reduce using rule 12 (aID -> REF aID .)
 
 
 state 42
 
-    (16) aID -> AMP aID .
+    (11) aID -> AMP aID .
 
-    EQUALS          reduce using rule 16 (aID -> AMP aID .)
-    PLUS            reduce using rule 16 (aID -> AMP aID .)
-    MINUS           reduce using rule 16 (aID -> AMP aID .)
-    REF             reduce using rule 16 (aID -> AMP aID .)
-    DIV             reduce using rule 16 (aID -> AMP aID .)
-    SEMICOL         reduce using rule 16 (aID -> AMP aID .)
-    RPAREN          reduce using rule 16 (aID -> AMP aID .)
+    EQUALS          reduce using rule 11 (aID -> AMP aID .)
+    PLUS            reduce using rule 11 (aID -> AMP aID .)
+    MINUS           reduce using rule 11 (aID -> AMP aID .)
+    REF             reduce using rule 11 (aID -> AMP aID .)
+    DIV             reduce using rule 11 (aID -> AMP aID .)
+    SEMICOL         reduce using rule 11 (aID -> AMP aID .)
 
 
 state 43
-
-    (17) aID -> REF aID .
-
-    EQUALS          reduce using rule 17 (aID -> REF aID .)
-    PLUS            reduce using rule 17 (aID -> REF aID .)
-    MINUS           reduce using rule 17 (aID -> REF aID .)
-    REF             reduce using rule 17 (aID -> REF aID .)
-    DIV             reduce using rule 17 (aID -> REF aID .)
-    SEMICOL         reduce using rule 17 (aID -> REF aID .)
-    RPAREN          reduce using rule 17 (aID -> REF aID .)
-
-
-state 44
 
     (6) DECLIST -> ID COMMA DECLIST .
 
     SEMICOL         reduce using rule 6 (DECLIST -> ID COMMA DECLIST .)
 
 
+state 44
+
+    (18) Wrhs -> Wrhs PLUS . Wrhs
+    (23) Wrhs -> Wrhs PLUS . Natom
+    (18) Wrhs -> . Wrhs PLUS Wrhs
+    (19) Wrhs -> . Wrhs MINUS Wrhs
+    (20) Wrhs -> . Wrhs REF Wrhs
+    (21) Wrhs -> . Wrhs DIV Wrhs
+    (22) Wrhs -> . aID
+    (23) Wrhs -> . Wrhs PLUS Natom
+    (24) Wrhs -> . Wrhs MINUS Natom
+    (25) Wrhs -> . Wrhs REF Natom
+    (26) Wrhs -> . Wrhs DIV Natom
+    (27) Wrhs -> . Natom PLUS Wrhs
+    (28) Wrhs -> . Natom MINUS Wrhs
+    (29) Wrhs -> . Natom REF Wrhs
+    (30) Wrhs -> . Natom DIV Wrhs
+    (31) Wrhs -> . MINUS Wrhs
+    (32) Natom -> . NUMBER
+    (39) Natom -> . MINUS Natom
+    (10) aID -> . WORD
+    (11) aID -> . AMP aID
+    (12) aID -> . REF aID
+
+    MINUS           shift and go to state 33
+    NUMBER          shift and go to state 36
+    WORD            shift and go to state 26
+    AMP             shift and go to state 27
+    REF             shift and go to state 24
+
+    Wrhs                           shift and go to state 61
+    Natom                          shift and go to state 62
+    aID                            shift and go to state 34
+
 state 45
 
-    (35) Wrhs -> LPAREN Wrhs . RPAREN
-    (23) Wrhs -> Wrhs . PLUS RWatom
-    (24) Wrhs -> Wrhs . MINUS RWatom
-    (25) Wrhs -> Wrhs . REF RWatom
-    (26) Wrhs -> Wrhs . DIV RWatom
-    (27) Wrhs -> Wrhs . PLUS Nrhs
-    (28) Wrhs -> Wrhs . MINUS Nrhs
-    (29) Wrhs -> Wrhs . REF Nrhs
-    (30) Wrhs -> Wrhs . DIV Nrhs
+    (19) Wrhs -> Wrhs MINUS . Wrhs
+    (24) Wrhs -> Wrhs MINUS . Natom
+    (18) Wrhs -> . Wrhs PLUS Wrhs
+    (19) Wrhs -> . Wrhs MINUS Wrhs
+    (20) Wrhs -> . Wrhs REF Wrhs
+    (21) Wrhs -> . Wrhs DIV Wrhs
+    (22) Wrhs -> . aID
+    (23) Wrhs -> . Wrhs PLUS Natom
+    (24) Wrhs -> . Wrhs MINUS Natom
+    (25) Wrhs -> . Wrhs REF Natom
+    (26) Wrhs -> . Wrhs DIV Natom
+    (27) Wrhs -> . Natom PLUS Wrhs
+    (28) Wrhs -> . Natom MINUS Wrhs
+    (29) Wrhs -> . Natom REF Wrhs
+    (30) Wrhs -> . Natom DIV Wrhs
+    (31) Wrhs -> . MINUS Wrhs
+    (32) Natom -> . NUMBER
+    (39) Natom -> . MINUS Natom
+    (10) aID -> . WORD
+    (11) aID -> . AMP aID
+    (12) aID -> . REF aID
 
-    RPAREN          shift and go to state 57
-    PLUS            shift and go to state 47
-    MINUS           shift and go to state 48
-    REF             shift and go to state 50
-    DIV             shift and go to state 49
+    MINUS           shift and go to state 33
+    NUMBER          shift and go to state 36
+    WORD            shift and go to state 26
+    AMP             shift and go to state 27
+    REF             shift and go to state 24
 
+    Wrhs                           shift and go to state 63
+    Natom                          shift and go to state 64
+    aID                            shift and go to state 34
 
 state 46
 
-    (41) Nrhs -> LPAREN Nrhs . RPAREN
-    (31) Wrhs -> Nrhs . PLUS Wrhs
-    (32) Wrhs -> Nrhs . MINUS Wrhs
-    (33) Wrhs -> Nrhs . REF Wrhs
-    (34) Wrhs -> Nrhs . DIV Wrhs
-    (37) Nrhs -> Nrhs . PLUS Natom
-    (38) Nrhs -> Nrhs . MINUS Natom
-    (39) Nrhs -> Nrhs . REF Natom
-    (40) Nrhs -> Nrhs . DIV Natom
+    (20) Wrhs -> Wrhs REF . Wrhs
+    (25) Wrhs -> Wrhs REF . Natom
+    (18) Wrhs -> . Wrhs PLUS Wrhs
+    (19) Wrhs -> . Wrhs MINUS Wrhs
+    (20) Wrhs -> . Wrhs REF Wrhs
+    (21) Wrhs -> . Wrhs DIV Wrhs
+    (22) Wrhs -> . aID
+    (23) Wrhs -> . Wrhs PLUS Natom
+    (24) Wrhs -> . Wrhs MINUS Natom
+    (25) Wrhs -> . Wrhs REF Natom
+    (26) Wrhs -> . Wrhs DIV Natom
+    (27) Wrhs -> . Natom PLUS Wrhs
+    (28) Wrhs -> . Natom MINUS Wrhs
+    (29) Wrhs -> . Natom REF Wrhs
+    (30) Wrhs -> . Natom DIV Wrhs
+    (31) Wrhs -> . MINUS Wrhs
+    (32) Natom -> . NUMBER
+    (39) Natom -> . MINUS Natom
+    (10) aID -> . WORD
+    (11) aID -> . AMP aID
+    (12) aID -> . REF aID
 
-    RPAREN          shift and go to state 58
-    PLUS            shift and go to state 51
-    MINUS           shift and go to state 52
-    REF             shift and go to state 54
-    DIV             shift and go to state 53
+    MINUS           shift and go to state 33
+    NUMBER          shift and go to state 36
+    WORD            shift and go to state 26
+    AMP             shift and go to state 27
+    REF             shift and go to state 24
 
+    Wrhs                           shift and go to state 65
+    Natom                          shift and go to state 66
+    aID                            shift and go to state 34
 
 state 47
 
-    (23) Wrhs -> Wrhs PLUS . RWatom
-    (27) Wrhs -> Wrhs PLUS . Nrhs
-    (18) RWatom -> . aID
-    (19) RWatom -> . MINUS RWatom
-    (36) Nrhs -> . Natom
-    (37) Nrhs -> . Nrhs PLUS Natom
-    (38) Nrhs -> . Nrhs MINUS Natom
-    (39) Nrhs -> . Nrhs REF Natom
-    (40) Nrhs -> . Nrhs DIV Natom
-    (41) Nrhs -> . LPAREN Nrhs RPAREN
-    (15) aID -> . WORD
-    (16) aID -> . AMP aID
-    (17) aID -> . REF aID
-    (20) Natom -> . NUMBER
-    (21) Natom -> . MINUS Natom
+    (21) Wrhs -> Wrhs DIV . Wrhs
+    (26) Wrhs -> Wrhs DIV . Natom
+    (18) Wrhs -> . Wrhs PLUS Wrhs
+    (19) Wrhs -> . Wrhs MINUS Wrhs
+    (20) Wrhs -> . Wrhs REF Wrhs
+    (21) Wrhs -> . Wrhs DIV Wrhs
+    (22) Wrhs -> . aID
+    (23) Wrhs -> . Wrhs PLUS Natom
+    (24) Wrhs -> . Wrhs MINUS Natom
+    (25) Wrhs -> . Wrhs REF Natom
+    (26) Wrhs -> . Wrhs DIV Natom
+    (27) Wrhs -> . Natom PLUS Wrhs
+    (28) Wrhs -> . Natom MINUS Wrhs
+    (29) Wrhs -> . Natom REF Wrhs
+    (30) Wrhs -> . Natom DIV Wrhs
+    (31) Wrhs -> . MINUS Wrhs
+    (32) Natom -> . NUMBER
+    (39) Natom -> . MINUS Natom
+    (10) aID -> . WORD
+    (11) aID -> . AMP aID
+    (12) aID -> . REF aID
 
-    MINUS           shift and go to state 38
-    LPAREN          shift and go to state 59
-    WORD            shift and go to state 24
-    AMP             shift and go to state 25
-    REF             shift and go to state 27
-    NUMBER          shift and go to state 31
+    MINUS           shift and go to state 33
+    NUMBER          shift and go to state 36
+    WORD            shift and go to state 26
+    AMP             shift and go to state 27
+    REF             shift and go to state 24
 
-    Nrhs                           shift and go to state 60
-    RWatom                         shift and go to state 61
-    Natom                          shift and go to state 37
-    aID                            shift and go to state 32
+    Wrhs                           shift and go to state 67
+    Natom                          shift and go to state 68
+    aID                            shift and go to state 34
 
 state 48
 
-    (24) Wrhs -> Wrhs MINUS . RWatom
-    (28) Wrhs -> Wrhs MINUS . Nrhs
-    (18) RWatom -> . aID
-    (19) RWatom -> . MINUS RWatom
-    (36) Nrhs -> . Natom
-    (37) Nrhs -> . Nrhs PLUS Natom
-    (38) Nrhs -> . Nrhs MINUS Natom
-    (39) Nrhs -> . Nrhs REF Natom
-    (40) Nrhs -> . Nrhs DIV Natom
-    (41) Nrhs -> . LPAREN Nrhs RPAREN
-    (15) aID -> . WORD
-    (16) aID -> . AMP aID
-    (17) aID -> . REF aID
-    (20) Natom -> . NUMBER
-    (21) Natom -> . MINUS Natom
+    (31) Wrhs -> MINUS Wrhs .
+    (18) Wrhs -> Wrhs . PLUS Wrhs
+    (19) Wrhs -> Wrhs . MINUS Wrhs
+    (20) Wrhs -> Wrhs . REF Wrhs
+    (21) Wrhs -> Wrhs . DIV Wrhs
+    (23) Wrhs -> Wrhs . PLUS Natom
+    (24) Wrhs -> Wrhs . MINUS Natom
+    (25) Wrhs -> Wrhs . REF Natom
+    (26) Wrhs -> Wrhs . DIV Natom
 
-    MINUS           shift and go to state 38
-    LPAREN          shift and go to state 59
-    WORD            shift and go to state 24
-    AMP             shift and go to state 25
-    REF             shift and go to state 27
-    NUMBER          shift and go to state 31
+    PLUS            reduce using rule 31 (Wrhs -> MINUS Wrhs .)
+    MINUS           reduce using rule 31 (Wrhs -> MINUS Wrhs .)
+    REF             reduce using rule 31 (Wrhs -> MINUS Wrhs .)
+    DIV             reduce using rule 31 (Wrhs -> MINUS Wrhs .)
+    SEMICOL         reduce using rule 31 (Wrhs -> MINUS Wrhs .)
 
-    Nrhs                           shift and go to state 62
-    RWatom                         shift and go to state 63
-    Natom                          shift and go to state 37
-    aID                            shift and go to state 32
+  ! PLUS            [ shift and go to state 44 ]
+  ! MINUS           [ shift and go to state 45 ]
+  ! REF             [ shift and go to state 46 ]
+  ! DIV             [ shift and go to state 47 ]
+
 
 state 49
 
-    (26) Wrhs -> Wrhs DIV . RWatom
-    (30) Wrhs -> Wrhs DIV . Nrhs
-    (18) RWatom -> . aID
-    (19) RWatom -> . MINUS RWatom
-    (36) Nrhs -> . Natom
-    (37) Nrhs -> . Nrhs PLUS Natom
-    (38) Nrhs -> . Nrhs MINUS Natom
-    (39) Nrhs -> . Nrhs REF Natom
-    (40) Nrhs -> . Nrhs DIV Natom
-    (41) Nrhs -> . LPAREN Nrhs RPAREN
-    (15) aID -> . WORD
-    (16) aID -> . AMP aID
-    (17) aID -> . REF aID
-    (20) Natom -> . NUMBER
-    (21) Natom -> . MINUS Natom
+    (39) Natom -> MINUS Natom .
+    (27) Wrhs -> Natom . PLUS Wrhs
+    (28) Wrhs -> Natom . MINUS Wrhs
+    (29) Wrhs -> Natom . REF Wrhs
+    (30) Wrhs -> Natom . DIV Wrhs
 
-    MINUS           shift and go to state 38
-    LPAREN          shift and go to state 59
-    WORD            shift and go to state 24
-    AMP             shift and go to state 25
-    REF             shift and go to state 27
-    NUMBER          shift and go to state 31
+    PLUS            reduce using rule 39 (Natom -> MINUS Natom .)
+    MINUS           reduce using rule 39 (Natom -> MINUS Natom .)
+    REF             reduce using rule 39 (Natom -> MINUS Natom .)
+    DIV             reduce using rule 39 (Natom -> MINUS Natom .)
+    SEMICOL         reduce using rule 39 (Natom -> MINUS Natom .)
 
-    Nrhs                           shift and go to state 64
-    RWatom                         shift and go to state 65
-    Natom                          shift and go to state 37
-    aID                            shift and go to state 32
+  ! PLUS            [ shift and go to state 50 ]
+  ! MINUS           [ shift and go to state 51 ]
+  ! REF             [ shift and go to state 52 ]
+  ! DIV             [ shift and go to state 53 ]
+
 
 state 50
 
-    (25) Wrhs -> Wrhs REF . RWatom
-    (29) Wrhs -> Wrhs REF . Nrhs
-    (18) RWatom -> . aID
-    (19) RWatom -> . MINUS RWatom
-    (36) Nrhs -> . Natom
-    (37) Nrhs -> . Nrhs PLUS Natom
-    (38) Nrhs -> . Nrhs MINUS Natom
-    (39) Nrhs -> . Nrhs REF Natom
-    (40) Nrhs -> . Nrhs DIV Natom
-    (41) Nrhs -> . LPAREN Nrhs RPAREN
-    (15) aID -> . WORD
-    (16) aID -> . AMP aID
-    (17) aID -> . REF aID
-    (20) Natom -> . NUMBER
-    (21) Natom -> . MINUS Natom
+    (27) Wrhs -> Natom PLUS . Wrhs
+    (18) Wrhs -> . Wrhs PLUS Wrhs
+    (19) Wrhs -> . Wrhs MINUS Wrhs
+    (20) Wrhs -> . Wrhs REF Wrhs
+    (21) Wrhs -> . Wrhs DIV Wrhs
+    (22) Wrhs -> . aID
+    (23) Wrhs -> . Wrhs PLUS Natom
+    (24) Wrhs -> . Wrhs MINUS Natom
+    (25) Wrhs -> . Wrhs REF Natom
+    (26) Wrhs -> . Wrhs DIV Natom
+    (27) Wrhs -> . Natom PLUS Wrhs
+    (28) Wrhs -> . Natom MINUS Wrhs
+    (29) Wrhs -> . Natom REF Wrhs
+    (30) Wrhs -> . Natom DIV Wrhs
+    (31) Wrhs -> . MINUS Wrhs
+    (10) aID -> . WORD
+    (11) aID -> . AMP aID
+    (12) aID -> . REF aID
+    (32) Natom -> . NUMBER
+    (39) Natom -> . MINUS Natom
 
-    MINUS           shift and go to state 38
-    LPAREN          shift and go to state 59
-    WORD            shift and go to state 24
-    AMP             shift and go to state 25
-    REF             shift and go to state 27
-    NUMBER          shift and go to state 31
+    MINUS           shift and go to state 33
+    WORD            shift and go to state 26
+    AMP             shift and go to state 27
+    REF             shift and go to state 24
+    NUMBER          shift and go to state 36
 
-    Nrhs                           shift and go to state 66
-    RWatom                         shift and go to state 67
-    Natom                          shift and go to state 37
-    aID                            shift and go to state 32
+    Natom                          shift and go to state 35
+    Wrhs                           shift and go to state 69
+    aID                            shift and go to state 34
 
 state 51
 
-    (31) Wrhs -> Nrhs PLUS . Wrhs
-    (37) Nrhs -> Nrhs PLUS . Natom
-    (22) Wrhs -> . RWatom
-    (23) Wrhs -> . Wrhs PLUS RWatom
-    (24) Wrhs -> . Wrhs MINUS RWatom
-    (25) Wrhs -> . Wrhs REF RWatom
-    (26) Wrhs -> . Wrhs DIV RWatom
-    (27) Wrhs -> . Wrhs PLUS Nrhs
-    (28) Wrhs -> . Wrhs MINUS Nrhs
-    (29) Wrhs -> . Wrhs REF Nrhs
-    (30) Wrhs -> . Wrhs DIV Nrhs
-    (31) Wrhs -> . Nrhs PLUS Wrhs
-    (32) Wrhs -> . Nrhs MINUS Wrhs
-    (33) Wrhs -> . Nrhs REF Wrhs
-    (34) Wrhs -> . Nrhs DIV Wrhs
-    (35) Wrhs -> . LPAREN Wrhs RPAREN
-    (20) Natom -> . NUMBER
-    (21) Natom -> . MINUS Natom
-    (18) RWatom -> . aID
-    (19) RWatom -> . MINUS RWatom
-    (36) Nrhs -> . Natom
-    (37) Nrhs -> . Nrhs PLUS Natom
-    (38) Nrhs -> . Nrhs MINUS Natom
-    (39) Nrhs -> . Nrhs REF Natom
-    (40) Nrhs -> . Nrhs DIV Natom
-    (41) Nrhs -> . LPAREN Nrhs RPAREN
-    (15) aID -> . WORD
-    (16) aID -> . AMP aID
-    (17) aID -> . REF aID
+    (28) Wrhs -> Natom MINUS . Wrhs
+    (18) Wrhs -> . Wrhs PLUS Wrhs
+    (19) Wrhs -> . Wrhs MINUS Wrhs
+    (20) Wrhs -> . Wrhs REF Wrhs
+    (21) Wrhs -> . Wrhs DIV Wrhs
+    (22) Wrhs -> . aID
+    (23) Wrhs -> . Wrhs PLUS Natom
+    (24) Wrhs -> . Wrhs MINUS Natom
+    (25) Wrhs -> . Wrhs REF Natom
+    (26) Wrhs -> . Wrhs DIV Natom
+    (27) Wrhs -> . Natom PLUS Wrhs
+    (28) Wrhs -> . Natom MINUS Wrhs
+    (29) Wrhs -> . Natom REF Wrhs
+    (30) Wrhs -> . Natom DIV Wrhs
+    (31) Wrhs -> . MINUS Wrhs
+    (10) aID -> . WORD
+    (11) aID -> . AMP aID
+    (12) aID -> . REF aID
+    (32) Natom -> . NUMBER
+    (39) Natom -> . MINUS Natom
 
-    LPAREN          shift and go to state 33
-    NUMBER          shift and go to state 31
-    MINUS           shift and go to state 70
-    WORD            shift and go to state 24
-    AMP             shift and go to state 25
-    REF             shift and go to state 27
+    MINUS           shift and go to state 33
+    WORD            shift and go to state 26
+    AMP             shift and go to state 27
+    REF             shift and go to state 24
+    NUMBER          shift and go to state 36
 
-    Wrhs                           shift and go to state 68
-    Nrhs                           shift and go to state 40
-    RWatom                         shift and go to state 36
-    aID                            shift and go to state 32
-    Natom                          shift and go to state 69
+    Natom                          shift and go to state 35
+    Wrhs                           shift and go to state 70
+    aID                            shift and go to state 34
 
 state 52
 
-    (32) Wrhs -> Nrhs MINUS . Wrhs
-    (38) Nrhs -> Nrhs MINUS . Natom
-    (22) Wrhs -> . RWatom
-    (23) Wrhs -> . Wrhs PLUS RWatom
-    (24) Wrhs -> . Wrhs MINUS RWatom
-    (25) Wrhs -> . Wrhs REF RWatom
-    (26) Wrhs -> . Wrhs DIV RWatom
-    (27) Wrhs -> . Wrhs PLUS Nrhs
-    (28) Wrhs -> . Wrhs MINUS Nrhs
-    (29) Wrhs -> . Wrhs REF Nrhs
-    (30) Wrhs -> . Wrhs DIV Nrhs
-    (31) Wrhs -> . Nrhs PLUS Wrhs
-    (32) Wrhs -> . Nrhs MINUS Wrhs
-    (33) Wrhs -> . Nrhs REF Wrhs
-    (34) Wrhs -> . Nrhs DIV Wrhs
-    (35) Wrhs -> . LPAREN Wrhs RPAREN
-    (20) Natom -> . NUMBER
-    (21) Natom -> . MINUS Natom
-    (18) RWatom -> . aID
-    (19) RWatom -> . MINUS RWatom
-    (36) Nrhs -> . Natom
-    (37) Nrhs -> . Nrhs PLUS Natom
-    (38) Nrhs -> . Nrhs MINUS Natom
-    (39) Nrhs -> . Nrhs REF Natom
-    (40) Nrhs -> . Nrhs DIV Natom
-    (41) Nrhs -> . LPAREN Nrhs RPAREN
-    (15) aID -> . WORD
-    (16) aID -> . AMP aID
-    (17) aID -> . REF aID
+    (29) Wrhs -> Natom REF . Wrhs
+    (18) Wrhs -> . Wrhs PLUS Wrhs
+    (19) Wrhs -> . Wrhs MINUS Wrhs
+    (20) Wrhs -> . Wrhs REF Wrhs
+    (21) Wrhs -> . Wrhs DIV Wrhs
+    (22) Wrhs -> . aID
+    (23) Wrhs -> . Wrhs PLUS Natom
+    (24) Wrhs -> . Wrhs MINUS Natom
+    (25) Wrhs -> . Wrhs REF Natom
+    (26) Wrhs -> . Wrhs DIV Natom
+    (27) Wrhs -> . Natom PLUS Wrhs
+    (28) Wrhs -> . Natom MINUS Wrhs
+    (29) Wrhs -> . Natom REF Wrhs
+    (30) Wrhs -> . Natom DIV Wrhs
+    (31) Wrhs -> . MINUS Wrhs
+    (10) aID -> . WORD
+    (11) aID -> . AMP aID
+    (12) aID -> . REF aID
+    (32) Natom -> . NUMBER
+    (39) Natom -> . MINUS Natom
 
-    LPAREN          shift and go to state 33
-    NUMBER          shift and go to state 31
-    MINUS           shift and go to state 70
-    WORD            shift and go to state 24
-    AMP             shift and go to state 25
-    REF             shift and go to state 27
+    MINUS           shift and go to state 33
+    WORD            shift and go to state 26
+    AMP             shift and go to state 27
+    REF             shift and go to state 24
+    NUMBER          shift and go to state 36
 
+    Natom                          shift and go to state 35
     Wrhs                           shift and go to state 71
-    Nrhs                           shift and go to state 40
-    RWatom                         shift and go to state 36
-    aID                            shift and go to state 32
-    Natom                          shift and go to state 72
+    aID                            shift and go to state 34
 
 state 53
 
-    (34) Wrhs -> Nrhs DIV . Wrhs
-    (40) Nrhs -> Nrhs DIV . Natom
-    (22) Wrhs -> . RWatom
-    (23) Wrhs -> . Wrhs PLUS RWatom
-    (24) Wrhs -> . Wrhs MINUS RWatom
-    (25) Wrhs -> . Wrhs REF RWatom
-    (26) Wrhs -> . Wrhs DIV RWatom
-    (27) Wrhs -> . Wrhs PLUS Nrhs
-    (28) Wrhs -> . Wrhs MINUS Nrhs
-    (29) Wrhs -> . Wrhs REF Nrhs
-    (30) Wrhs -> . Wrhs DIV Nrhs
-    (31) Wrhs -> . Nrhs PLUS Wrhs
-    (32) Wrhs -> . Nrhs MINUS Wrhs
-    (33) Wrhs -> . Nrhs REF Wrhs
-    (34) Wrhs -> . Nrhs DIV Wrhs
-    (35) Wrhs -> . LPAREN Wrhs RPAREN
-    (20) Natom -> . NUMBER
-    (21) Natom -> . MINUS Natom
-    (18) RWatom -> . aID
-    (19) RWatom -> . MINUS RWatom
-    (36) Nrhs -> . Natom
-    (37) Nrhs -> . Nrhs PLUS Natom
-    (38) Nrhs -> . Nrhs MINUS Natom
-    (39) Nrhs -> . Nrhs REF Natom
-    (40) Nrhs -> . Nrhs DIV Natom
-    (41) Nrhs -> . LPAREN Nrhs RPAREN
-    (15) aID -> . WORD
-    (16) aID -> . AMP aID
-    (17) aID -> . REF aID
+    (30) Wrhs -> Natom DIV . Wrhs
+    (18) Wrhs -> . Wrhs PLUS Wrhs
+    (19) Wrhs -> . Wrhs MINUS Wrhs
+    (20) Wrhs -> . Wrhs REF Wrhs
+    (21) Wrhs -> . Wrhs DIV Wrhs
+    (22) Wrhs -> . aID
+    (23) Wrhs -> . Wrhs PLUS Natom
+    (24) Wrhs -> . Wrhs MINUS Natom
+    (25) Wrhs -> . Wrhs REF Natom
+    (26) Wrhs -> . Wrhs DIV Natom
+    (27) Wrhs -> . Natom PLUS Wrhs
+    (28) Wrhs -> . Natom MINUS Wrhs
+    (29) Wrhs -> . Natom REF Wrhs
+    (30) Wrhs -> . Natom DIV Wrhs
+    (31) Wrhs -> . MINUS Wrhs
+    (10) aID -> . WORD
+    (11) aID -> . AMP aID
+    (12) aID -> . REF aID
+    (32) Natom -> . NUMBER
+    (39) Natom -> . MINUS Natom
 
-    LPAREN          shift and go to state 33
-    NUMBER          shift and go to state 31
-    MINUS           shift and go to state 70
-    WORD            shift and go to state 24
-    AMP             shift and go to state 25
-    REF             shift and go to state 27
+    MINUS           shift and go to state 33
+    WORD            shift and go to state 26
+    AMP             shift and go to state 27
+    REF             shift and go to state 24
+    NUMBER          shift and go to state 36
 
-    Wrhs                           shift and go to state 73
-    Nrhs                           shift and go to state 40
-    RWatom                         shift and go to state 36
-    aID                            shift and go to state 32
-    Natom                          shift and go to state 74
+    Natom                          shift and go to state 35
+    Wrhs                           shift and go to state 72
+    aID                            shift and go to state 34
 
 state 54
 
-    (33) Wrhs -> Nrhs REF . Wrhs
-    (39) Nrhs -> Nrhs REF . Natom
-    (22) Wrhs -> . RWatom
-    (23) Wrhs -> . Wrhs PLUS RWatom
-    (24) Wrhs -> . Wrhs MINUS RWatom
-    (25) Wrhs -> . Wrhs REF RWatom
-    (26) Wrhs -> . Wrhs DIV RWatom
-    (27) Wrhs -> . Wrhs PLUS Nrhs
-    (28) Wrhs -> . Wrhs MINUS Nrhs
-    (29) Wrhs -> . Wrhs REF Nrhs
-    (30) Wrhs -> . Wrhs DIV Nrhs
-    (31) Wrhs -> . Nrhs PLUS Wrhs
-    (32) Wrhs -> . Nrhs MINUS Wrhs
-    (33) Wrhs -> . Nrhs REF Wrhs
-    (34) Wrhs -> . Nrhs DIV Wrhs
-    (35) Wrhs -> . LPAREN Wrhs RPAREN
-    (20) Natom -> . NUMBER
-    (21) Natom -> . MINUS Natom
-    (18) RWatom -> . aID
-    (19) RWatom -> . MINUS RWatom
-    (36) Nrhs -> . Natom
-    (37) Nrhs -> . Nrhs PLUS Natom
-    (38) Nrhs -> . Nrhs MINUS Natom
-    (39) Nrhs -> . Nrhs REF Natom
-    (40) Nrhs -> . Nrhs DIV Natom
-    (41) Nrhs -> . LPAREN Nrhs RPAREN
-    (15) aID -> . WORD
-    (16) aID -> . AMP aID
-    (17) aID -> . REF aID
+    (34) Nrhs -> Nrhs PLUS . Natom
+    (32) Natom -> . NUMBER
+    (39) Natom -> . MINUS Natom
 
-    LPAREN          shift and go to state 33
-    NUMBER          shift and go to state 31
-    MINUS           shift and go to state 70
-    WORD            shift and go to state 24
-    AMP             shift and go to state 25
-    REF             shift and go to state 27
+    NUMBER          shift and go to state 36
+    MINUS           shift and go to state 60
 
-    Wrhs                           shift and go to state 75
-    Nrhs                           shift and go to state 40
-    RWatom                         shift and go to state 36
-    aID                            shift and go to state 32
-    Natom                          shift and go to state 76
+    Natom                          shift and go to state 73
 
 state 55
 
-    (21) Natom -> MINUS Natom .
+    (35) Nrhs -> Nrhs MINUS . Natom
+    (32) Natom -> . NUMBER
+    (39) Natom -> . MINUS Natom
 
-    RPAREN          reduce using rule 21 (Natom -> MINUS Natom .)
-    PLUS            reduce using rule 21 (Natom -> MINUS Natom .)
-    MINUS           reduce using rule 21 (Natom -> MINUS Natom .)
-    REF             reduce using rule 21 (Natom -> MINUS Natom .)
-    DIV             reduce using rule 21 (Natom -> MINUS Natom .)
-    SEMICOL         reduce using rule 21 (Natom -> MINUS Natom .)
+    NUMBER          shift and go to state 36
+    MINUS           shift and go to state 60
 
+    Natom                          shift and go to state 74
 
 state 56
 
-    (19) RWatom -> MINUS RWatom .
+    (36) Nrhs -> Nrhs REF . Natom
+    (32) Natom -> . NUMBER
+    (39) Natom -> . MINUS Natom
 
-    PLUS            reduce using rule 19 (RWatom -> MINUS RWatom .)
-    MINUS           reduce using rule 19 (RWatom -> MINUS RWatom .)
-    REF             reduce using rule 19 (RWatom -> MINUS RWatom .)
-    DIV             reduce using rule 19 (RWatom -> MINUS RWatom .)
-    SEMICOL         reduce using rule 19 (RWatom -> MINUS RWatom .)
-    RPAREN          reduce using rule 19 (RWatom -> MINUS RWatom .)
+    NUMBER          shift and go to state 36
+    MINUS           shift and go to state 60
 
+    Natom                          shift and go to state 75
 
 state 57
 
-    (35) Wrhs -> LPAREN Wrhs RPAREN .
+    (37) Nrhs -> Nrhs DIV . Natom
+    (32) Natom -> . NUMBER
+    (39) Natom -> . MINUS Natom
 
-    PLUS            reduce using rule 35 (Wrhs -> LPAREN Wrhs RPAREN .)
-    MINUS           reduce using rule 35 (Wrhs -> LPAREN Wrhs RPAREN .)
-    REF             reduce using rule 35 (Wrhs -> LPAREN Wrhs RPAREN .)
-    DIV             reduce using rule 35 (Wrhs -> LPAREN Wrhs RPAREN .)
-    SEMICOL         reduce using rule 35 (Wrhs -> LPAREN Wrhs RPAREN .)
-    RPAREN          reduce using rule 35 (Wrhs -> LPAREN Wrhs RPAREN .)
+    NUMBER          shift and go to state 36
+    MINUS           shift and go to state 60
 
+    Natom                          shift and go to state 76
 
 state 58
 
-    (41) Nrhs -> LPAREN Nrhs RPAREN .
+    (38) Nrhs -> LPAREN Nrhs . RPAREN
+    (34) Nrhs -> Nrhs . PLUS Natom
+    (35) Nrhs -> Nrhs . MINUS Natom
+    (36) Nrhs -> Nrhs . REF Natom
+    (37) Nrhs -> Nrhs . DIV Natom
 
-    PLUS            reduce using rule 41 (Nrhs -> LPAREN Nrhs RPAREN .)
-    MINUS           reduce using rule 41 (Nrhs -> LPAREN Nrhs RPAREN .)
-    REF             reduce using rule 41 (Nrhs -> LPAREN Nrhs RPAREN .)
-    DIV             reduce using rule 41 (Nrhs -> LPAREN Nrhs RPAREN .)
-    SEMICOL         reduce using rule 41 (Nrhs -> LPAREN Nrhs RPAREN .)
-    RPAREN          reduce using rule 41 (Nrhs -> LPAREN Nrhs RPAREN .)
+    RPAREN          shift and go to state 77
+    PLUS            shift and go to state 54
+    MINUS           shift and go to state 55
+    REF             shift and go to state 56
+    DIV             shift and go to state 57
 
 
 state 59
 
-    (41) Nrhs -> LPAREN . Nrhs RPAREN
-    (36) Nrhs -> . Natom
-    (37) Nrhs -> . Nrhs PLUS Natom
-    (38) Nrhs -> . Nrhs MINUS Natom
-    (39) Nrhs -> . Nrhs REF Natom
-    (40) Nrhs -> . Nrhs DIV Natom
-    (41) Nrhs -> . LPAREN Nrhs RPAREN
-    (20) Natom -> . NUMBER
-    (21) Natom -> . MINUS Natom
+    (33) Nrhs -> Natom .
 
-    LPAREN          shift and go to state 59
-    NUMBER          shift and go to state 31
-    MINUS           shift and go to state 78
+    RPAREN          reduce using rule 33 (Nrhs -> Natom .)
+    PLUS            reduce using rule 33 (Nrhs -> Natom .)
+    MINUS           reduce using rule 33 (Nrhs -> Natom .)
+    REF             reduce using rule 33 (Nrhs -> Natom .)
+    DIV             reduce using rule 33 (Nrhs -> Natom .)
 
-    Nrhs                           shift and go to state 77
-    Natom                          shift and go to state 37
 
 state 60
 
-    (27) Wrhs -> Wrhs PLUS Nrhs .
-    (37) Nrhs -> Nrhs . PLUS Natom
-    (38) Nrhs -> Nrhs . MINUS Natom
-    (39) Nrhs -> Nrhs . REF Natom
-    (40) Nrhs -> Nrhs . DIV Natom
+    (39) Natom -> MINUS . Natom
+    (32) Natom -> . NUMBER
+    (39) Natom -> . MINUS Natom
 
-  ! shift/reduce conflict for PLUS resolved as shift
-  ! shift/reduce conflict for MINUS resolved as shift
-  ! shift/reduce conflict for REF resolved as shift
-  ! shift/reduce conflict for DIV resolved as shift
-    SEMICOL         reduce using rule 27 (Wrhs -> Wrhs PLUS Nrhs .)
-    RPAREN          reduce using rule 27 (Wrhs -> Wrhs PLUS Nrhs .)
-    PLUS            shift and go to state 79
-    MINUS           shift and go to state 80
-    REF             shift and go to state 82
-    DIV             shift and go to state 81
+    NUMBER          shift and go to state 36
+    MINUS           shift and go to state 60
 
-  ! PLUS            [ reduce using rule 27 (Wrhs -> Wrhs PLUS Nrhs .) ]
-  ! MINUS           [ reduce using rule 27 (Wrhs -> Wrhs PLUS Nrhs .) ]
-  ! REF             [ reduce using rule 27 (Wrhs -> Wrhs PLUS Nrhs .) ]
-  ! DIV             [ reduce using rule 27 (Wrhs -> Wrhs PLUS Nrhs .) ]
-
+    Natom                          shift and go to state 78
 
 state 61
 
-    (23) Wrhs -> Wrhs PLUS RWatom .
+    (18) Wrhs -> Wrhs PLUS Wrhs .
+    (18) Wrhs -> Wrhs . PLUS Wrhs
+    (19) Wrhs -> Wrhs . MINUS Wrhs
+    (20) Wrhs -> Wrhs . REF Wrhs
+    (21) Wrhs -> Wrhs . DIV Wrhs
+    (23) Wrhs -> Wrhs . PLUS Natom
+    (24) Wrhs -> Wrhs . MINUS Natom
+    (25) Wrhs -> Wrhs . REF Natom
+    (26) Wrhs -> Wrhs . DIV Natom
 
-    PLUS            reduce using rule 23 (Wrhs -> Wrhs PLUS RWatom .)
-    MINUS           reduce using rule 23 (Wrhs -> Wrhs PLUS RWatom .)
-    REF             reduce using rule 23 (Wrhs -> Wrhs PLUS RWatom .)
-    DIV             reduce using rule 23 (Wrhs -> Wrhs PLUS RWatom .)
-    SEMICOL         reduce using rule 23 (Wrhs -> Wrhs PLUS RWatom .)
-    RPAREN          reduce using rule 23 (Wrhs -> Wrhs PLUS RWatom .)
+    PLUS            reduce using rule 18 (Wrhs -> Wrhs PLUS Wrhs .)
+    MINUS           reduce using rule 18 (Wrhs -> Wrhs PLUS Wrhs .)
+    SEMICOL         reduce using rule 18 (Wrhs -> Wrhs PLUS Wrhs .)
+    REF             shift and go to state 46
+    DIV             shift and go to state 47
+
+  ! REF             [ reduce using rule 18 (Wrhs -> Wrhs PLUS Wrhs .) ]
+  ! DIV             [ reduce using rule 18 (Wrhs -> Wrhs PLUS Wrhs .) ]
+  ! PLUS            [ shift and go to state 44 ]
+  ! MINUS           [ shift and go to state 45 ]
 
 
 state 62
 
-    (28) Wrhs -> Wrhs MINUS Nrhs .
-    (37) Nrhs -> Nrhs . PLUS Natom
-    (38) Nrhs -> Nrhs . MINUS Natom
-    (39) Nrhs -> Nrhs . REF Natom
-    (40) Nrhs -> Nrhs . DIV Natom
+    (23) Wrhs -> Wrhs PLUS Natom .
+    (27) Wrhs -> Natom . PLUS Wrhs
+    (28) Wrhs -> Natom . MINUS Wrhs
+    (29) Wrhs -> Natom . REF Wrhs
+    (30) Wrhs -> Natom . DIV Wrhs
 
-  ! shift/reduce conflict for PLUS resolved as shift
-  ! shift/reduce conflict for MINUS resolved as shift
-  ! shift/reduce conflict for REF resolved as shift
-  ! shift/reduce conflict for DIV resolved as shift
-    SEMICOL         reduce using rule 28 (Wrhs -> Wrhs MINUS Nrhs .)
-    RPAREN          reduce using rule 28 (Wrhs -> Wrhs MINUS Nrhs .)
-    PLUS            shift and go to state 79
-    MINUS           shift and go to state 80
-    REF             shift and go to state 82
-    DIV             shift and go to state 81
+    PLUS            reduce using rule 23 (Wrhs -> Wrhs PLUS Natom .)
+    MINUS           reduce using rule 23 (Wrhs -> Wrhs PLUS Natom .)
+    SEMICOL         reduce using rule 23 (Wrhs -> Wrhs PLUS Natom .)
+    REF             shift and go to state 52
+    DIV             shift and go to state 53
 
-  ! PLUS            [ reduce using rule 28 (Wrhs -> Wrhs MINUS Nrhs .) ]
-  ! MINUS           [ reduce using rule 28 (Wrhs -> Wrhs MINUS Nrhs .) ]
-  ! REF             [ reduce using rule 28 (Wrhs -> Wrhs MINUS Nrhs .) ]
-  ! DIV             [ reduce using rule 28 (Wrhs -> Wrhs MINUS Nrhs .) ]
+  ! REF             [ reduce using rule 23 (Wrhs -> Wrhs PLUS Natom .) ]
+  ! DIV             [ reduce using rule 23 (Wrhs -> Wrhs PLUS Natom .) ]
+  ! PLUS            [ shift and go to state 50 ]
+  ! MINUS           [ shift and go to state 51 ]
 
 
 state 63
 
-    (24) Wrhs -> Wrhs MINUS RWatom .
+    (19) Wrhs -> Wrhs MINUS Wrhs .
+    (18) Wrhs -> Wrhs . PLUS Wrhs
+    (19) Wrhs -> Wrhs . MINUS Wrhs
+    (20) Wrhs -> Wrhs . REF Wrhs
+    (21) Wrhs -> Wrhs . DIV Wrhs
+    (23) Wrhs -> Wrhs . PLUS Natom
+    (24) Wrhs -> Wrhs . MINUS Natom
+    (25) Wrhs -> Wrhs . REF Natom
+    (26) Wrhs -> Wrhs . DIV Natom
 
-    PLUS            reduce using rule 24 (Wrhs -> Wrhs MINUS RWatom .)
-    MINUS           reduce using rule 24 (Wrhs -> Wrhs MINUS RWatom .)
-    REF             reduce using rule 24 (Wrhs -> Wrhs MINUS RWatom .)
-    DIV             reduce using rule 24 (Wrhs -> Wrhs MINUS RWatom .)
-    SEMICOL         reduce using rule 24 (Wrhs -> Wrhs MINUS RWatom .)
-    RPAREN          reduce using rule 24 (Wrhs -> Wrhs MINUS RWatom .)
+    PLUS            reduce using rule 19 (Wrhs -> Wrhs MINUS Wrhs .)
+    MINUS           reduce using rule 19 (Wrhs -> Wrhs MINUS Wrhs .)
+    SEMICOL         reduce using rule 19 (Wrhs -> Wrhs MINUS Wrhs .)
+    REF             shift and go to state 46
+    DIV             shift and go to state 47
+
+  ! REF             [ reduce using rule 19 (Wrhs -> Wrhs MINUS Wrhs .) ]
+  ! DIV             [ reduce using rule 19 (Wrhs -> Wrhs MINUS Wrhs .) ]
+  ! PLUS            [ shift and go to state 44 ]
+  ! MINUS           [ shift and go to state 45 ]
 
 
 state 64
 
-    (30) Wrhs -> Wrhs DIV Nrhs .
-    (37) Nrhs -> Nrhs . PLUS Natom
-    (38) Nrhs -> Nrhs . MINUS Natom
-    (39) Nrhs -> Nrhs . REF Natom
-    (40) Nrhs -> Nrhs . DIV Natom
+    (24) Wrhs -> Wrhs MINUS Natom .
+    (27) Wrhs -> Natom . PLUS Wrhs
+    (28) Wrhs -> Natom . MINUS Wrhs
+    (29) Wrhs -> Natom . REF Wrhs
+    (30) Wrhs -> Natom . DIV Wrhs
 
-  ! shift/reduce conflict for PLUS resolved as shift
-  ! shift/reduce conflict for MINUS resolved as shift
-  ! shift/reduce conflict for REF resolved as shift
-  ! shift/reduce conflict for DIV resolved as shift
-    SEMICOL         reduce using rule 30 (Wrhs -> Wrhs DIV Nrhs .)
-    RPAREN          reduce using rule 30 (Wrhs -> Wrhs DIV Nrhs .)
-    PLUS            shift and go to state 79
-    MINUS           shift and go to state 80
-    REF             shift and go to state 82
-    DIV             shift and go to state 81
+    PLUS            reduce using rule 24 (Wrhs -> Wrhs MINUS Natom .)
+    MINUS           reduce using rule 24 (Wrhs -> Wrhs MINUS Natom .)
+    SEMICOL         reduce using rule 24 (Wrhs -> Wrhs MINUS Natom .)
+    REF             shift and go to state 52
+    DIV             shift and go to state 53
 
-  ! PLUS            [ reduce using rule 30 (Wrhs -> Wrhs DIV Nrhs .) ]
-  ! MINUS           [ reduce using rule 30 (Wrhs -> Wrhs DIV Nrhs .) ]
-  ! REF             [ reduce using rule 30 (Wrhs -> Wrhs DIV Nrhs .) ]
-  ! DIV             [ reduce using rule 30 (Wrhs -> Wrhs DIV Nrhs .) ]
+  ! REF             [ reduce using rule 24 (Wrhs -> Wrhs MINUS Natom .) ]
+  ! DIV             [ reduce using rule 24 (Wrhs -> Wrhs MINUS Natom .) ]
+  ! PLUS            [ shift and go to state 50 ]
+  ! MINUS           [ shift and go to state 51 ]
 
 
 state 65
 
-    (26) Wrhs -> Wrhs DIV RWatom .
+    (20) Wrhs -> Wrhs REF Wrhs .
+    (18) Wrhs -> Wrhs . PLUS Wrhs
+    (19) Wrhs -> Wrhs . MINUS Wrhs
+    (20) Wrhs -> Wrhs . REF Wrhs
+    (21) Wrhs -> Wrhs . DIV Wrhs
+    (23) Wrhs -> Wrhs . PLUS Natom
+    (24) Wrhs -> Wrhs . MINUS Natom
+    (25) Wrhs -> Wrhs . REF Natom
+    (26) Wrhs -> Wrhs . DIV Natom
 
-    PLUS            reduce using rule 26 (Wrhs -> Wrhs DIV RWatom .)
-    MINUS           reduce using rule 26 (Wrhs -> Wrhs DIV RWatom .)
-    REF             reduce using rule 26 (Wrhs -> Wrhs DIV RWatom .)
-    DIV             reduce using rule 26 (Wrhs -> Wrhs DIV RWatom .)
-    SEMICOL         reduce using rule 26 (Wrhs -> Wrhs DIV RWatom .)
-    RPAREN          reduce using rule 26 (Wrhs -> Wrhs DIV RWatom .)
+    PLUS            reduce using rule 20 (Wrhs -> Wrhs REF Wrhs .)
+    MINUS           reduce using rule 20 (Wrhs -> Wrhs REF Wrhs .)
+    REF             reduce using rule 20 (Wrhs -> Wrhs REF Wrhs .)
+    DIV             reduce using rule 20 (Wrhs -> Wrhs REF Wrhs .)
+    SEMICOL         reduce using rule 20 (Wrhs -> Wrhs REF Wrhs .)
+
+  ! PLUS            [ shift and go to state 44 ]
+  ! MINUS           [ shift and go to state 45 ]
+  ! REF             [ shift and go to state 46 ]
+  ! DIV             [ shift and go to state 47 ]
 
 
 state 66
 
-    (29) Wrhs -> Wrhs REF Nrhs .
-    (37) Nrhs -> Nrhs . PLUS Natom
-    (38) Nrhs -> Nrhs . MINUS Natom
-    (39) Nrhs -> Nrhs . REF Natom
-    (40) Nrhs -> Nrhs . DIV Natom
+    (25) Wrhs -> Wrhs REF Natom .
+    (27) Wrhs -> Natom . PLUS Wrhs
+    (28) Wrhs -> Natom . MINUS Wrhs
+    (29) Wrhs -> Natom . REF Wrhs
+    (30) Wrhs -> Natom . DIV Wrhs
 
-  ! shift/reduce conflict for PLUS resolved as shift
-  ! shift/reduce conflict for MINUS resolved as shift
-  ! shift/reduce conflict for REF resolved as shift
-  ! shift/reduce conflict for DIV resolved as shift
-    SEMICOL         reduce using rule 29 (Wrhs -> Wrhs REF Nrhs .)
-    RPAREN          reduce using rule 29 (Wrhs -> Wrhs REF Nrhs .)
-    PLUS            shift and go to state 79
-    MINUS           shift and go to state 80
-    REF             shift and go to state 82
-    DIV             shift and go to state 81
+    PLUS            reduce using rule 25 (Wrhs -> Wrhs REF Natom .)
+    MINUS           reduce using rule 25 (Wrhs -> Wrhs REF Natom .)
+    REF             reduce using rule 25 (Wrhs -> Wrhs REF Natom .)
+    DIV             reduce using rule 25 (Wrhs -> Wrhs REF Natom .)
+    SEMICOL         reduce using rule 25 (Wrhs -> Wrhs REF Natom .)
 
-  ! PLUS            [ reduce using rule 29 (Wrhs -> Wrhs REF Nrhs .) ]
-  ! MINUS           [ reduce using rule 29 (Wrhs -> Wrhs REF Nrhs .) ]
-  ! REF             [ reduce using rule 29 (Wrhs -> Wrhs REF Nrhs .) ]
-  ! DIV             [ reduce using rule 29 (Wrhs -> Wrhs REF Nrhs .) ]
+  ! PLUS            [ shift and go to state 50 ]
+  ! MINUS           [ shift and go to state 51 ]
+  ! REF             [ shift and go to state 52 ]
+  ! DIV             [ shift and go to state 53 ]
 
 
 state 67
 
-    (25) Wrhs -> Wrhs REF RWatom .
+    (21) Wrhs -> Wrhs DIV Wrhs .
+    (18) Wrhs -> Wrhs . PLUS Wrhs
+    (19) Wrhs -> Wrhs . MINUS Wrhs
+    (20) Wrhs -> Wrhs . REF Wrhs
+    (21) Wrhs -> Wrhs . DIV Wrhs
+    (23) Wrhs -> Wrhs . PLUS Natom
+    (24) Wrhs -> Wrhs . MINUS Natom
+    (25) Wrhs -> Wrhs . REF Natom
+    (26) Wrhs -> Wrhs . DIV Natom
 
-    PLUS            reduce using rule 25 (Wrhs -> Wrhs REF RWatom .)
-    MINUS           reduce using rule 25 (Wrhs -> Wrhs REF RWatom .)
-    REF             reduce using rule 25 (Wrhs -> Wrhs REF RWatom .)
-    DIV             reduce using rule 25 (Wrhs -> Wrhs REF RWatom .)
-    SEMICOL         reduce using rule 25 (Wrhs -> Wrhs REF RWatom .)
-    RPAREN          reduce using rule 25 (Wrhs -> Wrhs REF RWatom .)
+    PLUS            reduce using rule 21 (Wrhs -> Wrhs DIV Wrhs .)
+    MINUS           reduce using rule 21 (Wrhs -> Wrhs DIV Wrhs .)
+    REF             reduce using rule 21 (Wrhs -> Wrhs DIV Wrhs .)
+    DIV             reduce using rule 21 (Wrhs -> Wrhs DIV Wrhs .)
+    SEMICOL         reduce using rule 21 (Wrhs -> Wrhs DIV Wrhs .)
+
+  ! PLUS            [ shift and go to state 44 ]
+  ! MINUS           [ shift and go to state 45 ]
+  ! REF             [ shift and go to state 46 ]
+  ! DIV             [ shift and go to state 47 ]
 
 
 state 68
 
-    (31) Wrhs -> Nrhs PLUS Wrhs .
-    (23) Wrhs -> Wrhs . PLUS RWatom
-    (24) Wrhs -> Wrhs . MINUS RWatom
-    (25) Wrhs -> Wrhs . REF RWatom
-    (26) Wrhs -> Wrhs . DIV RWatom
-    (27) Wrhs -> Wrhs . PLUS Nrhs
-    (28) Wrhs -> Wrhs . MINUS Nrhs
-    (29) Wrhs -> Wrhs . REF Nrhs
-    (30) Wrhs -> Wrhs . DIV Nrhs
+    (26) Wrhs -> Wrhs DIV Natom .
+    (27) Wrhs -> Natom . PLUS Wrhs
+    (28) Wrhs -> Natom . MINUS Wrhs
+    (29) Wrhs -> Natom . REF Wrhs
+    (30) Wrhs -> Natom . DIV Wrhs
 
-  ! shift/reduce conflict for PLUS resolved as shift
-  ! shift/reduce conflict for MINUS resolved as shift
-  ! shift/reduce conflict for REF resolved as shift
-  ! shift/reduce conflict for DIV resolved as shift
-    SEMICOL         reduce using rule 31 (Wrhs -> Nrhs PLUS Wrhs .)
-    RPAREN          reduce using rule 31 (Wrhs -> Nrhs PLUS Wrhs .)
-    PLUS            shift and go to state 47
-    MINUS           shift and go to state 48
-    REF             shift and go to state 50
-    DIV             shift and go to state 49
+    PLUS            reduce using rule 26 (Wrhs -> Wrhs DIV Natom .)
+    MINUS           reduce using rule 26 (Wrhs -> Wrhs DIV Natom .)
+    REF             reduce using rule 26 (Wrhs -> Wrhs DIV Natom .)
+    DIV             reduce using rule 26 (Wrhs -> Wrhs DIV Natom .)
+    SEMICOL         reduce using rule 26 (Wrhs -> Wrhs DIV Natom .)
 
-  ! PLUS            [ reduce using rule 31 (Wrhs -> Nrhs PLUS Wrhs .) ]
-  ! MINUS           [ reduce using rule 31 (Wrhs -> Nrhs PLUS Wrhs .) ]
-  ! REF             [ reduce using rule 31 (Wrhs -> Nrhs PLUS Wrhs .) ]
-  ! DIV             [ reduce using rule 31 (Wrhs -> Nrhs PLUS Wrhs .) ]
+  ! PLUS            [ shift and go to state 50 ]
+  ! MINUS           [ shift and go to state 51 ]
+  ! REF             [ shift and go to state 52 ]
+  ! DIV             [ shift and go to state 53 ]
 
 
 state 69
 
-    (37) Nrhs -> Nrhs PLUS Natom .
-    (36) Nrhs -> Natom .
+    (27) Wrhs -> Natom PLUS Wrhs .
+    (18) Wrhs -> Wrhs . PLUS Wrhs
+    (19) Wrhs -> Wrhs . MINUS Wrhs
+    (20) Wrhs -> Wrhs . REF Wrhs
+    (21) Wrhs -> Wrhs . DIV Wrhs
+    (23) Wrhs -> Wrhs . PLUS Natom
+    (24) Wrhs -> Wrhs . MINUS Natom
+    (25) Wrhs -> Wrhs . REF Natom
+    (26) Wrhs -> Wrhs . DIV Natom
 
-  ! reduce/reduce conflict for PLUS resolved using rule 36 (Nrhs -> Natom .)
-  ! reduce/reduce conflict for MINUS resolved using rule 36 (Nrhs -> Natom .)
-  ! reduce/reduce conflict for REF resolved using rule 36 (Nrhs -> Natom .)
-  ! reduce/reduce conflict for DIV resolved using rule 36 (Nrhs -> Natom .)
-    SEMICOL         reduce using rule 37 (Nrhs -> Nrhs PLUS Natom .)
-    RPAREN          reduce using rule 37 (Nrhs -> Nrhs PLUS Natom .)
-    PLUS            reduce using rule 36 (Nrhs -> Natom .)
-    MINUS           reduce using rule 36 (Nrhs -> Natom .)
-    REF             reduce using rule 36 (Nrhs -> Natom .)
-    DIV             reduce using rule 36 (Nrhs -> Natom .)
+    PLUS            reduce using rule 27 (Wrhs -> Natom PLUS Wrhs .)
+    MINUS           reduce using rule 27 (Wrhs -> Natom PLUS Wrhs .)
+    SEMICOL         reduce using rule 27 (Wrhs -> Natom PLUS Wrhs .)
+    REF             shift and go to state 46
+    DIV             shift and go to state 47
 
-  ! PLUS            [ reduce using rule 37 (Nrhs -> Nrhs PLUS Natom .) ]
-  ! MINUS           [ reduce using rule 37 (Nrhs -> Nrhs PLUS Natom .) ]
-  ! REF             [ reduce using rule 37 (Nrhs -> Nrhs PLUS Natom .) ]
-  ! DIV             [ reduce using rule 37 (Nrhs -> Nrhs PLUS Natom .) ]
+  ! REF             [ reduce using rule 27 (Wrhs -> Natom PLUS Wrhs .) ]
+  ! DIV             [ reduce using rule 27 (Wrhs -> Natom PLUS Wrhs .) ]
+  ! PLUS            [ shift and go to state 44 ]
+  ! MINUS           [ shift and go to state 45 ]
 
 
 state 70
 
-    (21) Natom -> MINUS . Natom
-    (19) RWatom -> MINUS . RWatom
-    (20) Natom -> . NUMBER
-    (21) Natom -> . MINUS Natom
-    (18) RWatom -> . aID
-    (19) RWatom -> . MINUS RWatom
-    (15) aID -> . WORD
-    (16) aID -> . AMP aID
-    (17) aID -> . REF aID
+    (28) Wrhs -> Natom MINUS Wrhs .
+    (18) Wrhs -> Wrhs . PLUS Wrhs
+    (19) Wrhs -> Wrhs . MINUS Wrhs
+    (20) Wrhs -> Wrhs . REF Wrhs
+    (21) Wrhs -> Wrhs . DIV Wrhs
+    (23) Wrhs -> Wrhs . PLUS Natom
+    (24) Wrhs -> Wrhs . MINUS Natom
+    (25) Wrhs -> Wrhs . REF Natom
+    (26) Wrhs -> Wrhs . DIV Natom
 
-    NUMBER          shift and go to state 31
-    MINUS           shift and go to state 70
-    WORD            shift and go to state 24
-    AMP             shift and go to state 25
-    REF             shift and go to state 27
+    PLUS            reduce using rule 28 (Wrhs -> Natom MINUS Wrhs .)
+    MINUS           reduce using rule 28 (Wrhs -> Natom MINUS Wrhs .)
+    SEMICOL         reduce using rule 28 (Wrhs -> Natom MINUS Wrhs .)
+    REF             shift and go to state 46
+    DIV             shift and go to state 47
 
-    RWatom                         shift and go to state 56
-    aID                            shift and go to state 32
-    Natom                          shift and go to state 55
+  ! REF             [ reduce using rule 28 (Wrhs -> Natom MINUS Wrhs .) ]
+  ! DIV             [ reduce using rule 28 (Wrhs -> Natom MINUS Wrhs .) ]
+  ! PLUS            [ shift and go to state 44 ]
+  ! MINUS           [ shift and go to state 45 ]
+
 
 state 71
 
-    (32) Wrhs -> Nrhs MINUS Wrhs .
-    (23) Wrhs -> Wrhs . PLUS RWatom
-    (24) Wrhs -> Wrhs . MINUS RWatom
-    (25) Wrhs -> Wrhs . REF RWatom
-    (26) Wrhs -> Wrhs . DIV RWatom
-    (27) Wrhs -> Wrhs . PLUS Nrhs
-    (28) Wrhs -> Wrhs . MINUS Nrhs
-    (29) Wrhs -> Wrhs . REF Nrhs
-    (30) Wrhs -> Wrhs . DIV Nrhs
+    (29) Wrhs -> Natom REF Wrhs .
+    (18) Wrhs -> Wrhs . PLUS Wrhs
+    (19) Wrhs -> Wrhs . MINUS Wrhs
+    (20) Wrhs -> Wrhs . REF Wrhs
+    (21) Wrhs -> Wrhs . DIV Wrhs
+    (23) Wrhs -> Wrhs . PLUS Natom
+    (24) Wrhs -> Wrhs . MINUS Natom
+    (25) Wrhs -> Wrhs . REF Natom
+    (26) Wrhs -> Wrhs . DIV Natom
 
-  ! shift/reduce conflict for PLUS resolved as shift
-  ! shift/reduce conflict for MINUS resolved as shift
-  ! shift/reduce conflict for REF resolved as shift
-  ! shift/reduce conflict for DIV resolved as shift
-    SEMICOL         reduce using rule 32 (Wrhs -> Nrhs MINUS Wrhs .)
-    RPAREN          reduce using rule 32 (Wrhs -> Nrhs MINUS Wrhs .)
-    PLUS            shift and go to state 47
-    MINUS           shift and go to state 48
-    REF             shift and go to state 50
-    DIV             shift and go to state 49
+    PLUS            reduce using rule 29 (Wrhs -> Natom REF Wrhs .)
+    MINUS           reduce using rule 29 (Wrhs -> Natom REF Wrhs .)
+    REF             reduce using rule 29 (Wrhs -> Natom REF Wrhs .)
+    DIV             reduce using rule 29 (Wrhs -> Natom REF Wrhs .)
+    SEMICOL         reduce using rule 29 (Wrhs -> Natom REF Wrhs .)
 
-  ! PLUS            [ reduce using rule 32 (Wrhs -> Nrhs MINUS Wrhs .) ]
-  ! MINUS           [ reduce using rule 32 (Wrhs -> Nrhs MINUS Wrhs .) ]
-  ! REF             [ reduce using rule 32 (Wrhs -> Nrhs MINUS Wrhs .) ]
-  ! DIV             [ reduce using rule 32 (Wrhs -> Nrhs MINUS Wrhs .) ]
+  ! PLUS            [ shift and go to state 44 ]
+  ! MINUS           [ shift and go to state 45 ]
+  ! REF             [ shift and go to state 46 ]
+  ! DIV             [ shift and go to state 47 ]
 
 
 state 72
 
-    (38) Nrhs -> Nrhs MINUS Natom .
-    (36) Nrhs -> Natom .
+    (30) Wrhs -> Natom DIV Wrhs .
+    (18) Wrhs -> Wrhs . PLUS Wrhs
+    (19) Wrhs -> Wrhs . MINUS Wrhs
+    (20) Wrhs -> Wrhs . REF Wrhs
+    (21) Wrhs -> Wrhs . DIV Wrhs
+    (23) Wrhs -> Wrhs . PLUS Natom
+    (24) Wrhs -> Wrhs . MINUS Natom
+    (25) Wrhs -> Wrhs . REF Natom
+    (26) Wrhs -> Wrhs . DIV Natom
 
-  ! reduce/reduce conflict for PLUS resolved using rule 36 (Nrhs -> Natom .)
-  ! reduce/reduce conflict for MINUS resolved using rule 36 (Nrhs -> Natom .)
-  ! reduce/reduce conflict for REF resolved using rule 36 (Nrhs -> Natom .)
-  ! reduce/reduce conflict for DIV resolved using rule 36 (Nrhs -> Natom .)
-    SEMICOL         reduce using rule 38 (Nrhs -> Nrhs MINUS Natom .)
-    RPAREN          reduce using rule 38 (Nrhs -> Nrhs MINUS Natom .)
-    PLUS            reduce using rule 36 (Nrhs -> Natom .)
-    MINUS           reduce using rule 36 (Nrhs -> Natom .)
-    REF             reduce using rule 36 (Nrhs -> Natom .)
-    DIV             reduce using rule 36 (Nrhs -> Natom .)
+    PLUS            reduce using rule 30 (Wrhs -> Natom DIV Wrhs .)
+    MINUS           reduce using rule 30 (Wrhs -> Natom DIV Wrhs .)
+    REF             reduce using rule 30 (Wrhs -> Natom DIV Wrhs .)
+    DIV             reduce using rule 30 (Wrhs -> Natom DIV Wrhs .)
+    SEMICOL         reduce using rule 30 (Wrhs -> Natom DIV Wrhs .)
 
-  ! PLUS            [ reduce using rule 38 (Nrhs -> Nrhs MINUS Natom .) ]
-  ! MINUS           [ reduce using rule 38 (Nrhs -> Nrhs MINUS Natom .) ]
-  ! REF             [ reduce using rule 38 (Nrhs -> Nrhs MINUS Natom .) ]
-  ! DIV             [ reduce using rule 38 (Nrhs -> Nrhs MINUS Natom .) ]
+  ! PLUS            [ shift and go to state 44 ]
+  ! MINUS           [ shift and go to state 45 ]
+  ! REF             [ shift and go to state 46 ]
+  ! DIV             [ shift and go to state 47 ]
 
 
 state 73
 
-    (34) Wrhs -> Nrhs DIV Wrhs .
-    (23) Wrhs -> Wrhs . PLUS RWatom
-    (24) Wrhs -> Wrhs . MINUS RWatom
-    (25) Wrhs -> Wrhs . REF RWatom
-    (26) Wrhs -> Wrhs . DIV RWatom
-    (27) Wrhs -> Wrhs . PLUS Nrhs
-    (28) Wrhs -> Wrhs . MINUS Nrhs
-    (29) Wrhs -> Wrhs . REF Nrhs
-    (30) Wrhs -> Wrhs . DIV Nrhs
+    (34) Nrhs -> Nrhs PLUS Natom .
 
-  ! shift/reduce conflict for PLUS resolved as shift
-  ! shift/reduce conflict for MINUS resolved as shift
-  ! shift/reduce conflict for REF resolved as shift
-  ! shift/reduce conflict for DIV resolved as shift
-    SEMICOL         reduce using rule 34 (Wrhs -> Nrhs DIV Wrhs .)
-    RPAREN          reduce using rule 34 (Wrhs -> Nrhs DIV Wrhs .)
-    PLUS            shift and go to state 47
-    MINUS           shift and go to state 48
-    REF             shift and go to state 50
-    DIV             shift and go to state 49
-
-  ! PLUS            [ reduce using rule 34 (Wrhs -> Nrhs DIV Wrhs .) ]
-  ! MINUS           [ reduce using rule 34 (Wrhs -> Nrhs DIV Wrhs .) ]
-  ! REF             [ reduce using rule 34 (Wrhs -> Nrhs DIV Wrhs .) ]
-  ! DIV             [ reduce using rule 34 (Wrhs -> Nrhs DIV Wrhs .) ]
+    PLUS            reduce using rule 34 (Nrhs -> Nrhs PLUS Natom .)
+    MINUS           reduce using rule 34 (Nrhs -> Nrhs PLUS Natom .)
+    REF             reduce using rule 34 (Nrhs -> Nrhs PLUS Natom .)
+    DIV             reduce using rule 34 (Nrhs -> Nrhs PLUS Natom .)
+    SEMICOL         reduce using rule 34 (Nrhs -> Nrhs PLUS Natom .)
+    RPAREN          reduce using rule 34 (Nrhs -> Nrhs PLUS Natom .)
 
 
 state 74
 
-    (40) Nrhs -> Nrhs DIV Natom .
-    (36) Nrhs -> Natom .
+    (35) Nrhs -> Nrhs MINUS Natom .
 
-  ! reduce/reduce conflict for PLUS resolved using rule 36 (Nrhs -> Natom .)
-  ! reduce/reduce conflict for MINUS resolved using rule 36 (Nrhs -> Natom .)
-  ! reduce/reduce conflict for REF resolved using rule 36 (Nrhs -> Natom .)
-  ! reduce/reduce conflict for DIV resolved using rule 36 (Nrhs -> Natom .)
-    SEMICOL         reduce using rule 40 (Nrhs -> Nrhs DIV Natom .)
-    RPAREN          reduce using rule 40 (Nrhs -> Nrhs DIV Natom .)
-    PLUS            reduce using rule 36 (Nrhs -> Natom .)
-    MINUS           reduce using rule 36 (Nrhs -> Natom .)
-    REF             reduce using rule 36 (Nrhs -> Natom .)
-    DIV             reduce using rule 36 (Nrhs -> Natom .)
-
-  ! PLUS            [ reduce using rule 40 (Nrhs -> Nrhs DIV Natom .) ]
-  ! MINUS           [ reduce using rule 40 (Nrhs -> Nrhs DIV Natom .) ]
-  ! REF             [ reduce using rule 40 (Nrhs -> Nrhs DIV Natom .) ]
-  ! DIV             [ reduce using rule 40 (Nrhs -> Nrhs DIV Natom .) ]
+    PLUS            reduce using rule 35 (Nrhs -> Nrhs MINUS Natom .)
+    MINUS           reduce using rule 35 (Nrhs -> Nrhs MINUS Natom .)
+    REF             reduce using rule 35 (Nrhs -> Nrhs MINUS Natom .)
+    DIV             reduce using rule 35 (Nrhs -> Nrhs MINUS Natom .)
+    SEMICOL         reduce using rule 35 (Nrhs -> Nrhs MINUS Natom .)
+    RPAREN          reduce using rule 35 (Nrhs -> Nrhs MINUS Natom .)
 
 
 state 75
 
-    (33) Wrhs -> Nrhs REF Wrhs .
-    (23) Wrhs -> Wrhs . PLUS RWatom
-    (24) Wrhs -> Wrhs . MINUS RWatom
-    (25) Wrhs -> Wrhs . REF RWatom
-    (26) Wrhs -> Wrhs . DIV RWatom
-    (27) Wrhs -> Wrhs . PLUS Nrhs
-    (28) Wrhs -> Wrhs . MINUS Nrhs
-    (29) Wrhs -> Wrhs . REF Nrhs
-    (30) Wrhs -> Wrhs . DIV Nrhs
+    (36) Nrhs -> Nrhs REF Natom .
 
-  ! shift/reduce conflict for PLUS resolved as shift
-  ! shift/reduce conflict for MINUS resolved as shift
-  ! shift/reduce conflict for REF resolved as shift
-  ! shift/reduce conflict for DIV resolved as shift
-    SEMICOL         reduce using rule 33 (Wrhs -> Nrhs REF Wrhs .)
-    RPAREN          reduce using rule 33 (Wrhs -> Nrhs REF Wrhs .)
-    PLUS            shift and go to state 47
-    MINUS           shift and go to state 48
-    REF             shift and go to state 50
-    DIV             shift and go to state 49
-
-  ! PLUS            [ reduce using rule 33 (Wrhs -> Nrhs REF Wrhs .) ]
-  ! MINUS           [ reduce using rule 33 (Wrhs -> Nrhs REF Wrhs .) ]
-  ! REF             [ reduce using rule 33 (Wrhs -> Nrhs REF Wrhs .) ]
-  ! DIV             [ reduce using rule 33 (Wrhs -> Nrhs REF Wrhs .) ]
+    PLUS            reduce using rule 36 (Nrhs -> Nrhs REF Natom .)
+    MINUS           reduce using rule 36 (Nrhs -> Nrhs REF Natom .)
+    REF             reduce using rule 36 (Nrhs -> Nrhs REF Natom .)
+    DIV             reduce using rule 36 (Nrhs -> Nrhs REF Natom .)
+    SEMICOL         reduce using rule 36 (Nrhs -> Nrhs REF Natom .)
+    RPAREN          reduce using rule 36 (Nrhs -> Nrhs REF Natom .)
 
 
 state 76
 
-    (39) Nrhs -> Nrhs REF Natom .
-    (36) Nrhs -> Natom .
+    (37) Nrhs -> Nrhs DIV Natom .
 
-  ! reduce/reduce conflict for PLUS resolved using rule 36 (Nrhs -> Natom .)
-  ! reduce/reduce conflict for MINUS resolved using rule 36 (Nrhs -> Natom .)
-  ! reduce/reduce conflict for REF resolved using rule 36 (Nrhs -> Natom .)
-  ! reduce/reduce conflict for DIV resolved using rule 36 (Nrhs -> Natom .)
-    SEMICOL         reduce using rule 39 (Nrhs -> Nrhs REF Natom .)
-    RPAREN          reduce using rule 39 (Nrhs -> Nrhs REF Natom .)
-    PLUS            reduce using rule 36 (Nrhs -> Natom .)
-    MINUS           reduce using rule 36 (Nrhs -> Natom .)
-    REF             reduce using rule 36 (Nrhs -> Natom .)
-    DIV             reduce using rule 36 (Nrhs -> Natom .)
-
-  ! PLUS            [ reduce using rule 39 (Nrhs -> Nrhs REF Natom .) ]
-  ! MINUS           [ reduce using rule 39 (Nrhs -> Nrhs REF Natom .) ]
-  ! REF             [ reduce using rule 39 (Nrhs -> Nrhs REF Natom .) ]
-  ! DIV             [ reduce using rule 39 (Nrhs -> Nrhs REF Natom .) ]
+    PLUS            reduce using rule 37 (Nrhs -> Nrhs DIV Natom .)
+    MINUS           reduce using rule 37 (Nrhs -> Nrhs DIV Natom .)
+    REF             reduce using rule 37 (Nrhs -> Nrhs DIV Natom .)
+    DIV             reduce using rule 37 (Nrhs -> Nrhs DIV Natom .)
+    SEMICOL         reduce using rule 37 (Nrhs -> Nrhs DIV Natom .)
+    RPAREN          reduce using rule 37 (Nrhs -> Nrhs DIV Natom .)
 
 
 state 77
 
-    (41) Nrhs -> LPAREN Nrhs . RPAREN
-    (37) Nrhs -> Nrhs . PLUS Natom
-    (38) Nrhs -> Nrhs . MINUS Natom
-    (39) Nrhs -> Nrhs . REF Natom
-    (40) Nrhs -> Nrhs . DIV Natom
+    (38) Nrhs -> LPAREN Nrhs RPAREN .
 
-    RPAREN          shift and go to state 58
-    PLUS            shift and go to state 79
-    MINUS           shift and go to state 80
-    REF             shift and go to state 82
-    DIV             shift and go to state 81
+    PLUS            reduce using rule 38 (Nrhs -> LPAREN Nrhs RPAREN .)
+    MINUS           reduce using rule 38 (Nrhs -> LPAREN Nrhs RPAREN .)
+    REF             reduce using rule 38 (Nrhs -> LPAREN Nrhs RPAREN .)
+    DIV             reduce using rule 38 (Nrhs -> LPAREN Nrhs RPAREN .)
+    SEMICOL         reduce using rule 38 (Nrhs -> LPAREN Nrhs RPAREN .)
+    RPAREN          reduce using rule 38 (Nrhs -> LPAREN Nrhs RPAREN .)
 
 
 state 78
 
-    (21) Natom -> MINUS . Natom
-    (20) Natom -> . NUMBER
-    (21) Natom -> . MINUS Natom
+    (39) Natom -> MINUS Natom .
 
-    NUMBER          shift and go to state 31
-    MINUS           shift and go to state 78
-
-    Natom                          shift and go to state 55
-
-state 79
-
-    (37) Nrhs -> Nrhs PLUS . Natom
-    (20) Natom -> . NUMBER
-    (21) Natom -> . MINUS Natom
-
-    NUMBER          shift and go to state 31
-    MINUS           shift and go to state 78
-
-    Natom                          shift and go to state 83
-
-state 80
-
-    (38) Nrhs -> Nrhs MINUS . Natom
-    (20) Natom -> . NUMBER
-    (21) Natom -> . MINUS Natom
-
-    NUMBER          shift and go to state 31
-    MINUS           shift and go to state 78
-
-    Natom                          shift and go to state 84
-
-state 81
-
-    (40) Nrhs -> Nrhs DIV . Natom
-    (20) Natom -> . NUMBER
-    (21) Natom -> . MINUS Natom
-
-    NUMBER          shift and go to state 31
-    MINUS           shift and go to state 78
-
-    Natom                          shift and go to state 85
-
-state 82
-
-    (39) Nrhs -> Nrhs REF . Natom
-    (20) Natom -> . NUMBER
-    (21) Natom -> . MINUS Natom
-
-    NUMBER          shift and go to state 31
-    MINUS           shift and go to state 78
-
-    Natom                          shift and go to state 86
-
-state 83
-
-    (37) Nrhs -> Nrhs PLUS Natom .
-
-    PLUS            reduce using rule 37 (Nrhs -> Nrhs PLUS Natom .)
-    MINUS           reduce using rule 37 (Nrhs -> Nrhs PLUS Natom .)
-    REF             reduce using rule 37 (Nrhs -> Nrhs PLUS Natom .)
-    DIV             reduce using rule 37 (Nrhs -> Nrhs PLUS Natom .)
-    SEMICOL         reduce using rule 37 (Nrhs -> Nrhs PLUS Natom .)
-    RPAREN          reduce using rule 37 (Nrhs -> Nrhs PLUS Natom .)
-
-
-state 84
-
-    (38) Nrhs -> Nrhs MINUS Natom .
-
-    PLUS            reduce using rule 38 (Nrhs -> Nrhs MINUS Natom .)
-    MINUS           reduce using rule 38 (Nrhs -> Nrhs MINUS Natom .)
-    REF             reduce using rule 38 (Nrhs -> Nrhs MINUS Natom .)
-    DIV             reduce using rule 38 (Nrhs -> Nrhs MINUS Natom .)
-    SEMICOL         reduce using rule 38 (Nrhs -> Nrhs MINUS Natom .)
-    RPAREN          reduce using rule 38 (Nrhs -> Nrhs MINUS Natom .)
-
-
-state 85
-
-    (40) Nrhs -> Nrhs DIV Natom .
-
-    PLUS            reduce using rule 40 (Nrhs -> Nrhs DIV Natom .)
-    MINUS           reduce using rule 40 (Nrhs -> Nrhs DIV Natom .)
-    REF             reduce using rule 40 (Nrhs -> Nrhs DIV Natom .)
-    DIV             reduce using rule 40 (Nrhs -> Nrhs DIV Natom .)
-    SEMICOL         reduce using rule 40 (Nrhs -> Nrhs DIV Natom .)
-    RPAREN          reduce using rule 40 (Nrhs -> Nrhs DIV Natom .)
-
-
-state 86
-
-    (39) Nrhs -> Nrhs REF Natom .
-
-    PLUS            reduce using rule 39 (Nrhs -> Nrhs REF Natom .)
-    MINUS           reduce using rule 39 (Nrhs -> Nrhs REF Natom .)
-    REF             reduce using rule 39 (Nrhs -> Nrhs REF Natom .)
-    DIV             reduce using rule 39 (Nrhs -> Nrhs REF Natom .)
-    SEMICOL         reduce using rule 39 (Nrhs -> Nrhs REF Natom .)
-    RPAREN          reduce using rule 39 (Nrhs -> Nrhs REF Natom .)
+    RPAREN          reduce using rule 39 (Natom -> MINUS Natom .)
+    PLUS            reduce using rule 39 (Natom -> MINUS Natom .)
+    MINUS           reduce using rule 39 (Natom -> MINUS Natom .)
+    REF             reduce using rule 39 (Natom -> MINUS Natom .)
+    DIV             reduce using rule 39 (Natom -> MINUS Natom .)
+    SEMICOL         reduce using rule 39 (Natom -> MINUS Natom .)
 
 WARNING: 
 WARNING: Conflicts:
 WARNING: 
-WARNING: shift/reduce conflict for PLUS in state 60 resolved as shift
-WARNING: shift/reduce conflict for MINUS in state 60 resolved as shift
-WARNING: shift/reduce conflict for REF in state 60 resolved as shift
-WARNING: shift/reduce conflict for DIV in state 60 resolved as shift
-WARNING: shift/reduce conflict for PLUS in state 62 resolved as shift
-WARNING: shift/reduce conflict for MINUS in state 62 resolved as shift
-WARNING: shift/reduce conflict for REF in state 62 resolved as shift
-WARNING: shift/reduce conflict for DIV in state 62 resolved as shift
-WARNING: shift/reduce conflict for PLUS in state 64 resolved as shift
-WARNING: shift/reduce conflict for MINUS in state 64 resolved as shift
-WARNING: shift/reduce conflict for REF in state 64 resolved as shift
-WARNING: shift/reduce conflict for DIV in state 64 resolved as shift
-WARNING: shift/reduce conflict for PLUS in state 66 resolved as shift
-WARNING: shift/reduce conflict for MINUS in state 66 resolved as shift
-WARNING: shift/reduce conflict for REF in state 66 resolved as shift
-WARNING: shift/reduce conflict for DIV in state 66 resolved as shift
-WARNING: shift/reduce conflict for PLUS in state 68 resolved as shift
-WARNING: shift/reduce conflict for MINUS in state 68 resolved as shift
-WARNING: shift/reduce conflict for REF in state 68 resolved as shift
-WARNING: shift/reduce conflict for DIV in state 68 resolved as shift
-WARNING: shift/reduce conflict for PLUS in state 71 resolved as shift
-WARNING: shift/reduce conflict for MINUS in state 71 resolved as shift
-WARNING: shift/reduce conflict for REF in state 71 resolved as shift
-WARNING: shift/reduce conflict for DIV in state 71 resolved as shift
-WARNING: shift/reduce conflict for PLUS in state 73 resolved as shift
-WARNING: shift/reduce conflict for MINUS in state 73 resolved as shift
-WARNING: shift/reduce conflict for REF in state 73 resolved as shift
-WARNING: shift/reduce conflict for DIV in state 73 resolved as shift
-WARNING: shift/reduce conflict for PLUS in state 75 resolved as shift
-WARNING: shift/reduce conflict for MINUS in state 75 resolved as shift
-WARNING: shift/reduce conflict for REF in state 75 resolved as shift
-WARNING: shift/reduce conflict for DIV in state 75 resolved as shift
-WARNING: reduce/reduce conflict in state 69 resolved using rule (Nrhs -> Natom)
-WARNING: rejected rule (Nrhs -> Nrhs PLUS Natom) in state 69
-WARNING: reduce/reduce conflict in state 72 resolved using rule (Nrhs -> Natom)
-WARNING: rejected rule (Nrhs -> Nrhs MINUS Natom) in state 72
-WARNING: reduce/reduce conflict in state 74 resolved using rule (Nrhs -> Natom)
-WARNING: rejected rule (Nrhs -> Nrhs DIV Natom) in state 74
-WARNING: reduce/reduce conflict in state 76 resolved using rule (Nrhs -> Natom)
-WARNING: rejected rule (Nrhs -> Nrhs REF Natom) in state 76
+WARNING: shift/reduce conflict for PLUS in state 39 resolved as shift
+WARNING: shift/reduce conflict for MINUS in state 39 resolved as shift
+WARNING: shift/reduce conflict for REF in state 39 resolved as shift
+WARNING: shift/reduce conflict for DIV in state 39 resolved as shift

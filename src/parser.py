@@ -28,7 +28,7 @@ t_MINUS = r'-'
 t_DIV = r'/'
 t_LCPAREN = r'{'
 t_RCPAREN = r'}'
-t_WORD = r'[a-zA-Z_][a-zA-Z0-9_]*' 
+t_WORD = r'[a-zA-Z_][a-zA-Z0-9_]*'
 
 def t_newline(t):
     r'\n+'
@@ -56,7 +56,7 @@ def t_RETTYPE(t):
 	r'void' 
 	return t
 def t_NUMBER(t):
-    r'\d+|-\d+'
+    r'\d+'
     try:
         t.value = int(t.value)
     except ValueError:
@@ -69,12 +69,12 @@ def t_error(t):
 	t.lexer.skip(1)
 
 # Parsing rules
-# precedence = (
-# 	('left', 'PLUS', 'MINUS'),
-#         ('left', 'TIMES', 'DIVIDE'),
-#         ('right', 'EXP'),
-#         ('right', 'UMINUS'),
-# )
+precedence = (
+	('left', 'PLUS', 'MINUS'),
+        ('left', 'REF', 'DIV'),
+        ('right', 'UMINUS')
+
+)
 def p_expression_prog(p):
         'expression : RETTYPE FUNCNAME LPAREN RPAREN LCPAREN BODY RCPAREN'
 def p_expression_body(p) :
@@ -117,6 +117,13 @@ def p_expression_id(p) :
 # 		| AMP LHS_POINT
 # 	"""
 
+def p_expression_assignId(p) :
+	"""
+	aID : WORD
+		| AMP aID
+		| REF aID
+	"""
+
 def p_expression_lhspointer(p):
 	"""
 	LHS_POINT : REF aID
@@ -129,18 +136,10 @@ def p_expression_assign(p) :
 def p_prim(p) :
 	"""
 	PRIM : WORD EQUALS Wrhs
-		| LHS_POINT EQUALS Wrhs
 		| LHS_POINT EQUALS Nrhs
+		| LHS_POINT EQUALS Wrhs
 	"""	
 	increaseNumAssign(1)
-
-
-def p_expression_assignId(p) :
-	"""
-	aID : WORD
-		| AMP aID
-		| REF aID
-	"""
 
 # def p_expression_rhs(p):
 # 	"""
@@ -159,43 +158,69 @@ def p_expression_assignId(p) :
 # 			| Wrhs
 # 	"""
 
-def p_expression_RWatom(p) :
+# def p_expression_RWatom(p) :
+# 	"""
+# 	RWatom : aID
+# 		  | MINUS RWatom %prec UMINUS
+# 	"""
+def p_expression_Wrhs1(p):
 	"""
-	RWatom : aID
-		  | MINUS RWatom
+		Wrhs : Wrhs PLUS Wrhs
+			 | Wrhs MINUS Wrhs
+			 | Wrhs REF Wrhs
+			 | Wrhs DIV Wrhs
 	"""
+def p_expression_Wrhs2(p):
+	"""
+		Wrhs : aID
+			| Wrhs PLUS Natom
+			 | Wrhs MINUS Natom
+			 | Wrhs REF Natom
+			 | Wrhs DIV Natom
+			 | Natom PLUS Wrhs
+			 | Natom MINUS Wrhs
+			 | Natom REF Wrhs
+			 | Natom DIV Wrhs
+	"""
+def p_expression_Wrhs3(p):
+	"""
+		Wrhs : MINUS Wrhs %prec UMINUS
+	"""
+# def p_expression_Wrhs(p):
+# 	"""
+# 		Wrhs : RWatom 
+# 			 | Wrhs PLUS RWatom
+# 			 | Wrhs MINUS RWatom
+# 			 | Wrhs REF RWatom
+# 			 | Wrhs DIV RWatom
+# 			 | Wrhs PLUS Nrhs
+# 			 | Wrhs MINUS Nrhs
+# 			 | Wrhs REF Nrhs
+# 			 | Wrhs DIV Nrhs
+# 			 | Nrhs PLUS Wrhs
+# 			 | Nrhs MINUS Wrhs
+# 			 | Nrhs REF Wrhs
+# 			 | Nrhs DIV Wrhs
+# 			 | LPAREN Wrhs RPAREN
+# 	"""
+
 def p_expression_Natom(p) :
 	"""
 	Natom : NUMBER
-		  | MINUS Natom
 	"""
-
-def p_expression_Wrhs(p):
-	"""
-		Wrhs : RWatom 
-			 | Wrhs PLUS RWatom
-			 | Wrhs MINUS RWatom
-			 | Wrhs REF RWatom
-			 | Wrhs DIV RWatom
-			 | Wrhs PLUS Nrhs
-			 | Wrhs MINUS Nrhs
-			 | Wrhs REF Nrhs
-			 | Wrhs DIV Nrhs
-			 | Nrhs PLUS Wrhs
-			 | Nrhs MINUS Wrhs
-			 | Nrhs REF Wrhs
-			 | Nrhs DIV Wrhs
-			 | LPAREN Wrhs RPAREN
-	"""
-
 def p_expression_Nrhs(p):
 	"""
-		Nrhs : Natom 
+		Nrhs : Natom
 			 | Nrhs PLUS Natom
 			 | Nrhs MINUS Natom
 			 | Nrhs REF Natom
 			 | Nrhs DIV Natom
 			 | LPAREN Nrhs RPAREN
+	"""
+def p_expression_Natom1(p):
+	"""
+	Natom : MINUS Natom %prec UMINUS
+
 	"""
 
 def p_error(p):
