@@ -148,7 +148,7 @@ def p_expression_assign(p) :
 		p[1] = Abstree([], "VAR", True, p[1])
 	p[0]= Abstree([p[1], p[3]], "ASSGN", False, -1)
 	global trees
-	trees.append((p[0], p.lineno))
+	trees.append((p[0], p.lineno(2)))
 	increaseNumAssign(1)
 
 def p_expression_Wrhs1(p):
@@ -204,7 +204,3 @@ if __name__ == "__main__":
 		for x in trees:
 			x[0].print_tree(0)
 			print()
-	# if correct==1 :
-	# 	print(numStatic)
-	# 	print(numPointer)
-	# 	print(numAssign)
