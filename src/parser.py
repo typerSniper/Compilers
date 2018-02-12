@@ -3,8 +3,11 @@
 import sys
 import ply.lex as lex
 import ply.yacc as yacc
-# from Abstree import Abstree
+from Abstree import Abstree
 
+
+
+trees = []
 numStatic= 0
 numPointer = 0
 numAssign =0
@@ -29,6 +32,14 @@ t_DIV = r'/'
 t_LCPAREN = r'{'
 t_RCPAREN = r'}'
 t_WORD = r'[a-zA-Z_][a-zA-Z0-9_]*'
+
+def opMapper(x):
+	return {
+		'+' : "PLUS",
+		'-' : "MINUS",
+		'*' : "MUL",
+		'/' : "DIV"
+	}[x]
 
 def t_newline(t):
     r'\n+'
@@ -73,7 +84,6 @@ precedence = (
 	('left', 'PLUS', 'MINUS'),
         ('left', 'REF', 'DIV'),
         ('right', 'UMINUS')
-
 )
 def p_expression_prog(p):
         'expression : RETTYPE FUNCNAME LPAREN RPAREN LCPAREN BODY RCPAREN'
@@ -110,59 +120,37 @@ def p_expression_id(p) :
 	"""
 	p[0] = assigner(p)
 
-# def p_expression_lhs(p) :
-# 	"""
-# 	LHS : WORD
-# 		| AMP LHS
-# 		| AMP LHS_POINT
-# 	"""
-
 def p_expression_assignId(p) :
 	"""
 	aID : WORD
 		| AMP aID
 		| REF aID
 	"""
+	if(len(p)==2):
+		p[0] = Abstree([], "VAR", True, p[1])
+	elif(len(p)==3):
+		if(p[1]=="*"):
+			p[0]= Abstree([p[2]], "DEREF", False, -1)
+		elif(p[1]=="&"):
+			p[0]= Abstree([p[2]], "ADDR", False, -1)
 
 def p_expression_lhspointer(p):
 	"""
 	LHS_POINT : REF aID
 	"""
+	p[0]= Abstree([p[2]], "DEREF", False, -1)
 def p_expression_assign(p) :
 	"""
-	ASSIGN : PRIM
-	"""
-
-def p_prim(p) :
-	"""
-	PRIM : WORD EQUALS Wrhs
-		| LHS_POINT EQUALS Nrhs
+	ASSIGN : WORD EQUALS Wrhs
 		| LHS_POINT EQUALS Wrhs
-	"""	
+	"""
+	if(isinstance(p[1], str)):
+		p[1] = Abstree([], "VAR", True, p[1])
+	p[0]= Abstree([p[1], p[3]], "ASSGN", False, -1)
+	global trees
+	trees.append((p[0], p.lineno))
 	increaseNumAssign(1)
 
-# def p_expression_rhs(p):
-# 	"""
-# 		rhs : 
-# 			| rhs PLUS Wrhs
-# 			| rhs MINUS Wrhs
-# 			| rhs REF Wrhs
-# 			| rhs DIV Wrhs
-# 			| rhs PLUS Nrhs
-# 			| rhs MINUS Nrhs
-# 			| rhs REF Nrhs
-# 			| rhs DIV Nrhs
-# 			| MINUS rhs
-# 			| LPAREN rhs RPAREN  
-# 			| Nrhs
-# 			| Wrhs
-# 	"""
-
-# def p_expression_RWatom(p) :
-# 	"""
-# 	RWatom : aID
-# 		  | MINUS RWatom %prec UMINUS
-# 	"""
 def p_expression_Wrhs1(p):
 	"""
 		Wrhs : Wrhs PLUS Wrhs
@@ -170,58 +158,23 @@ def p_expression_Wrhs1(p):
 			 | Wrhs REF Wrhs
 			 | Wrhs DIV Wrhs
 	"""
+	p[0]= Abstree([p[1], p[3]], opMapper(p[2]), False, -1)
 def p_expression_Wrhs2(p):
 	"""
 		Wrhs : aID
-			| Wrhs PLUS Natom
-			 | Wrhs MINUS Natom
-			 | Wrhs REF Natom
-			 | Wrhs DIV Natom
-			 | Natom PLUS Wrhs
-			 | Natom MINUS Wrhs
-			 | Natom REF Wrhs
-			 | Natom DIV Wrhs
+			 | Natom
 	"""
+	p[0] = p[1]
 def p_expression_Wrhs3(p):
 	"""
 		Wrhs : MINUS Wrhs %prec UMINUS
 	"""
-# def p_expression_Wrhs(p):
-# 	"""
-# 		Wrhs : RWatom 
-# 			 | Wrhs PLUS RWatom
-# 			 | Wrhs MINUS RWatom
-# 			 | Wrhs REF RWatom
-# 			 | Wrhs DIV RWatom
-# 			 | Wrhs PLUS Nrhs
-# 			 | Wrhs MINUS Nrhs
-# 			 | Wrhs REF Nrhs
-# 			 | Wrhs DIV Nrhs
-# 			 | Nrhs PLUS Wrhs
-# 			 | Nrhs MINUS Wrhs
-# 			 | Nrhs REF Wrhs
-# 			 | Nrhs DIV Wrhs
-# 			 | LPAREN Wrhs RPAREN
-# 	"""
-
+	p[0]= Abstree([p[2]], "UMINUS", False, -1)
 def p_expression_Natom(p) :
 	"""
 	Natom : NUMBER
 	"""
-def p_expression_Nrhs(p):
-	"""
-		Nrhs : Natom
-			 | Nrhs PLUS Natom
-			 | Nrhs MINUS Natom
-			 | Nrhs REF Natom
-			 | Nrhs DIV Natom
-			 | LPAREN Nrhs RPAREN
-	"""
-def p_expression_Natom1(p):
-	"""
-	Natom : MINUS Natom %prec UMINUS
-
-	"""
+	p[0] = Abstree([], "CONST", True, p[1])
 
 def p_error(p):
 	global correct 
@@ -241,7 +194,17 @@ if __name__ == "__main__":
 	f = open(sys.argv[1], 'r')
 	data = f.read()
 	process(data)
-	if correct==1 :
-		print(numStatic)
-		print(numPointer)
-		print(numAssign)
+	done = 1
+	for x in trees:
+		if(not x[0].valid_tree()):
+			done = 0
+			x[0].print_error(x[1])
+			break
+	if done:
+		for x in trees:
+			x[0].print_tree(0)
+			print()
+	# if correct==1 :
+	# 	print(numStatic)
+	# 	print(numPointer)
+	# 	print(numAssign)
