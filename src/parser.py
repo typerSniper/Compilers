@@ -5,7 +5,11 @@ import ply.lex as lex
 import ply.yacc as yacc
 from Abstree import Abstree
 
-
+# TODO/DIFFS
+# What to print (as AST) on error t2.c t4.c
+# How many errors to print t5.c. We are printing atmost one syntax error and atmost one tree error/ They are printing only
+# 	one error
+# Printing to file
 
 trees = []
 numStatic= 0
@@ -163,8 +167,12 @@ def p_expression_Wrhs2(p):
 	"""
 		Wrhs : aID
 			 | Natom
+			 | LPAREN Wrhs RPAREN
 	"""
-	p[0] = p[1]
+	if len(p) == 4:
+		p[0] = p[2]
+	else:
+		p[0] = p[1]
 def p_expression_Wrhs3(p):
 	"""
 		Wrhs : MINUS Wrhs %prec UMINUS
@@ -180,9 +188,9 @@ def p_error(p):
 	global correct 
 	correct = 0
 	if p:
-		print("syntax error at '{0}' on {1}'{2}'".format(p.value, "line number ", p.lineno))
+		print("Syntax error at '{0}' on {1}'{2}'".format(p.value, "line number ", p.lineno))
 	else:
-		print("syntax error at EOF")
+		print("Syntax error at EOF")
 
 def process(data):
 	lex.lex()
@@ -200,7 +208,7 @@ if __name__ == "__main__":
 			done = 0
 			x[0].print_error(x[1])
 			break
-	if done:
+	if done and correct:
 		for x in trees:
 			x[0].print_tree(0)
 			print()

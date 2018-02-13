@@ -52,7 +52,7 @@ class Abstree:
 					frontier.remove(curr)
 			return found
 	def print_error(self, lineno):
-		print("syntax error at lineno'{0}' due to {1}".format(str(lineno), str(self.children[0].value) + " ="))
+		print("Syntax error at '{1}' on line number {0}".format(str(lineno), str(self.children[0].value) + " ="))
 # a = Abstree([], "VAR", True, "a")
 # c = Abstree([], "CONST", True, "5")
 # # de = Abstree([a], "UMINUS", False, "")
