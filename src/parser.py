@@ -199,7 +199,10 @@ def process(data):
 
 data = ""
 if __name__ == "__main__":
-	f = open(sys.argv[1], 'r')
+	k = sys.argv[1]
+	f = open(k, 'r')
+	print(k)
+	outFile = "Parser_ast_"+ (k.split('/'))[-1]+".txt"
 	data = f.read()
 	process(data)
 	done = 1
@@ -208,6 +211,7 @@ if __name__ == "__main__":
 			done = 0
 			x[0].print_error(x[1])
 			break
+	sys.stdout = open(outFile, 'w')
 	if done and correct:
 		for x in trees:
 			x[0].print_tree(0)
