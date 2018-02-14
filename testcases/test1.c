@@ -1,5 +1,8 @@
-void main() {
-
-    *a = 1;
-    *a = a + b --1-2;
+void main()
+{
+        int a, *pa, b;
+        int ***b;
+        b = &a;
+        ****ca = &(a);
+        a = 10;
 }

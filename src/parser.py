@@ -185,8 +185,15 @@ def p_expression_Natom(p) :
 	p[0] = Abstree([], "CONST", True, p[1])
 
 def p_error(p):
-	global correct 
+	global correct, trees 
 	correct = 0
+	for x in trees:
+		if(not x[0].valid_tree()):
+			done = 0
+			x[0].print_error(x[1])
+			trees=[]
+			return
+	trees=[]
 	if p:
 		print("Syntax error at '{0}' on {1}'{2}'".format(p.value, "line number ", p.lineno))
 	else:
