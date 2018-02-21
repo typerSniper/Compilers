@@ -19,12 +19,14 @@ numAssign =0
 correct  = 1
 tokens = ('DTYPE', 'EQUALS', 'LPAREN', 'RPAREN', 'LCPAREN', 'RCPAREN', 
 			'RETTYPE', 'FUNCNAME', 'SEMICOL', 'COMMA', 'AMP', 'WORD', 'REF', 'NUMBER',
-			'PLUS', 'MINUS', 'DIV')
+			'PLUS', 'MINUS', 'DIV', 'IF', 'WHILE', 'ELSE', 'LESSTHAN', 'GREATERTHAN')
 
 t_ignore = " \t"
 t_ignore_comment = "//[^\n]*\n"
 
 t_EQUALS = r'='
+t_LESSTHAN = r'<'
+t_GREATERTHAN = r'>'
 t_LPAREN = r'\('
 t_RPAREN = r'\)'
 t_SEMICOL = r';'
@@ -37,6 +39,18 @@ t_DIV = r'/'
 t_LCPAREN = r'{'
 t_RCPAREN = r'}'
 t_WORD = r'[a-zA-Z_][a-zA-Z0-9_]*'
+
+def t_IF(t):
+  	r'if'
+  	return t
+
+def t_ELSE(t):
+  	r'else'
+  	return t
+
+def t_WHILE(t):
+  	r'while'
+  	return t
 
 def opMapper(x):
 	return {
@@ -96,12 +110,10 @@ def p_expression_body(p) :
 	"""
 	BODY : DECL SEMICOL BODY 
 			| ASSIGN SEMICOL BODY
+			| COMPLETEIF BODY
+			| WHILExpr BODY
 			| 
 	"""
-# def p_expression_if(p):
-# 	"""
-# 	IF_BLOCK : IF
-# 	"""
 def p_expression_decl(p):
 	"""
 	DECL : DTYPE DECLIST
@@ -189,6 +201,42 @@ def p_expression_Natom(p) :
 	"""
 	p[0] = Abstree([], Label.CONST, True, p[1])
 
+def p_expression_ifBlock(p) :
+	"""
+	IFBLOCK :  ASSIGN SEMICOL 
+			| LCPAREN ASSIGN SEMICOL BODY RCPAREN
+			| LCPAREN DECL SEMICOL BODY RCPAREN
+			| LCPAREN  COMPLETEIF BODY RCPAREN
+			| LCPAREN WHILExpr BODY RCPAREN
+	"""
+def p_expression_if(p):
+	"""
+	IFExpr : IF LPAREN Cond RPAREN IFBLOCK
+		   | IFExpr ELSE IF LPAREN Cond RPAREN IFBLOCK
+	"""
+def p_expression_else(p):
+	"""
+	COMPLETEIF : IFExpr ELSE IFBLOCK
+			   | IFExpr
+	"""
+def p_expression_while(p):
+	"""
+	WHILExpr : WHILE LPAREN Cond RPAREN IFBLOCK
+	"""
+
+def p_expression_cond(p):
+	"""
+	Cond : Wrhs Compare Wrhs
+	"""
+
+def p_expression_compare(p):
+	"""
+	Compare : LESSTHAN
+			  | GREATERTHAN
+			  | LESSTHAN EQUALS
+			  | GREATERTHAN EQUALS
+			  | EQUALS EQUALS
+	"""
 def p_error(p):
 	global correct, trees 
 	correct = 0
@@ -206,6 +254,9 @@ def p_error(p):
 
 def process(data):
 	lex.lex()
+	# lexer.input(data)
+	# for tok in lexer :
+	# 	print(tok)
 	yacc.yacc()
 	yacc.parse(data)
 
@@ -214,17 +265,17 @@ if __name__ == "__main__":
 	k = sys.argv[1]
 	f = open(k, 'r')
 	print(k)
-	outFile = "Parser_ast_"+ (k.split('/'))[-1]+".txt"
+	# outFile = "Parser_ast_"+ (k.split('/'))[-1]+".txt"
 	data = f.read()
 	process(data)
-	done = 1
-	for x in trees:
-		if(not x[0].valid_tree()):
-			done = 0
-			x[0].print_error(x[1])
-			break
-	sys.stdout = open(outFile, 'w')
-	if done and correct:
-		for x in trees:
-			x[0].print_tree(0)
-			print()
+	# done = 1
+	# for x in trees:
+	# 	if(not x[0].valid_tree()):
+	# 		done = 0
+	# 		x[0].print_error(x[1])
+	# 		break
+	# sys.stdout = open(outFile, 'w')
+	# if done and correct:
+	# 	for x in trees:
+	# 		x[0].print_tree(0)
+	# 		print()
