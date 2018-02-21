@@ -1,5 +1,19 @@
+import enum
+class Label(enum.Enum):
+	VAR = 1
+	DEREF = 2
+	ADDR = 3
+	UMINUS= 4
+	CONST = 5
+	ASSGN = 6 
+	MINUS = 7
+	PLUS  = 8
+	MUL = 9
+	DIV = 10
+	DEFAULT = 1000
+
 class Abstree:
-	label = ""
+	label = Label.DEFAULT
 	children = []
 	isTerminal = False
 	value = ""
@@ -15,10 +29,10 @@ class Abstree:
 		for i in range(depth):
 			s = s+"\t"
 		if(self.isTerminal):
-			print(s+self.label + "(" + self.value + ")")
+			print(s+self.label.name + "(" + self.value + ")")
 			return
 		self.print_without(s)
-		print(self.label)
+		print(self.label.name)
 		lbrack = s + "("
 		print(lbrack)
 		for x in self.children:
@@ -28,10 +42,10 @@ class Abstree:
 			print(s+"\t"+",")
 		print(s+")")
 	def valid_tree(self):
-		if self.label=="ASSGN" :
+		if self.label==Label.ASSGN :
 			return self.check_assign()
 	def check_assign(self):
-		if self.children[0].label=="DEREF":
+		if self.children[0].label==Label.DEREF:
 			return True
 		else :
 			found = False
@@ -41,7 +55,7 @@ class Abstree:
 					break
 				curr = frontier[0]
 				if curr.isTerminal:
-					if curr.label == "VAR":
+					if curr.label == Label.VAR:
 						found = True
 						break
 					else:

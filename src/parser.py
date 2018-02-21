@@ -4,6 +4,7 @@ import sys
 import ply.lex as lex
 import ply.yacc as yacc
 from Abstree import Abstree
+from Abstree import Label
 
 # TODO/DIFFS
 # What to print (as AST) on error t2.c t4.c
@@ -39,10 +40,10 @@ t_WORD = r'[a-zA-Z_][a-zA-Z0-9_]*'
 
 def opMapper(x):
 	return {
-		'+' : "PLUS",
-		'-' : "MINUS",
-		'*' : "MUL",
-		'/' : "DIV"
+		'+' : Label.PLUS,
+		'-' : Label.MINUS,
+		'*' : Label.MUL,
+		'/' : Label.DIV
 	}[x]
 
 def t_newline(t):
@@ -97,6 +98,10 @@ def p_expression_body(p) :
 			| ASSIGN SEMICOL BODY
 			| 
 	"""
+# def p_expression_if(p):
+# 	"""
+# 	IF_BLOCK : IF
+# 	"""
 def p_expression_decl(p):
 	"""
 	DECL : DTYPE DECLIST
@@ -131,26 +136,26 @@ def p_expression_assignId(p) :
 		| REF aID
 	"""
 	if(len(p)==2):
-		p[0] = Abstree([], "VAR", True, p[1])
+		p[0] = Abstree([], Label.VAR, True, p[1])
 	elif(len(p)==3):
 		if(p[1]=="*"):
-			p[0]= Abstree([p[2]], "DEREF", False, -1)
+			p[0]= Abstree([p[2]], Label.DEREF, False, -1)
 		elif(p[1]=="&"):
-			p[0]= Abstree([p[2]], "ADDR", False, -1)
+			p[0]= Abstree([p[2]], Label.ADDR, False, -1)
 
 def p_expression_lhspointer(p):
 	"""
 	LHS_POINT : REF aID
 	"""
-	p[0]= Abstree([p[2]], "DEREF", False, -1)
+	p[0]= Abstree([p[2]], Label.DEREF, False, -1)
 def p_expression_assign(p) :
 	"""
 	ASSIGN : WORD EQUALS Wrhs
 		| LHS_POINT EQUALS Wrhs
 	"""
 	if(isinstance(p[1], str)):
-		p[1] = Abstree([], "VAR", True, p[1])
-	p[0]= Abstree([p[1], p[3]], "ASSGN", False, -1)
+		p[1] = Abstree([], Label.VAR, True, p[1])
+	p[0]= Abstree([p[1], p[3]], Label.ASSGN, False, -1)
 	global trees
 	trees.append((p[0], p.lineno(2)))
 	increaseNumAssign(1)
@@ -177,12 +182,12 @@ def p_expression_Wrhs3(p):
 	"""
 		Wrhs : MINUS Wrhs %prec UMINUS
 	"""
-	p[0]= Abstree([p[2]], "UMINUS", False, -1)
+	p[0]= Abstree([p[2]], Label.UMINUS, False, -1)
 def p_expression_Natom(p) :
 	"""
 	Natom : NUMBER
 	"""
-	p[0] = Abstree([], "CONST", True, p[1])
+	p[0] = Abstree([], Label.CONST, True, p[1])
 
 def p_error(p):
 	global correct, trees 
