@@ -10,6 +10,21 @@ class Label(enum.Enum):
 	PLUS  = 8
 	MUL = 9
 	DIV = 10
+	IF = 11
+	ELSE_IF = 12
+	ELSE = 13
+	WHILE = 14
+	BLOCK = 15
+	IFSTMT = 16
+	COND = 17 
+	LESSTHAN = 18
+	LESSTHANEQ = 19 
+	GREATERTHAN = 20
+	GREATERTHANEQ = 21
+	EQ = 22
+	DECL = 23
+	INT = 24
+	DVAR = 25
 	DEFAULT = 1000
 
 class Abstree:
@@ -44,6 +59,10 @@ class Abstree:
 	def valid_tree(self):
 		if self.label==Label.ASSGN :
 			return self.check_assign()
+	def add_child(self, child):
+		self.children.append(child)
+	def prepend(self, child):
+		self.children = [child] + self.children
 	def check_assign(self):
 		if self.children[0].label==Label.DEREF:
 			return True

@@ -6,12 +6,6 @@ import ply.yacc as yacc
 from Abstree import Abstree
 from Abstree import Label
 
-# TODO/DIFFS
-# What to print (as AST) on error t2.c t4.c
-# How many errors to print t5.c. We are printing atmost one syntax error and atmost one tree error/ They are printing only
-# 	one error
-# Printing to file
-
 trees = []
 numStatic= 0
 numPointer = 0
@@ -40,6 +34,8 @@ t_LCPAREN = r'{'
 t_RCPAREN = r'}'
 t_WORD = r'[a-zA-Z_][a-zA-Z0-9_]*'
 
+prog = []
+
 def t_IF(t):
   	r'if'
   	return t
@@ -57,7 +53,12 @@ def opMapper(x):
 		'+' : Label.PLUS,
 		'-' : Label.MINUS,
 		'*' : Label.MUL,
-		'/' : Label.DIV
+		'/' : Label.DIV, 
+		'<' : Label.LESSTHAN,
+		'<=': Label.LESSTHANEQ, 
+		'>' : Label.GREATERTHAN,
+		'>=': Label.GREATERTHANEQ,
+		'==': Label.EQ
 	}[x]
 
 def t_newline(t):
@@ -67,14 +68,6 @@ def t_newline(t):
 def increaseNumAssign(k):
 	global numAssign
 	numAssign = numAssign + k
-
-def assigner(p):
-	i =2 
-	p[0] = p[1]
-	while i<len(p):
-		p[0] = p[0] + p[i]
-		i=i+1	
-	return p[0]
 def t_DTYPE(t):
 	r'int'
 	return t
@@ -106,6 +99,7 @@ precedence = (
 )
 def p_expression_prog(p):
         'expression : RETTYPE FUNCNAME LPAREN RPAREN LCPAREN BODY RCPAREN'
+        p[6].print_tree(0)
 def p_expression_body(p) :
 	"""
 	BODY : DECL SEMICOL BODY 
@@ -114,33 +108,42 @@ def p_expression_body(p) :
 			| WHILExpr BODY
 			| 
 	"""
+	if(len(p)==1):
+		p[0] = Abstree([], Label.BLOCK, False, -1)
+	elif(len(p)==4) :
+		p[3].prepend(p[1])
+		p[0] = p[3]
+	elif(len(p)==3):
+		p[2].prepend(p[1])
+		p[0] = p[2]
+
 def p_expression_decl(p):
 	"""
 	DECL : DTYPE DECLIST
 	"""
-	p[0] =assigner(p)
-	split = p[2].split(',')
-	for k in split:
-		if k.count('*')>0:
-			global numPointer
-			numPointer = numPointer + 1
-		else :
-			global numStatic
-			numStatic = numStatic + 1
+	p[1] = Abstree([], Label.INT, True, -1)
+	p[0] = Abstree([p[1]], Label.DECL, False, -1)
+	for x in reversed(p[2]):
+		p[0].add_child(x)
 def p_expression_declist(p):
 	"""
 	DECLIST : ID COMMA DECLIST 
 			| ID
 	"""
-	p[0] = assigner(p)
-
+	if len(p)==2:
+		p[0] = [Abstree([p[1]], Label.DVAR, False, -1)]
+	else:
+		p[3].append(Abstree([p[1]], Label.DVAR, False, -1))
+		p[0] = p[3]
 def p_expression_id(p) :
 	"""
 	ID : WORD
 	   | REF ID
 	"""
-	p[0] = assigner(p)
-
+	if len(p)==2:
+		p[0] = Abstree([], Label.VAR, True, p[1])
+	else:
+		p[0] = Abstree([p[2]], Label.DEREF, False, -1)
 def p_expression_assignId(p) :
 	"""
 	aID : WORD
@@ -168,9 +171,9 @@ def p_expression_assign(p) :
 	if(isinstance(p[1], str)):
 		p[1] = Abstree([], Label.VAR, True, p[1])
 	p[0]= Abstree([p[1], p[3]], Label.ASSGN, False, -1)
-	global trees
-	trees.append((p[0], p.lineno(2)))
-	increaseNumAssign(1)
+	# global trees
+	# trees.append((p[0], p.lineno(2)))
+	# increaseNumAssign(1)
 
 def p_expression_Wrhs1(p):
 	"""
@@ -209,25 +212,40 @@ def p_expression_ifBlock(p) :
 			| LCPAREN  COMPLETEIF BODY RCPAREN
 			| LCPAREN WHILExpr BODY RCPAREN
 	"""
+	if(len(p)==3):
+		p[0] = Abstree([p[1]], Label.BLOCK, False, -1)
+	else:
+		p[4].prepend(p[2])
+		p[0] = p[4]
 def p_expression_if(p):
 	"""
 	IFExpr : IF LPAREN Cond RPAREN IFBLOCK
 		   | IFExpr ELSE IF LPAREN Cond RPAREN IFBLOCK
 	"""
+	if(len(p)==6):
+		temp = Abstree([p[3], p[5]], Label.IF, False, -1)
+		p[0] = Abstree([temp], Label.IFSTMT, False, -1)
+	else :
+		p[1].add_child(Abstree([p[5], p[7]], Label.ELSE_IF, False, -1))
+		p[0] = p[1]
 def p_expression_else(p):
 	"""
 	COMPLETEIF : IFExpr ELSE IFBLOCK
 			   | IFExpr
 	"""
+	if(len(p)==4):
+		p[1].add_child(Abstree([p[3]], Label.ELSE, False, -1))
+	p[0] = p[1]
 def p_expression_while(p):
 	"""
 	WHILExpr : WHILE LPAREN Cond RPAREN IFBLOCK
 	"""
-
+	p[0] = Abstree([p[3], p[5]], Label.WHILE, False, -1)
 def p_expression_cond(p):
 	"""
 	Cond : Wrhs Compare Wrhs
 	"""
+	p[0] = Abstree([p[1], p[2],p[3]], Label.COND, False, -1)
 
 def p_expression_compare(p):
 	"""
@@ -237,6 +255,11 @@ def p_expression_compare(p):
 			  | GREATERTHAN EQUALS
 			  | EQUALS EQUALS
 	"""
+	if(len(p)==2):
+		p[0] = Abstree([], opMapper(p[1]), True, -1)
+	elif(len(p)==3):
+		p[0] = Abstree([], opMapper(str(p[1]+p[2])), True, -1)
+
 def p_error(p):
 	global correct, trees 
 	correct = 0
