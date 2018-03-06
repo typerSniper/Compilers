@@ -56,9 +56,65 @@ class Abstree:
 				break
 			print(s+"\t"+",")
 		print(s+")")
-	def valid_tree(self):
+	def valid_tree(self, availVars, parent, index):
 		if self.label==Label.ASSGN :
-			return self.check_assign()
+			return self.check_assign() and self.check_declaration(availVars)
+		elif self.label==Label.IFSTMT or self.label==Label.WHILE or \
+			self.label==Label.ELSE_IF or self.label==Label.IF or self.label==Label.ELSE:
+			q = True
+			for k in self.children:
+				q = q and k.valid_tree(availVars)
+			return q
+		elif self.label==Label.COND:
+			return self.check_declaration(availVars)
+		elif self.label == Label.BLOCK:
+			q = True
+			for k in self.children:
+				if(k.label==Label.DECL) :
+					q = q and k.valid_tree()
+					break 
+				q = q and k.valid_tree()
+			return q
+		elif self.label==Label.DECL :
+			q = True
+			availVars = availVars + self.update_vars()
+			siblings = parent.children[(index+1):]
+			for k in siblings:
+				if(k.label==Label.DECL) :
+					q = q and k.valid_tree()
+					break 
+				q = q and k.valid_tree()
+			return q				
+
+	def update_vars(self):
+		vars_ = []
+		for k in self.children:
+			if k.label == Label.DVAR:
+				c = k.children[0]
+				depth = 0
+				while True:
+					if c.label == Label.VAR:
+						vars_.append((c.value, depth))
+					else:
+						depth+=1
+		return vars_
+	def check_declaration(self, availVars):
+		g = True
+		if self.label == Label.VAR:
+			if self.value in [x[0] for x in a]
+				return True
+			else:
+				return False
+		elif self.label == Label.DEREF:
+			curr = self
+			depth = 1
+			while(curr.label!=Label.VAR):
+				depth = depth + 1
+				curr = curr.children[0]
+			t = (curr.value, depth)
+		for k in self.children:
+			g = g and k.check_declaration(k)
+		return g
 	def add_child(self, child):
 		self.children.append(child)
 	def prepend(self, child):
