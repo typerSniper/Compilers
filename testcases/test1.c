@@ -1,8 +1,8 @@
 void main()
 {
         int a, *pa, b;
-        int ***b;
+        // int ***b;
         b = &a;
-        ****ca = &(a);
-        a = 10;
+        ****ca = &a;
+        // a = 10;
 }

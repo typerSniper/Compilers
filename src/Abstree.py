@@ -62,29 +62,42 @@ class Abstree:
 		elif self.label==Label.IFSTMT or self.label==Label.WHILE or \
 			self.label==Label.ELSE_IF or self.label==Label.IF or self.label==Label.ELSE:
 			q = True
+			i=0
 			for k in self.children:
-				q = q and k.valid_tree(availVars)
+				q = q and k.valid_tree(availVars, self, i)
+				i+=1
 			return q
 		elif self.label==Label.COND:
 			return self.check_declaration(availVars)
 		elif self.label == Label.BLOCK:
 			q = True
+			i=0
 			for k in self.children:
 				if(k.label==Label.DECL) :
-					q = q and k.valid_tree()
+					# print("here", i)
+					q = q and k.valid_tree(availVars, self, i)
 					break 
-				q = q and k.valid_tree()
+				q = q and k.valid_tree(availVars, self, i)
+				i+=1
 			return q
 		elif self.label==Label.DECL :
 			q = True
-			availVars = availVars + self.update_vars()
+			i=index+1
+			new_vars = self.update_vars()
+			for x in new_vars:
+				if x[0] in [y[0] for y in availVars]:
+					print("ERROR: Double declaration for", x[0])
+					return False
+			availVars = availVars + new_vars
+			# print(availVars)
 			siblings = parent.children[(index+1):]
 			for k in siblings:
 				if(k.label==Label.DECL) :
-					q = q and k.valid_tree()
-					break 
-				q = q and k.valid_tree()
-			return q				
+					q = q and k.valid_tree(availVars, self, i)
+					break
+				q = q and k.valid_tree(availVars, self, i)
+				i+=1
+			return q
 
 	def update_vars(self):
 		vars_ = []
@@ -95,25 +108,29 @@ class Abstree:
 				while True:
 					if c.label == Label.VAR:
 						vars_.append((c.value, depth))
+						break
 					else:
 						depth+=1
+						c=c.children[0]
 		return vars_
 	def check_declaration(self, availVars):
 		g = True
 		if self.label == Label.VAR:
-			if self.value in [x[0] for x in a]
+			# print(availVars)
+			if self.value in [x[0] for x in availVars]:
 				return True
 			else:
+				print("ERROR:", self.value, "Not Defined")
 				return False
-		elif self.label == Label.DEREF:
-			curr = self
-			depth = 1
-			while(curr.label!=Label.VAR):
-				depth = depth + 1
-				curr = curr.children[0]
-			t = (curr.value, depth)
+		# elif self.label == Label.DEREF:
+		# 	curr = self
+		# 	depth = 1
+		# 	while(curr.label!=Label.VAR):
+		# 		depth = depth + 1
+		# 		curr = curr.children[0]
+		# 	t = (curr.value, depth)
 		for k in self.children:
-			g = g and k.check_declaration(k)
+			g = g and k.check_declaration(availVars)
 		return g
 	def add_child(self, child):
 		self.children.append(child)
