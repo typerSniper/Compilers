@@ -13,7 +13,7 @@ numAssign =0
 correct  = 1
 tokens = ('DTYPE', 'EQUALS', 'LPAREN', 'RPAREN', 'LCPAREN', 'RCPAREN', 
 			'RETTYPE', 'FUNCNAME', 'SEMICOL', 'COMMA', 'AMP', 'WORD', 'REF', 'NUMBER',
-			'PLUS', 'MINUS', 'DIV', 'IF', 'WHILE', 'ELSE', 'LESSTHAN', 'GREATERTHAN')
+			'PLUS', 'MINUS', 'DIV', 'IF', 'WHILE', 'ELSE', 'LESSTHAN', 'GREATERTHAN', 'OR')
 
 t_ignore = " \t"
 t_ignore_comment = "//[^\n]*\n"
@@ -26,6 +26,7 @@ t_RPAREN = r'\)'
 t_SEMICOL = r';'
 t_COMMA = r','
 t_AMP = r'&'
+t_OR = r'\|'
 t_REF = r'\*'
 t_PLUS = r'\+'
 t_MINUS = r'-'
@@ -54,13 +55,24 @@ def opMapper(x):
 		'-' : Label.MINUS,
 		'*' : Label.MUL,
 		'/' : Label.DIV, 
-		'<' : Label.LESSTHAN,
-		'<=': Label.LESSTHANEQ, 
-		'>' : Label.GREATERTHAN,
-		'>=': Label.GREATERTHANEQ,
-		'==': Label.EQ
+		'<' : Label.LT,
+		'<=': Label.LE, 
+		'>' : Label.GT,
+		'>=': Label.GE,
+		'==': Label.EQ,
+		'&&': Label.AND,
+		'||': Label.OR
 	}[x]
-
+def valMapper(x):
+	return {
+		'<' : "LT",
+		'<=': "LE", 
+		'>' : "GT",
+		'>=': "GE",
+		'==': "EQ",
+		'&&': "AND",
+		'||': "OR"
+	}[x]	
 def t_newline(t):
     r'\n+'
     t.lexer.lineno =  t.lexer.lineno + len(t.value)
@@ -183,7 +195,7 @@ def p_expression_Wrhs1(p):
 			 | Wrhs REF Wrhs
 			 | Wrhs DIV Wrhs
 	"""
-	p[0]= Abstree([p[1], p[3]], opMapper(p[2]), False, -1)
+	p[0]= Abstree([p[1], p[3]], opMapper(p[2]), False, p[2])
 def p_expression_Wrhs2(p):
 	"""
 		Wrhs : aID
@@ -224,10 +236,10 @@ def p_expression_if(p):
 		   | IFExpr ELSE IF LPAREN Cond RPAREN IFBLOCK
 	"""
 	if(len(p)==6):
-		temp = Abstree([p[3], p[5]], Label.IF, False, -1)
-		p[0] = Abstree([temp], Label.IFSTMT, False, -1)
+		p[0] = Abstree([p[3], p[5]], Label.IF, False, -1)
 	else :
-		p[1].add_child(Abstree([p[5], p[7]], Label.ELSE_IF, False, -1))
+		temp = Abstree([p[5], p[7]], Label.IF, False, -1)
+		p[1].add_child(temp)
 		p[0] = p[1]
 def p_expression_else(p):
 	"""
@@ -235,18 +247,24 @@ def p_expression_else(p):
 			   | IFExpr
 	"""
 	if(len(p)==4):
-		p[1].add_child(Abstree([p[3]], Label.ELSE, False, -1))
+		p[1].children[-1].add_child(p[3])
 	p[0] = p[1]
 def p_expression_while(p):
 	"""
 	WHILExpr : WHILE LPAREN Cond RPAREN IFBLOCK
 	"""
 	p[0] = Abstree([p[3], p[5]], Label.WHILE, False, -1)
+
 def p_expression_cond(p):
 	"""
 	Cond : Wrhs Compare Wrhs
+		| Cond AMP AMP Cond
+		| Cond OR OR Cond
 	"""
-	p[0] = Abstree([p[1], p[2],p[3]], Label.COND, False, -1)
+	if len(p) ==4:
+		p[0] = Abstree([p[1], p[3]], p[2][0], False, p[2][1])
+	else:
+		p[0] = Abstree([p[1], p[4]], opMapper(p[2]+p[3]), False, str(p[2]+p[3]))
 
 def p_expression_compare(p):
 	"""
@@ -257,9 +275,9 @@ def p_expression_compare(p):
 			  | EQUALS EQUALS
 	"""
 	if(len(p)==2):
-		p[0] = Abstree([], opMapper(p[1]), True, -1)
+		p[0] = (opMapper(p[1]), p[1])
 	elif(len(p)==3):
-		p[0] = Abstree([], opMapper(str(p[1]+p[2])), True, -1)
+		p[0] = (opMapper(str(p[1]+p[2])), str(p[1]+p[2]))
 
 def p_error(p):
 	global correct, trees 

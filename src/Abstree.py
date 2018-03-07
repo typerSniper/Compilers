@@ -11,21 +11,24 @@ class Label(enum.Enum):
 	MUL = 9
 	DIV = 10
 	IF = 11
-	ELSE_IF = 12
-	ELSE = 13
 	WHILE = 14
 	BLOCK = 15
-	IFSTMT = 16
 	COND = 17 
-	LESSTHAN = 18
-	LESSTHANEQ = 19 
-	GREATERTHAN = 20
-	GREATERTHANEQ = 21
+	LT = 18
+	LE = 19 
+	GT = 20
+	GE = 21
 	EQ = 22
 	DECL = 23
 	INT = 24
 	DVAR = 25
+	AND = 26
+	OR = 27
 	DEFAULT = 1000
+
+
+bbCount = 1
+tCount = 1  
 
 class Abstree:
 	label = Label.DEFAULT
@@ -65,8 +68,7 @@ class Abstree:
 	def valid_tree(self, availVars, parent, index):
 		if self.label==Label.ASSGN :
 			return self.check_assign() and self.check_declaration(availVars)
-		elif self.label==Label.IFSTMT or self.label==Label.WHILE or \
-			self.label==Label.ELSE_IF or self.label==Label.IF or self.label==Label.ELSE:
+		elif self.label==Label.WHILE or self.label==Label.IF:
 			q = True
 			i=0
 			for k in self.children:
@@ -174,5 +176,64 @@ class Abstree:
 			return found
 	def print_error(self, lineno):
 		print("Syntax error at '{1}' on line number {0}".format(str(lineno), str(self.children[0].value) + " ="))
-	# def make_cfg(self):
+
+
+# def make_cfg(node, assign, assignList):
+# 	if(node.label==Label.BLOCK):
+# 		for c in range(len(node.children)):
+# 			if(node.children[c].label!=Label.DECL):
+# 				if node.children[c].label==Label.ASSGN:
+# 					temp = []
+# 					while node.children[c].label == Label.ASSGN and c < len(node.children):
+# 						temp.append(node.children[c])
+# 						c+=1
+# 					c-=1
+# 					make_cfg()
+# 					# if c+1 == node.getNextGoto(c)
+# 					# 	node.children[c].make_cfg(True)
+# 					# else:
+# 					# 	node.children[c].make_cfg(False)
+# 				else:
+# 					node.children[c].make_cfg(True)
+# 	elif (node.label==Label.ASSGN):
+		
+# 		if gotoEnd:
+
+	# def getNextGoto(self, index):
+	# 	index = index + 1
+	# 	while index < len(self.children):
+	# 		if(self.children[index].label==Label.IFSTMT or self.children[index].label==Label.WHILE):
+	# 			return index
+	# 		index = index + 1
+
+# def make_cfg(node, target, current):
+# 	if(node.label==Label.BLOCK):
+# 		children = node.children
+# 		count = 0
+# 		for c in range(len(children)):
+# 			if(children[c].label==Label.DECL):
+# 				continue
+# 			elif c==len(children)-1:
+# 				make_cfg(children[c], target, current)
+# 			elif children[c].label==Label.ASSGN:
+# 				make_cfg(children[c], -1, current)
+# 				current = -1
+# 			elif children[c].label==Label.IFSTMT or children[c].label==Label.WHILE:
+# 				make_cfg(children[c], bbCount, current)
+# 				current = bbCount
+# 				bbCount = bbCount + 1
+
+
+# 	elif(node.label==Label.ASSGN):
+# 		if(current==-1):
+# 			print("<bb", current, ">")
+# 		node.print_assign()
+# 		if(target!=-1)
+# 			print("goto", "<bb", target, ">")
+
+# 	elif (node.label==Label.IFSTMT):
+
+
+
+
 		
