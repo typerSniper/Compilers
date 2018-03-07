@@ -5,7 +5,7 @@ class Label(enum.Enum):
 	ADDR = 3
 	UMINUS= 4
 	CONST = 5
-	ASSGN = 6 
+	ASGN = 6 
 	MINUS = 7
 	PLUS  = 8
 	MUL = 9
@@ -19,11 +19,12 @@ class Label(enum.Enum):
 	GT = 20
 	GE = 21
 	EQ = 22
-	DECL = 23
-	INT = 24
-	DVAR = 25
-	AND = 26
-	OR = 27
+	NE = 23
+	DECL = 24
+	INT = 25
+	DVAR = 26
+	AND = 27
+	OR = 28
 	DEFAULT = 1000
 
 
@@ -66,7 +67,7 @@ class Abstree:
 			print(s+"\t"+",")
 		print(s+")")
 	def valid_tree(self, availVars, parent, index):
-		if self.label==Label.ASSGN :
+		if self.label==Label.ASGN :
 			return self.check_assign() and self.check_declaration(availVars)
 		elif self.label==Label.WHILE or self.label==Label.IF:
 			q = True
@@ -182,9 +183,9 @@ class Abstree:
 # 	if(node.label==Label.BLOCK):
 # 		for c in range(len(node.children)):
 # 			if(node.children[c].label!=Label.DECL):
-# 				if node.children[c].label==Label.ASSGN:
+# 				if node.children[c].label==Label.ASGN:
 # 					temp = []
-# 					while node.children[c].label == Label.ASSGN and c < len(node.children):
+# 					while node.children[c].label == Label.ASGN and c < len(node.children):
 # 						temp.append(node.children[c])
 # 						c+=1
 # 					c-=1
@@ -195,7 +196,7 @@ class Abstree:
 # 					# 	node.children[c].make_cfg(False)
 # 				else:
 # 					node.children[c].make_cfg(True)
-# 	elif (node.label==Label.ASSGN):
+# 	elif (node.label==Label.ASGN):
 		
 # 		if gotoEnd:
 
@@ -215,7 +216,7 @@ class Abstree:
 # 				continue
 # 			elif c==len(children)-1:
 # 				make_cfg(children[c], target, current)
-# 			elif children[c].label==Label.ASSGN:
+# 			elif children[c].label==Label.ASGN:
 # 				make_cfg(children[c], -1, current)
 # 				current = -1
 # 			elif children[c].label==Label.IFSTMT or children[c].label==Label.WHILE:
@@ -224,7 +225,7 @@ class Abstree:
 # 				bbCount = bbCount + 1
 
 
-# 	elif(node.label==Label.ASSGN):
+# 	elif(node.label==Label.ASGN):
 # 		if(current==-1):
 # 			print("<bb", current, ">")
 # 		node.print_assign()

@@ -13,7 +13,7 @@ numAssign =0
 correct  = 1
 tokens = ('DTYPE', 'EQUALS', 'LPAREN', 'RPAREN', 'LCPAREN', 'RCPAREN', 
 			'RETTYPE', 'FUNCNAME', 'SEMICOL', 'COMMA', 'AMP', 'WORD', 'REF', 'NUMBER',
-			'PLUS', 'MINUS', 'DIV', 'IF', 'WHILE', 'ELSE', 'LESSTHAN', 'GREATERTHAN', 'OR')
+			'PLUS', 'MINUS', 'DIV', 'IF', 'WHILE', 'ELSE', 'LESSTHAN', 'GREATERTHAN', 'OR', 'NOT')
 
 t_ignore = " \t"
 t_ignore_comment = "//[^\n]*\n"
@@ -33,21 +33,24 @@ t_MINUS = r'-'
 t_DIV = r'/'
 t_LCPAREN = r'{'
 t_RCPAREN = r'}'
-t_WORD = r'[a-zA-Z_][a-zA-Z0-9_]*'
+t_NOT = r'\!'
+
+def t_WORD(t):
+	r'[a-zA-Z_][a-zA-Z0-9_]*'
+	if t.value in reserved:
+		t.type = reserved[t.value]
+	return t
 
 prog = []
 
-def t_IF(t):
-  	r'if'
-  	return t
-
-def t_ELSE(t):
-  	r'else'
-  	return t
-
-def t_WHILE(t):
-  	r'while'
-  	return t
+reserved = {
+	'if' : 'IF',
+  	'else' : 'ELSE',
+	'while' : 'WHILE',
+	'int' : 'DTYPE',
+	'main' : 'FUNCNAME',
+	'void' : 'RETTYPE'
+}
 
 def opMapper(x):
 	return {
@@ -61,18 +64,20 @@ def opMapper(x):
 		'>=': Label.GE,
 		'==': Label.EQ,
 		'&&': Label.AND,
-		'||': Label.OR
+		'||': Label.OR,
+		'!=': Label.NE
 	}[x]
-def valMapper(x):
-	return {
-		'<' : "LT",
-		'<=': "LE", 
-		'>' : "GT",
-		'>=': "GE",
-		'==': "EQ",
-		'&&': "AND",
-		'||': "OR"
-	}[x]	
+# def valMapper(x):
+# 	return {
+# 		'<' : "LT",
+# 		'<=': "LE", 
+# 		'>' : "GT",
+# 		'>=': "GE",
+# 		'==': "EQ",
+# 		'&&': "AND",
+# 		'||': "OR",
+# 		'!=': "NE"
+# 	}[x]	
 def t_newline(t):
     r'\n+'
     t.lexer.lineno =  t.lexer.lineno + len(t.value)
@@ -80,16 +85,7 @@ def t_newline(t):
 def increaseNumAssign(k):
 	global numAssign
 	numAssign = numAssign + k
-def t_DTYPE(t):
-	r'int'
-	return t
 
-def t_FUNCNAME(t) :
-	r'main'
-	return t
-def t_RETTYPE(t):
-	r'void' 
-	return t
 def t_NUMBER(t):
     r'\d+'
     try:
@@ -183,7 +179,7 @@ def p_expression_assign(p) :
 	"""
 	if(isinstance(p[1], str)):
 		p[1] = Abstree([], Label.VAR, True, p[1])
-	p[0]= Abstree([p[1], p[3]], Label.ASSGN, False, -1)
+	p[0]= Abstree([p[1], p[3]], Label.ASGN, False, -1)
 	# global trees
 	# trees.append((p[0], p.lineno(2)))
 	# increaseNumAssign(1)
@@ -227,9 +223,12 @@ def p_expression_ifBlock(p) :
 	"""
 	if(len(p)==3):
 		p[0] = Abstree([p[1]], Label.BLOCK, False, -1)
-	else:
+	elif len(p) == 6:
 		p[4].prepend(p[2])
 		p[0] = p[4]
+	else:
+		p[3].prepend(p[2])
+		p[0] = p[3]
 def p_expression_if(p):
 	"""
 	IFExpr : IF LPAREN Cond RPAREN IFBLOCK
@@ -239,7 +238,10 @@ def p_expression_if(p):
 		p[0] = Abstree([p[3], p[5]], Label.IF, False, -1)
 	else :
 		temp = Abstree([p[5], p[7]], Label.IF, False, -1)
-		p[1].add_child(temp)
+		curr = p[1]
+		while len(curr.children) != 2:
+			curr = curr.children[2]
+		curr.add_child(temp)
 		p[0] = p[1]
 def p_expression_else(p):
 	"""
@@ -247,24 +249,32 @@ def p_expression_else(p):
 			   | IFExpr
 	"""
 	if(len(p)==4):
-		p[1].children[-1].add_child(p[3])
+		curr = p[1]
+		while len(curr.children) != 2:
+			curr = curr.children[2]
+		curr.add_child(p[3])
 	p[0] = p[1]
 def p_expression_while(p):
 	"""
-	WHILExpr : WHILE LPAREN Cond RPAREN IFBLOCK
+	WHILExpr : WHILE LPAREN CondExpr RPAREN IFBLOCK
 	"""
 	p[0] = Abstree([p[3], p[5]], Label.WHILE, False, -1)
 
+def p_expression_condExpr(p):
+	"""
+	CondExpr : Cond
+		| CondExpr AMP AMP Cond
+		| CondExpr OR OR Cond
+	"""
+	if len(p) == 2:
+		p[0] = p[1]
+	else:
+		p[0] = Abstree([p[1], p[4]], opMapper(p[2]+p[3]), False, str(p[2]+p[3]))
 def p_expression_cond(p):
 	"""
 	Cond : Wrhs Compare Wrhs
-		| Cond AMP AMP Cond
-		| Cond OR OR Cond
 	"""
-	if len(p) ==4:
-		p[0] = Abstree([p[1], p[3]], p[2][0], False, p[2][1])
-	else:
-		p[0] = Abstree([p[1], p[4]], opMapper(p[2]+p[3]), False, str(p[2]+p[3]))
+	p[0] = Abstree([p[1], p[3]], p[2][0], False, p[2][1])
 
 def p_expression_compare(p):
 	"""
@@ -273,6 +283,7 @@ def p_expression_compare(p):
 			  | LESSTHAN EQUALS
 			  | GREATERTHAN EQUALS
 			  | EQUALS EQUALS
+			  | NOT EQUALS
 	"""
 	if(len(p)==2):
 		p[0] = (opMapper(p[1]), p[1])
@@ -306,7 +317,6 @@ data = ""
 if __name__ == "__main__":
 	k = sys.argv[1]
 	f = open(k, 'r')
-	print(k)
 	# outFile = "Parser_ast_"+ (k.split('/'))[-1]+".txt"
 	data = f.read()
 	process(data)
