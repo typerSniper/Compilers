@@ -40,6 +40,12 @@ class Abstree:
 	def print_without(self, s) :
 		print(s, end='')
 	def print_tree(self, depth):
+		if(self.label==Label.BLOCK):
+			for x in self.children:
+				x.print_tree(depth)
+			return
+		if(self.label==Label.DECL):
+			return
 		s = ""
 		for i in range(depth):
 			s = s+"\t"
@@ -120,15 +126,24 @@ class Abstree:
 			if self.value in [x[0] for x in availVars]:
 				return True
 			else:
-				print("ERROR:", self.value, "Not Defined")
+				# print("ERROR:", self.value, "Not Defined")
 				return False
-		# elif self.label == Label.DEREF:
-		# 	curr = self
-		# 	depth = 1
-		# 	while(curr.label!=Label.VAR):
-		# 		depth = depth + 1
-		# 		curr = curr.children[0]
-		# 	t = (curr.value, depth)
+		elif self.label == Label.DEREF or self.label == Label.ADDR:
+			curr = self
+			depth = 0
+			while(curr.label!=Label.VAR):
+				if(curr.label==Label.DEREF):
+					depth = depth + 1
+				elif (curr.label==Label.ADDR):
+					depth = depth - 1
+				curr = curr.children[0]
+			t = (curr.value, depth)
+			g = [True  for x in availVars if x[0]==t[0] and t[1] == x[1] ]
+			if len(g):
+				return True
+			else:
+				# print("ERROR: depth")
+				return False
 		for k in self.children:
 			g = g and k.check_declaration(availVars)
 		return g
@@ -159,9 +174,5 @@ class Abstree:
 			return found
 	def print_error(self, lineno):
 		print("Syntax error at '{1}' on line number {0}".format(str(lineno), str(self.children[0].value) + " ="))
-# a = Abstree([], "VAR", True, "a")
-# c = Abstree([], "CONST", True, "5")
-# # de = Abstree([a], "UMINUS", False, "")
-# assgn = Abstree([a, c], "ASSGN", False, "")
-# assgn.print_tree(0)
-# print(assgn.valid_tree())
+	# def make_cfg(self):
+		
