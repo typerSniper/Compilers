@@ -107,8 +107,11 @@ precedence = (
 )
 def p_expression_prog(p):
         'expression : RETTYPE FUNCNAME LPAREN RPAREN LCPAREN BODY RCPAREN'
-        if p[6].valid_tree([], None, None):
-        	p[6].print_tree(0)
+        p[6].print_cfg(1, -1, [], False, True)
+        # if p[6].valid_tree([], None, None):
+        # 	# p[6].print_tree(0)
+        # else:
+        # 	print("WEEEE")
 
 def p_expression_body(p) :
 	"""

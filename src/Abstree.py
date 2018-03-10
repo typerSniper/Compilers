@@ -179,6 +179,118 @@ class Abstree:
 	def print_error(self, lineno):
 		print("Syntax error at '{1}' on line number {0}".format(str(lineno), str(self.children[0].value) + " ="))
 
+	def print_cfg(self, b_curr, b_end, assignList, goto_w, og):
+		if self.label == Label.BLOCK:
+			for x in self.children:
+				b_curr, b_end, assignList, goto_w = x.print_cfg(b_curr, b_end, assignList, goto_w, False)
+			if len(assignList) != 0 and og:
+				b_curr+=1
+				print("goto <bb", str(b_curr)+">")
+				print()
+				assignList = []
+				print("<bb", str(b_curr)+">")
+				print("End")
+		elif self.label == Label.WHILE:
+			b_curr+=1
+			if len(assignList) != 0:
+				print("goto <bb", str(b_curr)+">")
+				print()
+				assignList = []
+			print("<bb", str(b_curr)+">")
+			print("IFBLOCK")
+			b_curr+=10
+			print("goto <bb", str(b_curr)+">")
+			print()
+		elif self.label == Label.IF:
+			b_curr+=1
+			if len(assignList) != 0:
+				print("goto <bb", str(b_curr)+">")
+				print()
+				assignList = []
+			print("<bb", str(b_curr)+">")
+			#Unroll cond
+			print("if(", end='')
+			self.children[0].print_statement()
+			print(") goto <bb", str(b_curr+1)+">")
+			b_next = b_curr + self.find_depth()
+			if b_end == -1:
+				b_end = b_next + self.children[-1].find_depth() + 1
+			print("else goto <bb", str(b_next)+">")
+			print()
+			b_curr+=1
+			for x in self.children[1:]:
+				b_curr, temp, assignList, goto_w = x.print_cfg(b_curr, b_end, [],goto_w, False)
+				if len(assignList) != 0:
+					b_curr+=1
+				assignList = []
+				if not goto_w:
+					print("goto <bb", str(b_end)+">")
+					print()
+				goto_w = False
+			goto_w = True
+
+		elif self.label == Label.ASGN:
+			if len(assignList) != 0:
+				assignList.append(1)
+				self.print_statement()
+			else:
+				assignList = [1]
+				print("<bb", str(b_curr)+">")
+				self.print_statement()
+			print()
+		return b_curr, b_end, assignList, goto_w
+
+	def find_depth(self, assignList):
+		if self.label == Label.BLOCK:
+			depth = 1
+			for x in self.children:
+				depth +=x.find_depth()
+			return depth
+		if self.label == Label.IF:
+			if len(self.children) ==2:
+				return 1 + self.children[1].find_depth()
+			else:
+				return 1 + self.children[1].find_depth() + self.children[2].find_depth()
+		if self.label == Label.ASGN:
+			if 
+				assignList = [1]
+				return 0
+			else:
+				assignList.append(1)
+
+		return 0
+
+	def find_end(self, b_curr):
+		if self.label == Label.IF:
+			end = b_curr
+			for x in self.children
+				end+=x.find_end()
+
+	def print_statement(self):
+		if self.label == Label.ASGN:
+			lhs = self.children[0]
+			rhs = self.children[1]
+			lhs.print_statement()
+			print(" = ", end='')
+			rhs.print_statement()
+		elif self.label == Label.VAR:
+			print(self.value, end='')
+		elif self.label == Label.ADDR:
+			print("&", end='')
+			self.children[0].print_statement()
+		elif self.label == Label.DEREF:
+			print("*", end='')
+			self.children[0].print_statement()
+		elif self.label == Label.CONST:
+			print(self.value, end='')
+		elif self.label == Label.NE or self.label == Label.EQ or \
+			self.label == Label.LT or self.Label == Label.GT or \
+			self.label == Label.LE or self.Label == Label.GE:
+			print("COND_HERE", end='')
+		elif self.label == Label.AND or self.label == OR:
+			print("AND_COND", end='')
+
+
 
 # def make_cfg(node, assign, assignList):
 # 	if(node.label==Label.BLOCK):
