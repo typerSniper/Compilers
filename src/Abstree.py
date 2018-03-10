@@ -74,6 +74,8 @@ class Abstree:
 			i=0
 			for k in self.children:
 				q = q and k.valid_tree(availVars, self, i)
+				if not q:
+					break
 				i+=1
 			return q
 		elif self.label==Label.COND:
@@ -125,11 +127,10 @@ class Abstree:
 	def check_declaration(self, availVars):
 		g = True
 		if self.label == Label.VAR:
-			# print(availVars)
 			if self.value in [x[0] for x in availVars]:
 				return True
 			else:
-				# print("ERROR:", self.value, "Not Defined")
+				print("ERROR:", self.value, "Not Defined")
 				return False
 		elif self.label == Label.DEREF or self.label == Label.ADDR:
 			curr = self
@@ -141,11 +142,11 @@ class Abstree:
 					depth = depth - 1
 				curr = curr.children[0]
 			t = (curr.value, depth)
-			g = [True  for x in availVars if x[0]==t[0] and t[1] == x[1] ]
+			g = [True  for x in availVars if x[0]==t[0] and t[1] > x[1] ]
 			if len(g):
 				return True
 			else:
-				# print("ERROR: depth")
+				print("ERROR: TOO MUCH INDIRECTION")
 				return False
 		for k in self.children:
 			g = g and k.check_declaration(availVars)

@@ -107,8 +107,9 @@ precedence = (
 )
 def p_expression_prog(p):
         'expression : RETTYPE FUNCNAME LPAREN RPAREN LCPAREN BODY RCPAREN'
-        p[6].print_tree(0)
-        print(p[6].valid_tree([], None, None))
+        if p[6].valid_tree([], None, None):
+        	p[6].print_tree(0)
+
 def p_expression_body(p) :
 	"""
 	BODY : DECL SEMICOL BODY 
@@ -215,29 +216,67 @@ def p_expression_Natom(p) :
 
 def p_expression_ifBlock(p) :
 	"""
-	IFBLOCK :  ASSIGN SEMICOL 
-			| LCPAREN ASSIGN SEMICOL BODY RCPAREN
-			| LCPAREN DECL SEMICOL BODY RCPAREN
-			| LCPAREN  COMPLETEIF BODY RCPAREN
-			| LCPAREN WHILExpr BODY RCPAREN
+	IFBLOCK : IFBLOCK ASSIGN SEMICOL 
+			| IFBLOCK  COMPLETEIF
+			| IFBLOCK WHILExpr
+			|
 	"""
-	if(len(p)==3):
-		p[0] = Abstree([p[1]], Label.BLOCK, False, -1)
-	elif len(p) == 6:
-		p[4].prepend(p[2])
-		p[0] = p[4]
+	if(len(p)!=1):
+		p[1].prepend(p[2])
+		p[0]=p[1]
 	else:
-		p[3].prepend(p[2])
-		p[0] = p[3]
+		p[0] = Abstree([], Label.BLOCK, False, -1)
+	# if(len(p)==3):
+	# 	p[0] = Abstree([p[1]], Label.BLOCK, False, -1)
+	# elif len(p) == 6:
+	# 	p[4].prepend(p[2])
+	# 	p[0] = p[4]
+	# else:
+	# 	p[3].prepend(p[2])
+	# 	p[0] = p[3]
+
+def p_expression_whileBlock(p) :
+	"""
+	WHILEBLOCK : WHILEBLOCK ASSIGN SEMICOL 
+			| WHILEBLOCK COMPLETEIF  
+			| WHILEBLOCK WHILExpr
+			| 
+
+	"""
+	if(len(p)==1):
+		p[0] = Abstree([], Label.BLOCK, False, -1)
+	else :
+		p[1].prepend(p[2])
+		p[0] = p[1]
+	# if(len(p)==3):
+	# 	p[0] = Abstree([p[1]], Label.BLOCK, False, -1)
+	# elif len(p) == 6:
+	# 	p[4].prepend(p[2])
+	# 	p[0] = p[4]
+	# else:
+	# 	p[3].prepend(p[2])
+	# 	p[0] = p[3]
 def p_expression_if(p):
 	"""
-	IFExpr : IF LPAREN Cond RPAREN IFBLOCK
-		   | IFExpr ELSE IF LPAREN Cond RPAREN IFBLOCK
+	IFExpr : IF LPAREN CondExpr RPAREN ASSIGN SEMICOL
+		   | IF LPAREN CondExpr RPAREN LCPAREN IFBLOCK RCPAREN
+		   | IFExpr ELSE IF LPAREN CondExpr RPAREN LCPAREN IFBLOCK RCPAREN 
+		   | IFExpr ELSE IF LPAREN CondExpr RPAREN ASSIGN SEMICOL 
 	"""
-	if(len(p)==6):
-		p[0] = Abstree([p[3], p[5]], Label.IF, False, -1)
-	else :
-		temp = Abstree([p[5], p[7]], Label.IF, False, -1)
+	if(len(p)==7):
+
+		p[0] = Abstree([p[3], Abstree([p[5]], Label.BLOCK, False, -1)], Label.IF, False, -1)
+	elif(len(p) == 8):
+		p[0] = Abstree([p[3], p[6]], Label.IF, False, -1)
+	elif len(p) == 9:
+		temp = Abstree([p[5], Abstree([p[7]], Label.BLOCK, False, -1)], Label.IF, False, -1)
+		curr = p[1]
+		while len(curr.children) != 2:
+			curr = curr.children[2]
+		curr.add_child(temp)
+		p[0] = p[1]
+	elif len(p) == 10:
+		temp = Abstree([p[5], p[8]], Label.IF, False, -1)
 		curr = p[1]
 		while len(curr.children) != 2:
 			curr = curr.children[2]
@@ -245,20 +284,30 @@ def p_expression_if(p):
 		p[0] = p[1]
 def p_expression_else(p):
 	"""
-	COMPLETEIF : IFExpr ELSE IFBLOCK
+	COMPLETEIF : IFExpr ELSE LCPAREN IFBLOCK RCPAREN
+			   | IFExpr ELSE ASSIGN SEMICOL
 			   | IFExpr
 	"""
-	if(len(p)==4):
+	if(len(p)==6):
 		curr = p[1]
 		while len(curr.children) != 2:
 			curr = curr.children[2]
-		curr.add_child(p[3])
+		curr.add_child(p[4])
+	elif len(p) == 5:
+		curr = p[1]
+		while len(curr.children) != 2:
+			curr = curr.children[2]
+		curr.add_child(Abstree([p[3]], Label.BLOCK, False, -1))
 	p[0] = p[1]
 def p_expression_while(p):
 	"""
-	WHILExpr : WHILE LPAREN CondExpr RPAREN IFBLOCK
+	WHILExpr : WHILE LPAREN CondExpr RPAREN ASSIGN SEMICOL 
+			| WHILE LPAREN CondExpr RPAREN LCPAREN WHILEBLOCK RCPAREN
 	"""
-	p[0] = Abstree([p[3], p[5]], Label.WHILE, False, -1)
+	if(len(p)==7):
+		p[0]  = Abstree([p[3], Abstree([p[5]], Label.BLOCK, False, -1)], Label.WHILE, False, -1)
+	else:
+		p[0] = Abstree([p[3], p[6]], Label.WHILE, False, -1)
 
 def p_expression_condExpr(p):
 	"""
