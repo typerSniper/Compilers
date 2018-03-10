@@ -107,9 +107,12 @@ precedence = (
 )
 def p_expression_prog(p):
         'expression : RETTYPE FUNCNAME LPAREN RPAREN LCPAREN BODY RCPAREN'
-        p[6].print_cfg(1, -1, [], False, True)
+        # p[6].add_child(Abstree([], Label.END, True, -1))
+        p[6].assign_blocks(0)
+        p[6].assign_goto_num(0)
+        # p[6].print_cfg(1, -1, [], False, True)
         # if p[6].valid_tree([], None, None):
-        # 	# p[6].print_tree(0)
+        p[6].print_tree(0)
         # else:
         # 	print("WEEEE")
 
@@ -225,7 +228,7 @@ def p_expression_ifBlock(p) :
 			|
 	"""
 	if(len(p)!=1):
-		p[1].prepend(p[2])
+		p[1].add_child(p[2])
 		p[0]=p[1]
 	else:
 		p[0] = Abstree([], Label.BLOCK, False, -1)
@@ -249,7 +252,7 @@ def p_expression_whileBlock(p) :
 	if(len(p)==1):
 		p[0] = Abstree([], Label.BLOCK, False, -1)
 	else :
-		p[1].prepend(p[2])
+		p[1].add_child(p[2])
 		p[0] = p[1]
 	# if(len(p)==3):
 	# 	p[0] = Abstree([p[1]], Label.BLOCK, False, -1)
