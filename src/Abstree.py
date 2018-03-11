@@ -49,7 +49,7 @@ def nameMapper(x):
 		return False, -1
 
 
-OPS = [Label.PLUS, Label.UMINUS, ]
+CONDS = [Label.LT, Label.LE, Label.GT, Label.GE, Label.EQ, Label.NE, Label.AND, Label.OR ]
 class Abstree:
 	label = Label.DEFAULT
 	children = []
@@ -88,7 +88,9 @@ class Abstree:
 			print(s+"\t"+",")
 		print(s+")")
 	def valid_tree(self, availVars, parent, index):
+		# print("here", self.label)
 		if self.label==Label.ASGN :
+			# print("here")
 			return self.check_assign() and self.check_declaration(availVars)
 		elif self.label==Label.WHILE or self.label==Label.IF:
 			q = True
@@ -99,16 +101,16 @@ class Abstree:
 					break
 				i+=1
 			return q
-		elif self.label==Label.COND:
+		elif self.label in CONDS:
 			return self.check_declaration(availVars)
 		elif self.label == Label.BLOCK:
 			q = True
 			i=0
 			for k in self.children:
 				if(k.label==Label.DECL) :
-					# print("here", i)
+					# print("here")
 					q = q and k.valid_tree(availVars, self, i)
-					break 
+					break
 				q = q and k.valid_tree(availVars, self, i)
 				i+=1
 			return q
@@ -116,6 +118,7 @@ class Abstree:
 			q = True
 			i=index+1
 			new_vars = self.update_vars()
+			# print(new_vars)
 			for x in new_vars:
 				if x[0] in [y[0] for y in availVars]:
 					print("ERROR: Double declaration for", x[0])
@@ -124,10 +127,11 @@ class Abstree:
 			# print(availVars)
 			siblings = parent.children[(index+1):]
 			for k in siblings:
+				# print("pop", k.label)
 				if(k.label==Label.DECL) :
-					q = q and k.valid_tree(availVars, self, i)
+					q = q and k.valid_tree(availVars, parent, i)
 					break
-				q = q and k.valid_tree(availVars, self, i)
+				q = q and k.valid_tree(availVars, parent, i)
 				i+=1
 			return q
 
@@ -146,9 +150,17 @@ class Abstree:
 						c=c.children[0]
 		return vars_
 	def check_declaration(self, availVars):
+		# if self.label == Label.ASGN or self.label in CONDS:
+		# 	if self.children[0].label == Label.VAR and
 		g = True
+		# print("here")
 		if self.label == Label.VAR:
 			if self.value in [x[0] for x in availVars]:
+				g = [True for x in availVars if x[0]==self.value and x[1]==0]
+				# print("HERE", g, self.value)
+				if len(g) > 0:
+					print("Direct use of non-pointer variable")
+					return False
 				return True
 			else:
 				print("ERROR:", self.value, "Not Defined")
@@ -156,6 +168,7 @@ class Abstree:
 		elif self.label == Label.DEREF or self.label == Label.ADDR:
 			curr = self
 			depth = 0
+			# print("DEBUG_here")
 			while(curr.label!=Label.VAR):
 				if(curr.label==Label.DEREF):
 					depth = depth + 1
@@ -163,15 +176,27 @@ class Abstree:
 					depth = depth - 1
 				curr = curr.children[0]
 			t = (curr.value, depth)
-			g = [True  for x in availVars if x[0]==t[0] and t[1] > x[1] ]
+			# print(t)
+			g = [True  for x in availVars if x[0]==t[0] and ((t[1] <= x[1] and x[1]!=0) or (x[1]==0 and t[1]<x[1])) ]
+			# print(t[0], g)
 			if len(g):
 				return True
 			else:
 				print("ERROR: TOO MUCH INDIRECTION")
 				return False
 		for k in self.children:
+			# print("DEBUG_here", k.label.name)
 			g = g and k.check_declaration(availVars)
 		return g
+	# def getNodeDepth(self, node):
+	# 	depth
+	# 	while(curr.label!=Label.VAR):
+	# 			if(curr.label==Label.DEREF):
+	# 				depth = depth + 1
+	# 			elif (curr.label==Label.ADDR):
+	# 				depth = depth - 1
+	# 			curr = curr.children[0]
+	# 	return depth
 	def add_child(self, child):
 		self.children.append(child)
 	def prepend(self, child):
@@ -196,6 +221,10 @@ class Abstree:
 					for k in curr.children:
 						frontier.append(k)
 					frontier.remove(curr)
+			if not found:
+				print("Syntax error at ", end='')
+				self.print_statement()
+				print()
 			return found
 	def print_error(self, lineno):
 		print("Syntax error at '{1}' on line number {0}".format(str(lineno), str(self.children[0].value) + " ="))
@@ -256,6 +285,16 @@ class Abstree:
 			self.children[0].print_statement()
 		elif self.label == Label.CONST:
 			print(self.value, end='')
+		elif self.label == Label.UMINUS:
+			rhs = self.children[0]
+			print(nameMapper(self.label)[1], end='')
+			rhs.print_statement()
+		elif nameMapper(self.label)[0]:
+			lhs = self.children[0]
+			rhs = self.children[1]
+			lhs.print_statement()
+			print(nameMapper(self.label)[1], end='')
+			rhs.print_statement()
 
 	def will_unroll(self):
 		if nameMapper(self.label)[0] :
@@ -264,14 +303,6 @@ class Abstree:
 					return True
 		return False
 	def unroll_and_print(self, t_curr):
-		# print(self.label.name)
-		# if self.label == Label.AND or self.label == Label.OR:
-		# 	t1 = self.children[0].unroll_and_print(t_curr)
-		# 	t_curr = t1
-		# 	t2 = self.children[1].unroll_and_print(t_curr)
-		# 	t_curr = t2+1
-		# 	print("t"+str(t_curr)+" = "+"t"+str(t1)+nameMapper(self.label)+"t"+str(t2))
-		# else:
 		if self.label==Label.ASGN :
 			if self.children[1].will_unroll():
 				t_curr = self.children[1].unroll_and_print(t_curr)
@@ -282,64 +313,39 @@ class Abstree:
 			print(' = ', end = '')
 			self.children[1].print_statement()
 		elif nameMapper(self.label)[0]:
-			if(self.children[0].will_unroll() and self.children[1].will_unroll()):
+			if self.label == Label.UMINUS:
+				if self.children[0].will_unroll():
+					t1 = self.children[0].unroll_and_print(t_curr)
+					t_curr = t1+1
+					print("t"+str(t_curr)+"="+nameMapper(self.label)[1]+"t"+str(t1), end='')
+				else:
+					t_curr = t_curr+1
+					print("t"+str(t_curr)+"="+nameMapper(self.label)[1], end='')
+					self.children[0].print_statement()
+			elif(self.children[0].will_unroll() and self.children[1].will_unroll()):
 				t1 = self.children[0].unroll_and_print(t_curr)
 				t_curr = t1
-				t2 = self.children[0].unroll_and_print(t_curr)
+				t2 = self.children[1].unroll_and_print(t_curr)
 				t_curr = t2+1
-				# print("1")
 				print("t"+str(t_curr)+" = "+"t"+str(t1)+nameMapper(self.label)[1]+"t"+str(t2), end='')
 			elif(not self.children[0].will_unroll() and not self.children[1].will_unroll()):
 				t_curr+=1
-				# print("2")
 				print("t"+str(t_curr)+" = ", end='')
 				self.children[0].print_statement()
 				print(nameMapper(self.label)[1], end='')
 				self.children[1].print_statement()
 
 			elif(self.children[0].will_unroll() and not self.children[1].will_unroll()):
-				# print(self.children[0].label.name, self.children[1].label.name)
 				t1 = self.children[0].unroll_and_print(t_curr)
 				t_curr = t1 + 1
-				# print("3")
 				print("t"+str(t_curr)+" = "+"t"+str(t1)+nameMapper(self.label)[1], end='')
 				self.children[1].print_statement()
-				
 			elif(not self.children[0].will_unroll() and self.children[1].will_unroll()):
 				t2 = self.children[1].unroll_and_print(t_curr)
 				t_curr = t2 + 1
-				print("t"+str(t_curr)+" = ")
+				print("t"+str(t_curr)+" = ", end='')
 				self.children[0].print_statement()
 				print(nameMapper(self.label)[1]+"t"+str(t2), end='')
-
-		# if self.children[0].label != Label.DEREF and self.children[0].label != Label.CONST and \
-		# 	self.children[0].label != Label.VAR and self.children[0].label != Label.ADDR and self.children[0].label != Label.UMINUS:
-		# 	t1 = self.children[0].unroll_and_print(t_curr)
-		# 	if self.children[1].label != Label.DEREF and self.children[1].label != Label.CONST and \
-		# 		self.children[1].label != Label.VAR and self.children[1].label != Label.ADDR:
-		# 		t2 = self.children[0].unroll_and_print(t_curr)
-		# 		t_curr = t2+1
-		# 		print("t"+str(t_curr)+" = "+"t"+str(t1)+nameMapper(self.label)+"t"+str(t2), end='')
-		# 	else:
-		# 		t_curr = t1+1
-		# 		print("t"+str(t_curr)+" = "+"t"+str(t1)+nameMapper(self.label), end='')
-		# 		self.children[1].print_statement()
-		# else:
-		# 	# print("here", self.children[1].label)
-		# 	if self.children[1].label != Label.DEREF and self.children[1].label != Label.CONST and \
-		# 		self.children[1].label != Label.VAR and self.children[1].label != Label.ADDR and self.children[1].label != Label.UMINUS:
-		# 		t2 = self.children[0].unroll_and_print(t_curr)
-		# 		t_curr = t2+1
-		# 		print("t"+str(t_curr)+" = ", end='')
-		# 		self.children[0].print_statement()
-		# 		print(nameMapper(self.label)+"t"+str(t2), end='')
-		# 	else:
-		# 		# print("here")
-		# 		t_curr+=1
-		# 		print("t"+str(t_curr)+" = ", end='')
-		# 		self.children[0].print_statement()
-		# 		print(nameMapper(self.label), end='')
-		# 		self.children[1].print_statement()
 		print()
 		return t_curr
 
