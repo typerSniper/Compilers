@@ -28,7 +28,7 @@ class Label(enum.Enum):
 	END = 29
 	DEFAULT = 1000
 def nameMapper(x):
-	return {
+	y = {
 		Label.PLUS :  ' + '  ,
 		Label.MINUS :  ' - '  ,
 		Label.MUL :  ' * '  ,
@@ -40,9 +40,16 @@ def nameMapper(x):
 		Label.EQ :  ' == ' ,
 		Label.AND :  ' && ' ,
 		Label.OR :  ' || ' ,
-		Label.NE :  ' != '
-	}[x]
+		Label.NE :  ' != ', 
+		Label.UMINUS : ' - '
+	}
+	if x in y:
+		return True, y[x]
+	else:
+		return False, -1
 
+
+OPS = [Label.PLUS, Label.UMINUS, ]
 class Abstree:
 	label = Label.DEFAULT
 	children = []
@@ -221,11 +228,10 @@ class Abstree:
 			if self.block_num != b_curr:
 				b_curr = self.block_num
 				print("<bb", str(b_curr)+">")
-			self.print_statement()
+			t_curr = self.unroll_and_print(t_curr)
 			if self.goto_num != -1:
-					print()
 					print("goto <bb", str(self.goto_num)+">")
-			print()
+					print()
 		elif self.label == Label.END:
 			b_curr = self.block_num
 			print("<bb", str(b_curr)+">")
@@ -251,44 +257,90 @@ class Abstree:
 		elif self.label == Label.CONST:
 			print(self.value, end='')
 
+	def will_unroll(self):
+		if nameMapper(self.label)[0] :
+			for x in self.children:
+				if (nameMapper(self.label)[0]):
+					return True
+		return False
 	def unroll_and_print(self, t_curr):
 		# print(self.label.name)
-		if self.label == Label.AND or self.label == Label.OR:
-			t1 = self.children[0].unroll_and_print(t_curr)
-			t_curr = t1
-			t2 = self.children[1].unroll_and_print(t_curr)
-			t_curr = t2+1
-			print("t"+str(t_curr)+" = "+"t"+str(t1)+nameMapper(self.label)+"t"+str(t2))
-		else:
-			if self.children[0].label != Label.DEREF and self.children[0].label != Label.CONST and \
-				self.children[0].label != Label.VAR and self.children[0].label != Label.ADDR and self.children[0].label != Label.UMINUS:
+		# if self.label == Label.AND or self.label == Label.OR:
+		# 	t1 = self.children[0].unroll_and_print(t_curr)
+		# 	t_curr = t1
+		# 	t2 = self.children[1].unroll_and_print(t_curr)
+		# 	t_curr = t2+1
+		# 	print("t"+str(t_curr)+" = "+"t"+str(t1)+nameMapper(self.label)+"t"+str(t2))
+		# else:
+		if self.label==Label.ASGN :
+			if self.children[1].will_unroll():
+				t_curr = self.children[1].unroll_and_print(t_curr)
+				self.children[0].print_statement()
+				print(" = "+"t"+str(t_curr))
+				return t_curr
+			self.children[0].print_statement()
+			print(' = ', end = '')
+			self.children[1].print_statement()
+		elif nameMapper(self.label)[0]:
+			if(self.children[0].will_unroll() and self.children[1].will_unroll()):
 				t1 = self.children[0].unroll_and_print(t_curr)
-				if self.children[1].label != Label.DEREF and self.children[1].label != Label.CONST and \
-					self.children[1].label != Label.VAR and self.children[1].label != Label.ADDR:
-					t2 = self.children[0].unroll_and_print(t_curr)
-					t_curr = t2+1
-					print("t"+str(t_curr)+" = "+"t"+str(t1)+nameMapper(self.label)+"t"+str(t2), end='')
-				else:
-					t_curr = t1+1
-					print("t"+str(t_curr)+" = "+"t"+str(t1)+nameMapper(self.label), end='')
-					self.children[1].print_statement()
-			else:
-				# print("here", self.children[1].label)
-				if self.children[1].label != Label.DEREF and self.children[1].label != Label.CONST and \
-					self.children[1].label != Label.VAR and self.children[1].label != Label.ADDR and self.children[1].label != Label.UMINUS:
-					t2 = self.children[0].unroll_and_print(t_curr)
-					t_curr = t2+1
-					print("t"+str(t_curr)+" = ", end='')
-					self.children[0].print_statement()
-					print(nameMapper(self.label)+"t"+str(t2), end='')
-				else:
-					# print("here")
-					t_curr+=1
-					print("t"+str(t_curr)+" = ", end='')
-					self.children[0].print_statement()
-					print(nameMapper(self.label), end='')
-					self.children[1].print_statement()
-			print()
+				t_curr = t1
+				t2 = self.children[0].unroll_and_print(t_curr)
+				t_curr = t2+1
+				# print("1")
+				print("t"+str(t_curr)+" = "+"t"+str(t1)+nameMapper(self.label)[1]+"t"+str(t2), end='')
+			elif(not self.children[0].will_unroll() and not self.children[1].will_unroll()):
+				t_curr+=1
+				# print("2")
+				print("t"+str(t_curr)+" = ", end='')
+				self.children[0].print_statement()
+				print(nameMapper(self.label)[1], end='')
+				self.children[1].print_statement()
+
+			elif(self.children[0].will_unroll() and not self.children[1].will_unroll()):
+				# print(self.children[0].label.name, self.children[1].label.name)
+				t1 = self.children[0].unroll_and_print(t_curr)
+				t_curr = t1 + 1
+				# print("3")
+				print("t"+str(t_curr)+" = "+"t"+str(t1)+nameMapper(self.label)[1], end='')
+				self.children[1].print_statement()
+				
+			elif(not self.children[0].will_unroll() and self.children[1].will_unroll()):
+				t2 = self.children[1].unroll_and_print(t_curr)
+				t_curr = t2 + 1
+				print("t"+str(t_curr)+" = ")
+				self.children[0].print_statement()
+				print(nameMapper(self.label)[1]+"t"+str(t2), end='')
+
+		# if self.children[0].label != Label.DEREF and self.children[0].label != Label.CONST and \
+		# 	self.children[0].label != Label.VAR and self.children[0].label != Label.ADDR and self.children[0].label != Label.UMINUS:
+		# 	t1 = self.children[0].unroll_and_print(t_curr)
+		# 	if self.children[1].label != Label.DEREF and self.children[1].label != Label.CONST and \
+		# 		self.children[1].label != Label.VAR and self.children[1].label != Label.ADDR:
+		# 		t2 = self.children[0].unroll_and_print(t_curr)
+		# 		t_curr = t2+1
+		# 		print("t"+str(t_curr)+" = "+"t"+str(t1)+nameMapper(self.label)+"t"+str(t2), end='')
+		# 	else:
+		# 		t_curr = t1+1
+		# 		print("t"+str(t_curr)+" = "+"t"+str(t1)+nameMapper(self.label), end='')
+		# 		self.children[1].print_statement()
+		# else:
+		# 	# print("here", self.children[1].label)
+		# 	if self.children[1].label != Label.DEREF and self.children[1].label != Label.CONST and \
+		# 		self.children[1].label != Label.VAR and self.children[1].label != Label.ADDR and self.children[1].label != Label.UMINUS:
+		# 		t2 = self.children[0].unroll_and_print(t_curr)
+		# 		t_curr = t2+1
+		# 		print("t"+str(t_curr)+" = ", end='')
+		# 		self.children[0].print_statement()
+		# 		print(nameMapper(self.label)+"t"+str(t2), end='')
+		# 	else:
+		# 		# print("here")
+		# 		t_curr+=1
+		# 		print("t"+str(t_curr)+" = ", end='')
+		# 		self.children[0].print_statement()
+		# 		print(nameMapper(self.label), end='')
+		# 		self.children[1].print_statement()
+		print()
 		return t_curr
 
 	def assign_blocks(self, num):
