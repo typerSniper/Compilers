@@ -107,12 +107,12 @@ precedence = (
 )
 def p_expression_prog(p):
         'expression : RETTYPE FUNCNAME LPAREN RPAREN LCPAREN BODY RCPAREN'
-        # p[6].add_child(Abstree([], Label.END, True, -1))
+        p[6].add_child(Abstree([], Label.END, True, -1))
         p[6].assign_blocks(0)
         p[6].assign_goto_num(0)
-        # p[6].print_cfg(1, -1, [], False, True)
+        p[6].print_cfg(0, -1)
         # if p[6].valid_tree([], None, None):
-        p[6].print_tree(0)
+        # p[6].print_tree(0)
         # else:
         # 	print("WEEEE")
 

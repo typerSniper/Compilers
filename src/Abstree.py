@@ -27,10 +27,21 @@ class Label(enum.Enum):
 	OR = 28
 	END = 29
 	DEFAULT = 1000
-
-
-bbCount = 1
-tCount = 1  
+def nameMapper(x):
+	return {
+		Label.PLUS :  ' + '  ,
+		Label.MINUS :  ' - '  ,
+		Label.MUL :  ' * '  ,
+		Label.DIV :  ' / '  ,
+		Label.LT :  ' < '  ,
+		Label.LE :  ' <= ' ,
+		Label.GT :  ' > '  ,
+		Label.GE :  ' >= ' ,
+		Label.EQ :  ' == ' ,
+		Label.AND :  ' && ' ,
+		Label.OR :  ' || ' ,
+		Label.NE :  ' != '
+	}[x]
 
 class Abstree:
 	label = Label.DEFAULT
@@ -182,116 +193,103 @@ class Abstree:
 	def print_error(self, lineno):
 		print("Syntax error at '{1}' on line number {0}".format(str(lineno), str(self.children[0].value) + " ="))
 
-	# def print_cfg(self, b_curr, b_end, assignList, goto_w, og):
-	# 	if self.label == Label.BLOCK:
-	# 		for x in self.children:
-	# 			b_curr, b_end, assignList, goto_w = x.print_cfg(b_curr, b_end, assignList, goto_w, False)
-	# 		if len(assignList) != 0 and og:
-	# 			b_curr+=1
-	# 			print("goto <bb", str(b_curr)+">")
-	# 			print()
-	# 			assignList = []
-	# 			print("<bb", str(b_curr)+">")
-	# 			print("End")
-	# 	elif self.label == Label.WHILE:
-	# 		b_curr+=1
-	# 		if len(assignList) != 0:
-	# 			print("goto <bb", str(b_curr)+">")
-	# 			print()
-	# 			assignList = []
-	# 		print("<bb", str(b_curr)+">")
-	# 		print("IFBLOCK")
-	# 		b_curr+=10
-	# 		print("goto <bb", str(b_curr)+">")
-	# 		print()
-	# 	elif self.label == Label.IF:
-	# 		b_curr+=1
-	# 		if len(assignList) != 0:
-	# 			print("goto <bb", str(b_curr)+">")
-	# 			print()
-	# 			assignList = []
-	# 		print("<bb", str(b_curr)+">")
-	# 		#Unroll cond
-	# 		print("if(", end='')
-	# 		self.children[0].print_statement()
-	# 		print(") goto <bb", str(b_curr+1)+">")
-	# 		b_next = b_curr + self.find_depth()
-	# 		if b_end == -1:
-	# 			b_end = b_next + self.children[-1].find_depth() + 1
-	# 		print("else goto <bb", str(b_next)+">")
-	# 		print()
-	# 		b_curr+=1
-	# 		for x in self.children[1:]:
-	# 			b_curr, temp, assignList, goto_w = x.print_cfg(b_curr, b_end, [],goto_w, False)
-	# 			if len(assignList) != 0:
-	# 				b_curr+=1
-	# 			assignList = []
-	# 			if not goto_w:
-	# 				print("goto <bb", str(b_end)+">")
-	# 				print()
-	# 			goto_w = False
-	# 		goto_w = True
+	def print_cfg(self, b_curr, t_curr):
+		if self.label == Label.BLOCK:
+			for x in self.children:
+				b_curr, t_curr = x.print_cfg(b_curr, t_curr)
+		elif self.label == Label.WHILE:
+			b_curr = self.block_num
+			print("<bb", str(b_curr)+">")
+			t_curr = self.children[0].unroll_and_print(t_curr)
+			print("if(t"+str(t_curr),end='')
+			print(") goto <bb", str(b_curr+1)+">")
+			print("else goto <bb", str(self.goto_num)+">")
+			print()
+			for x in self.children[1:]:
+				b_curr, t_curr = x.print_cfg(b_curr, t_curr)
+		elif self.label == Label.IF:
+			b_curr = self.block_num
+			print("<bb", str(b_curr)+">")
+			t_curr = self.children[0].unroll_and_print(t_curr)
+			print("if(t"+str(t_curr),end='')
+			print(") goto <bb", str(b_curr+1)+">")
+			print("else goto <bb", str(self.goto_num)+">")
+			print()
+			for x in self.children[1:]:
+				b_curr, t_curr = x.print_cfg(b_curr, t_curr)
+		elif self.label == Label.ASGN:
+			if self.block_num != b_curr:
+				b_curr = self.block_num
+				print("<bb", str(b_curr)+">")
+			self.print_statement()
+			if self.goto_num != -1:
+					print()
+					print("goto <bb", str(self.goto_num)+">")
+			print()
+		elif self.label == Label.END:
+			b_curr = self.block_num
+			print("<bb", str(b_curr)+">")
+			print("End")
+		return b_curr, t_curr
 
-	# 	elif self.label == Label.ASGN:
-	# 		if len(assignList) != 0:
-	# 			assignList.append(1)
-	# 			self.print_statement()
-	# 		else:
-	# 			assignList = [1]
-	# 			print("<bb", str(b_curr)+">")
-	# 			self.print_statement()
-	# 		print()
-	# 	return b_curr, b_end, assignList, goto_w
 
-	# # def find_depth(self, assignList):
-	# # 	if self.label == Label.BLOCK:
-	# # 		depth = 1
-	# # 		for x in self.children:
-	# # 			depth +=x.find_depth()
-	# # 		return depth
-	# # 	if self.label == Label.IF:
-	# # 		if len(self.children) ==2:
-	# # 			return 1 + self.children[1].find_depth()
-	# # 		else:
-	# # 			return 1 + self.children[1].find_depth() + self.children[2].find_depth()
-	# # 	if self.label == Label.ASGN:
-	# # 		if 
-	# # 			assignList = [1]
-	# # 			return 0
-	# # 		else:
-	# # 			assignList.append(1)
+	def print_statement(self):
+		if self.label == Label.ASGN:
+			lhs = self.children[0]
+			rhs = self.children[1]
+			lhs.print_statement()
+			print(" = ", end='')
+			rhs.print_statement()
+		elif self.label == Label.VAR:
+			print(self.value, end='')
+		elif self.label == Label.ADDR:
+			print("&", end='')
+			self.children[0].print_statement()
+		elif self.label == Label.DEREF:
+			print("*", end='')
+			self.children[0].print_statement()
+		elif self.label == Label.CONST:
+			print(self.value, end='')
 
-	# # 	return 0
-
-	# def find_end(self, b_curr):
-	# 	if self.label == Label.IF:
-	# 		end = b_curr
-	# 		for x in self.children
-	# 			end+=x.find_end()
-
-	# def print_statement(self):
-	# 	if self.label == Label.ASGN:
-	# 		lhs = self.children[0]
-	# 		rhs = self.children[1]
-	# 		lhs.print_statement()
-	# 		print(" = ", end='')
-	# 		rhs.print_statement()
-	# 	elif self.label == Label.VAR:
-	# 		print(self.value, end='')
-	# 	elif self.label == Label.ADDR:
-	# 		print("&", end='')
-	# 		self.children[0].print_statement()
-	# 	elif self.label == Label.DEREF:
-	# 		print("*", end='')
-	# 		self.children[0].print_statement()
-	# 	elif self.label == Label.CONST:
-	# 		print(self.value, end='')
-	# 	elif self.label == Label.NE or self.label == Label.EQ or \
-	# 		self.label == Label.LT or self.Label == Label.GT or \
-	# 		self.label == Label.LE or self.Label == Label.GE:
-	# 		print("COND_HERE", end='')
-	# 	elif self.label == Label.AND or self.label == OR:
-	# 		print("AND_COND", end='')
+	def unroll_and_print(self, t_curr):
+		# print(self.label.name)
+		if self.label == Label.AND or self.label == Label.OR:
+			t1 = self.children[0].unroll_and_print(t_curr)
+			t_curr = t1
+			t2 = self.children[1].unroll_and_print(t_curr)
+			t_curr = t2+1
+			print("t"+str(t_curr)+" = "+"t"+str(t1)+nameMapper(self.label)+"t"+str(t2))
+		else:
+			if self.children[0].label != Label.DEREF and self.children[0].label != Label.CONST and \
+				self.children[0].label != Label.VAR and self.children[0].label != Label.ADDR and self.children[0].label != Label.UMINUS:
+				t1 = self.children[0].unroll_and_print(t_curr)
+				if self.children[1].label != Label.DEREF and self.children[1].label != Label.CONST and \
+					self.children[1].label != Label.VAR and self.children[1].label != Label.ADDR:
+					t2 = self.children[0].unroll_and_print(t_curr)
+					t_curr = t2+1
+					print("t"+str(t_curr)+" = "+"t"+str(t1)+nameMapper(self.label)+"t"+str(t2), end='')
+				else:
+					t_curr = t1+1
+					print("t"+str(t_curr)+" = "+"t"+str(t1)+nameMapper(self.label), end='')
+					self.children[1].print_statement()
+			else:
+				# print("here", self.children[1].label)
+				if self.children[1].label != Label.DEREF and self.children[1].label != Label.CONST and \
+					self.children[1].label != Label.VAR and self.children[1].label != Label.ADDR and self.children[1].label != Label.UMINUS:
+					t2 = self.children[0].unroll_and_print(t_curr)
+					t_curr = t2+1
+					print("t"+str(t_curr)+" = ", end='')
+					self.children[0].print_statement()
+					print(nameMapper(self.label)+"t"+str(t2), end='')
+				else:
+					# print("here")
+					t_curr+=1
+					print("t"+str(t_curr)+" = ", end='')
+					self.children[0].print_statement()
+					print(nameMapper(self.label), end='')
+					self.children[1].print_statement()
+			print()
+		return t_curr
 
 	def assign_blocks(self, num):
 		if self.label == Label.BLOCK:
@@ -350,6 +348,31 @@ class Abstree:
 			self.goto_num = goto
 			self.children[1].assign_goto_num(self.block_num)
 
+	# # def find_depth(self, assignList):
+	# # 	if self.label == Label.BLOCK:
+	# # 		depth = 1
+	# # 		for x in self.children:
+	# # 			depth +=x.find_depth()
+	# # 		return depth
+	# # 	if self.label == Label.IF:
+	# # 		if len(self.children) ==2:
+	# # 			return 1 + self.children[1].find_depth()
+	# # 		else:
+	# # 			return 1 + self.children[1].find_depth() + self.children[2].find_depth()
+	# # 	if self.label == Label.ASGN:
+	# # 		if 
+	# # 			assignList = [1]
+	# # 			return 0
+	# # 		else:
+	# # 			assignList.append(1)
+
+	# # 	return 0
+
+	# def find_end(self, b_curr):
+	# 	if self.label == Label.IF:
+	# 		end = b_curr
+	# 		for x in self.children
+	# 			end+=x.find_end()
 # def make_cfg(node, assign, assignList):
 # 	if(node.label==Label.BLOCK):
 # 		for c in range(len(node.children)):
