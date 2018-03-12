@@ -65,19 +65,10 @@ def opMapper(x):
 		'==': Label.EQ,
 		'&&': Label.AND,
 		'||': Label.OR,
-		'!=': Label.NE
+		'!=': Label.NE,
+		'!' : Label.NOT,
 	}[x]
-# def valMapper(x):
-# 	return {
-# 		'<' : "LT",
-# 		'<=': "LE", 
-# 		'>' : "GT",
-# 		'>=': "GE",
-# 		'==': "EQ",
-# 		'&&': "AND",
-# 		'||': "OR",
-# 		'!=': "NE"
-# 	}[x]	
+
 def t_newline(t):
     r'\n+'
     t.lexer.lineno =  t.lexer.lineno + len(t.value)
@@ -110,9 +101,6 @@ def p_expression_prog(p):
 
         global tree
         tree = p[6]
-        # else:
-        # 	p[6].print_tree(0)
-        # 	print("WEEEE")
 
 def p_expression_body(p) :
 	"""
@@ -185,9 +173,6 @@ def p_expression_assign(p) :
 	if(isinstance(p[1], str)):
 		p[1] = Abstree([], Label.VAR, True, p[1])
 	p[0]= Abstree([p[1], p[3]], Label.ASGN, False, -1)
-	# global trees
-	# trees.append((p[0], p.lineno(2)))
-	# increaseNumAssign(1)
 
 def p_expression_Wrhs1(p):
 	"""
@@ -230,14 +215,6 @@ def p_expression_ifBlock(p) :
 		p[0]=p[1]
 	else:
 		p[0] = Abstree([], Label.BLOCK, False, -1)
-	# if(len(p)==3):
-	# 	p[0] = Abstree([p[1]], Label.BLOCK, False, -1)
-	# elif len(p) == 6:
-	# 	p[4].prepend(p[2])
-	# 	p[0] = p[4]
-	# else:
-	# 	p[3].prepend(p[2])
-	# 	p[0] = p[3]
 
 def p_expression_whileBlock(p) :
 	"""
@@ -252,14 +229,6 @@ def p_expression_whileBlock(p) :
 	else :
 		p[1].add_child(p[2])
 		p[0] = p[1]
-	# if(len(p)==3):
-	# 	p[0] = Abstree([p[1]], Label.BLOCK, False, -1)
-	# elif len(p) == 6:
-	# 	p[4].prepend(p[2])
-	# 	p[0] = p[4]
-	# else:
-	# 	p[3].prepend(p[2])
-	# 	p[0] = p[3]
 def p_expression_if(p):
 	"""
 	IFExpr : IF LPAREN CondExpr RPAREN ASSIGN SEMICOL
@@ -317,17 +286,32 @@ def p_expression_condExpr(p):
 	"""
 	CondExpr : Cond
 		| CondExpr AMP AMP Cond
-		| CondExpr OR OR Cond
+		| CondExpr AMP AMP LPAREN Cond RPAREN
+		| CondExpr OR OR Cond 
+		| CondExpr OR OR LPAREN Cond RPAREN
+		| NOT LPAREN CondExpr RPAREN
+		| LPAREN CondExpr RPAREN
 	"""
 	if len(p) == 2:
 		p[0] = p[1]
-	else:
-		p[0] = Abstree([p[1], p[4]], opMapper(p[2]+p[3]), False, str(p[2]+p[3]))
+	elif len(p) == 4:
+		p[0] = p[2]
+	elif len(p) == 5:
+		if str(p[1]) == "!":
+			p[0] = Abstree([p[3]], Label.NOT, False, str(p[1]))
+		else:
+			p[0] = Abstree([p[1], p[4]], opMapper(p[2]+p[3]), False, str(p[2]+p[3]))
+	elif len(p) == 7:
+		p[0] = Abstree([p[1], p[5]], opMapper(p[2]+p[3]), False, str(p[2]+p[3]))
 def p_expression_cond(p):
 	"""
 	Cond : Wrhs Compare Wrhs
+		| NOT Cond
 	"""
-	p[0] = Abstree([p[1], p[3]], p[2][0], False, p[2][1])
+	if len(p) == 3:
+		p[0] = Abstree([p[2]], Label.NOT, False, "!")
+	else:
+		p[0] = Abstree([p[1], p[3]], p[2][0], False, p[2][1])
 
 def p_expression_compare(p):
 	"""
@@ -346,11 +330,6 @@ def p_expression_compare(p):
 def p_error(p):
 	global correct, tree
 	correct = 0
-	if(not tree.valid_tree([], None, None)):
-		done = 0
-		tree=[]
-		return
-	tree=[]
 	if p:
 		print("Syntax error at '{0}' on {1}'{2}'".format(p.value, "line number ", p.lineno))
 	else:
@@ -358,9 +337,6 @@ def p_error(p):
 
 def process(data):
 	lex.lex()
-	# lexer.input(data)
-	# for tok in lexer :
-	# 	print(tok)
 	yacc.yacc()
 	yacc.parse(data)
 
@@ -373,24 +349,16 @@ if __name__ == "__main__":
 	data = f.read()
 	process(data)
 	done = 1
-	if not tree.valid_tree([], None, None):
-		done = 0
-	if done and correct:
-		sys.stdout = open(outFile1, 'w')
-		tree.print_tree(0)
-		print()
-		sys.stdout = open(outFile2, 'w')
-		tree.add_child(Abstree([], Label.END, True, -1))
-		tree.assign_blocks(0)
-		tree.assign_goto_num(0)
-		tree.print_cfg(0, -1)
-	# for x in trees:
-	# 	if(not x[0].valid_tree()):
-	# 		done = 0
-	# 		x[0].print_error(x[1])
-	# 		break
-	# sys.stdout = open(outFile, 'w')
-	# if done and correct:
-	# 	for x in trees:
-	# 		x[0].print_tree(0)
-	# 		print()
+	if correct:
+		if not tree.valid_tree([], None, None):
+			done = 0
+		if done :
+			sys.stdout = open(outFile1, 'w')
+			tree.print_tree(0)
+			print()
+			sys.stdout = open(outFile2, 'w')
+			print()
+			tree.add_child(Abstree([], Label.END, True, -1))
+			tree.assign_blocks(0)
+			tree.assign_goto_num(0)
+			tree.print_cfg(-1)
