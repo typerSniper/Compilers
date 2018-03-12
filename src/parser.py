@@ -6,7 +6,7 @@ import ply.yacc as yacc
 from Abstree import Abstree
 from Abstree import Label
 
-trees = []
+tree = []
 numStatic= 0
 numPointer = 0
 numAssign =0
@@ -108,11 +108,8 @@ precedence = (
 def p_expression_prog(p):
         'expression : RETTYPE FUNCNAME LPAREN RPAREN LCPAREN BODY RCPAREN'
 
-        if p[6].valid_tree([], None, None):
-        	p[6].add_child(Abstree([], Label.END, True, -1))
-	        p[6].assign_blocks(0)
-	        p[6].assign_goto_num(0)
-	        p[6].print_cfg(0, -1)
+        global tree
+        tree = p[6]
         # else:
         # 	p[6].print_tree(0)
         # 	print("WEEEE")
@@ -347,15 +344,13 @@ def p_expression_compare(p):
 		p[0] = (opMapper(str(p[1]+p[2])), str(p[1]+p[2]))
 
 def p_error(p):
-	global correct, trees 
+	global correct, tree
 	correct = 0
-	for x in trees:
-		if(not x[0].valid_tree()):
-			done = 0
-			x[0].print_error(x[1])
-			trees=[]
-			return
-	trees=[]
+	if(not tree.valid_tree([], None, None)):
+		done = 0
+		tree=[]
+		return
+	tree=[]
 	if p:
 		print("Syntax error at '{0}' on {1}'{2}'".format(p.value, "line number ", p.lineno))
 	else:
@@ -373,10 +368,22 @@ data = ""
 if __name__ == "__main__":
 	k = sys.argv[1]
 	f = open(k, 'r')
-	# outFile = "Parser_ast_"+ (k.split('/'))[-1]+".txt"
+	outFile1 = (k.split('/'))[-1] + ".ast"
+	outFile2 = (k.split('/'))[-1] + ".cfg"
 	data = f.read()
 	process(data)
-	# done = 1
+	done = 1
+	if not tree.valid_tree([], None, None):
+		done = 0
+	if done and correct:
+		sys.stdout = open(outFile1, 'w')
+		tree.print_tree(0)
+		print()
+		sys.stdout = open(outFile2, 'w')
+		tree.add_child(Abstree([], Label.END, True, -1))
+		tree.assign_blocks(0)
+		tree.assign_goto_num(0)
+		tree.print_cfg(0, -1)
 	# for x in trees:
 	# 	if(not x[0].valid_tree()):
 	# 		done = 0

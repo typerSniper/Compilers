@@ -78,7 +78,7 @@ class Abstree:
 			print(s+self.label.name + "(" + self.value + ")")
 			return
 		self.print_without(s)
-		print(self.label.name, self.block_num, self.goto_num)
+		print(self.label.name)
 		lbrack = s + "("
 		print(lbrack)
 		for x in self.children:
