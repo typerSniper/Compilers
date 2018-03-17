@@ -1,0 +1,74 @@
+import enum
+
+class ParseType(enum.Enum):
+	VarItem = 1
+	Scope = 2
+	ScopeList = 3
+	Abstree = 4
+	DECL = 5
+class DataTypeEnum(enum.Enum):
+	INT = 1
+	FLOAT = 2
+	VOID = 3
+
+class Label(enum.Enum):
+	VAR = 1
+	DEREF = 2
+	ADDR = 3
+	UMINUS= 4
+	CONST = 5
+	ASGN = 6 
+	MINUS = 7
+	PLUS  = 8
+	MUL = 9
+	DIV = 10
+	IF = 11
+	WHILE = 14
+	BLOCK = 15
+	COND = 17
+	LT = 18
+	LE = 19
+	GT = 20
+	GE = 21
+	EQ = 22
+	NE = 23
+	DECL = 24
+	INT = 25
+	DVAR = 26
+	AND = 27
+	OR = 28
+	END = 29
+	NOT = 30
+	GLOBAL = 31
+	FUNCDECL = 32
+	FLOAT = 33
+	DEFAULT = 1000
+def opMapper(x):
+	return {
+		'+' : Label.PLUS,
+		'-' : Label.MINUS,
+		'*' : Label.MUL,
+		'/' : Label.DIV, 
+		'<' : Label.LT,
+		'<=': Label.LE, 
+		'>' : Label.GT,
+		'>=': Label.GE,
+		'==': Label.EQ,
+		'&&': Label.AND,
+		'||': Label.OR,
+		'!=': Label.NE,
+		'!' : Label.NOT,
+	}[x]
+
+def typeMapper(x):
+	return {
+	'int' : DataTypeEnum.INT,
+	'float' : DataTypeEnum.FLOAT,
+	'void' : DataTypeEnum.VOID
+	}[x]
+
+def labMapper(x):
+	return { 
+	'int' : Label.INT,
+	'float' : Label.FLOAT,
+	}[x]

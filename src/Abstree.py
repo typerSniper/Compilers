@@ -1,33 +1,6 @@
-import enum
-class Label(enum.Enum):
-	VAR = 1
-	DEREF = 2
-	ADDR = 3
-	UMINUS= 4
-	CONST = 5
-	ASGN = 6 
-	MINUS = 7
-	PLUS  = 8
-	MUL = 9
-	DIV = 10
-	IF = 11
-	WHILE = 14
-	BLOCK = 15
-	COND = 17
-	LT = 18
-	LE = 19
-	GT = 20
-	GE = 21
-	EQ = 22
-	NE = 23
-	DECL = 24
-	INT = 25
-	DVAR = 26
-	AND = 27
-	OR = 28
-	END = 29
-	NOT = 30
-	DEFAULT = 1000
+from enums import Label
+import SymTable
+
 def nameMapper(x):
 	y = {
 		Label.PLUS :  ' + '  ,
@@ -63,16 +36,21 @@ class Abstree:
 		self.label = label
 		self.children = children
 		self.isTerminal = isTerminal
-		self.value = str(value)
+		if self.label != Label.FUNCDECL:
+			self.value = str(value)
+		else:
+			self.value = value
 	def print_without(self, s) :
 		print(s, end='')
 	def print_tree(self, depth):
+		# if self.label == Label.FUNCDECL:
+		# 	print(self.value.name, end = '')
 		if(self.label==Label.BLOCK):
 			for x in self.children:
 				x.print_tree(depth)
 			return
-		if(self.label==Label.DECL):
-			return
+		# if(self.label==Label.DECL):
+		# 	return
 		s = ""
 		for i in range(depth):
 			s = s+"\t"
@@ -392,3 +370,14 @@ class Abstree:
 		elif self.label == Label.WHILE:
 			self.goto_num = goto
 			self.children[1].assign_goto_num(self.block_num)
+	def get_name_ind(self):
+		curr = self
+		depth = 0
+		while(curr.label!=Label.VAR):
+			if(curr.label==Label.DEREF):
+				depth = depth + 1
+			elif (curr.label==Label.ADDR):
+				depth = depth - 1
+			curr = curr.children[0]
+		t = (curr.value, depth)
+		return t

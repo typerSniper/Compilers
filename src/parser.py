@@ -3,17 +3,29 @@
 import sys
 import ply.lex as lex
 import ply.yacc as yacc
+from enums import Label
+from enums import ParseType
+from enums import DataTypeEnum
+from enums import Label
+from enums import opMapper
+from enums import typeMapper
+from enums import labMapper
 from Abstree import Abstree
-from Abstree import Label
+from SymTable import VarItem
+from SymTable import Scope
+from SymTable import ScopeList
+from SymTable import DataTypes
+
 
 tree = []
 numStatic= 0
 numPointer = 0
 numAssign =0
 correct  = 1
-tokens = ('DTYPE', 'EQUALS', 'LPAREN', 'RPAREN', 'LCPAREN', 'RCPAREN', 
-			'RETTYPE', 'FUNCNAME', 'SEMICOL', 'COMMA', 'AMP', 'WORD', 'REF', 'NUMBER',
-			'PLUS', 'MINUS', 'DIV', 'IF', 'WHILE', 'ELSE', 'LESSTHAN', 'GREATERTHAN', 'OR', 'NOT')
+tokens = ('EQUALS', 'LPAREN', 'RPAREN', 'LCPAREN', 'RCPAREN', 
+		  'SEMICOL', 'COMMA', 'AMP', 'WORD', 'REF', 'NUMBER',
+			'PLUS', 'MINUS', 'DIV', 'IF', 'WHILE', 'ELSE', 'LESSTHAN', 'GREATERTHAN', 'OR', 'NOT'
+			, 'INT', 'FLOAT', 'VOID', 'RETURN')
 
 t_ignore = " \t"
 t_ignore_comment = "//[^\n]*\n"
@@ -47,27 +59,12 @@ reserved = {
 	'if' : 'IF',
   	'else' : 'ELSE',
 	'while' : 'WHILE',
-	'int' : 'DTYPE',
-	'main' : 'FUNCNAME',
-	'void' : 'RETTYPE'
+	'int' : 'INT',
+	'float' : 'FLOAT',
+	'void' : 'VOID',
+	'return' : 'RETURN'
 }
 
-def opMapper(x):
-	return {
-		'+' : Label.PLUS,
-		'-' : Label.MINUS,
-		'*' : Label.MUL,
-		'/' : Label.DIV, 
-		'<' : Label.LT,
-		'<=': Label.LE, 
-		'>' : Label.GT,
-		'>=': Label.GE,
-		'==': Label.EQ,
-		'&&': Label.AND,
-		'||': Label.OR,
-		'!=': Label.NE,
-		'!' : Label.NOT,
-	}[x]
 
 def t_newline(t):
     r'\n+'
@@ -96,11 +93,99 @@ precedence = (
         ('left', 'REF', 'DIV'),
         ('right', 'UMINUS')
 )
-def p_expression_prog(p):
-        'expression : RETTYPE FUNCNAME LPAREN RPAREN LCPAREN BODY RCPAREN'
 
-        global tree
-        tree = p[6]
+def p_expression_progS(p):
+	'progS : prog'
+	p[0] = p[1]
+	p[0].print_tree(0)
+
+def p_expression_prog(p):
+	"""
+	prog : var_decl prog
+		 | proc_decl prog
+		 | procs prog
+		 |
+	"""
+	if(len(p)==1):
+		p[0] = Abstree([], Label.GLOBAL, False, -1)
+	elif(len(p)==3):
+		p[2].prepend(p[1])
+		p[0] = p[2]
+
+
+def p_expression_var(p):
+	"""
+	var_decl : DECL SEMICOL  
+	"""
+	p[0] = p[1]
+
+def p_expression_procDecl(p):
+	"""
+	proc_decl : INT ID LPAREN PARAM RPAREN SEMICOL 
+			| FLOAT ID LPAREN PARAM RPAREN SEMICOL 
+			| VOID ID LPAREN PARAM RPAREN SEMICOL 
+	"""
+	tup = p[2].get_name_ind()
+	scope = Scope(tup[0])
+	scope.defineFunc(p[4], DataTypes(typeMapper(p[1]), tup[1]))
+	p[0] = Abstree([], Label.FUNCDECL, False, scope)
+
+def p_expression_procs(p):
+	"""
+	procs : INT ID LPAREN PARAM RPAREN LCPAREN BODY RCPAREN  
+		   | FLOAT ID LPAREN PARAM RPAREN LCPAREN BODY RCPAREN
+		   | VOID ID LPAREN PARAM RPAREN LCPAREN BODY RCPAREN   
+	"""
+	tup = p[2].get_name_ind()
+	scope = Scope(tup[0])
+	scope.defineFunc(p[4], DataTypes(typeMapper(p[1]), tup[1]))
+	p[0] = Abstree([p[7]], Label.FUNCDECL, False, scope)	
+
+def p_expression_param(p):
+	"""
+	PARAM : PTYPE ID EPARAM
+		  | 
+	"""
+	if(len(p)==1):
+		p[0] = []
+	else :
+		tup = p[2].get_name_ind()
+		item = DataTypes(typeMapper(p[1]), tup[1])
+		p[0] = [(tup[0] , item)] + p[3]
+def p_expression_eparam(p):
+	"""
+	EPARAM : COMMA PTYPE ID EPARAM
+		   | 
+	"""
+	if(len(p)==1):
+		p[0] = []
+	else :
+		tup = p[3].get_name_ind()
+		item = DataTypes(typeMapper(p[2]), tup[1])
+		p[0] = [(tup[0] , item)] + p[4]
+
+def p_expression_ptype(p):
+	"""
+	PTYPE : INT 
+		| FLOAT
+	"""
+	p[0] = p[1]
+
+# def p_expression_rettype(p):
+# 	"""
+# 	RETTYPE : INT
+# 			| FLOAT
+# 			| VOID
+# 			| RETTYPE REF
+# 	"""
+
+
+
+# def p_expression_prog(p):
+#         'expression : RETTYPE FUNCNAME LPAREN RPAREN LCPAREN BODY RCPAREN'
+
+#         global tree
+#         tree = p[6]
 
 def p_expression_body(p) :
 	"""
@@ -121,21 +206,23 @@ def p_expression_body(p) :
 
 def p_expression_decl(p):
 	"""
-	DECL : DTYPE DECLIST
+	DECL : INT DECLIST
+		 | FLOAT DECLIST
 	"""
-	p[1] = Abstree([], Label.INT, True, -1)
+	p[1] = Abstree([], labMapper(p[1]), True, -1)
 	p[0] = Abstree([p[1]], Label.DECL, False, -1)
 	for x in reversed(p[2]):
 		p[0].add_child(x)
+
 def p_expression_declist(p):
 	"""
 	DECLIST : ID COMMA DECLIST 
 			| ID
 	"""
 	if len(p)==2:
-		p[0] = [Abstree([p[1]], Label.DVAR, False, -1)]
+		p[0] = [p[1]]
 	else:
-		p[3].append(Abstree([p[1]], Label.DVAR, False, -1))
+		p[3].append(p[1])
 		p[0] = p[3]
 def p_expression_id(p) :
 	"""
@@ -348,17 +435,17 @@ if __name__ == "__main__":
 	outFile2 = (k.split('/'))[-1] + ".cfg"
 	data = f.read()
 	process(data)
-	done = 1
-	if correct:
-		if not tree.valid_tree([], None, None):
-			done = 0
-		if done :
-			sys.stdout = open(outFile1, 'w')
-			tree.print_tree(0)
-			print()
-			sys.stdout = open(outFile2, 'w')
-			print()
-			tree.add_child(Abstree([], Label.END, True, -1))
-			tree.assign_blocks(0)
-			tree.assign_goto_num(0)
-			tree.print_cfg(-1)
+	# done = 1
+	# if correct:
+	# 	if not tree.valid_tree([], None, None):
+	# 		done = 0
+	# 	if done :
+	# 		sys.stdout = open(outFile1, 'w')
+	# 		tree.print_tree(0)
+	# 		print()
+	# 		sys.stdout = open(outFile2, 'w')
+	# 		print()
+	# 		tree.add_child(Abstree([], Label.END, True, -1))
+	# 		tree.assign_blocks(0)
+	# 		tree.assign_goto_num(0)
+	# 		tree.print_cfg(-1)
