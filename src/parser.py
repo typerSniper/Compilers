@@ -142,7 +142,7 @@ def p_expression_param(p):
 	else :
 		tup = p[2].get_name_ind()
 		item = DataTypes(typeMapper(p[1]), tup[1])
-		p[0] = [(tup[0] , item)] + p[3]
+		p[0] =  p[3] + [(tup[0] , item)]
 def p_expression_eparam(p):
 	"""
 	EPARAM : COMMA PTYPE ID EPARAM
@@ -153,7 +153,7 @@ def p_expression_eparam(p):
 	else :
 		tup = p[3].get_name_ind()
 		item = DataTypes(typeMapper(p[2]), tup[1])
-		p[0] = [(tup[0] , item)] + p[4]
+		p[0] =  p[4] + [(tup[0] , item)]
 
 def p_expression_ptype(p):
 	"""

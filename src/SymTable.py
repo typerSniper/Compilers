@@ -30,8 +30,9 @@ class Scope:
 		self.isDefined = True
 	def printScope(self):
 		for c in self.varTable:
-			print(c, end = '')
+			print(c, end = ' ')
 			print(self.varTable[c].type)
+
 	def isSameScope(self, scope):
 		return self.name == scope.name and self.name == scope.name and self.paramTypes == scope.paramTypes and self.retType == scope.retType
 

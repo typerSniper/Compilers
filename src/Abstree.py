@@ -43,8 +43,9 @@ class Abstree:
 	def print_without(self, s) :
 		print(s, end='')
 	def print_tree(self, depth):
-		# if self.label == Label.FUNCDECL:
-		# 	print(self.value.name, end = '')
+		if self.label==Label.FUNCDECL:
+			# print("HERE")
+			# self.value.printScope()
 		if(self.label==Label.BLOCK):
 			for x in self.children:
 				x.print_tree(depth)
