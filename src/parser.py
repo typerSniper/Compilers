@@ -3,18 +3,9 @@
 import sys
 import ply.lex as lex
 import ply.yacc as yacc
-from enums import Label
-from enums import ParseType
-from enums import DataTypeEnum
-from enums import Label
-from enums import opMapper
-from enums import typeMapper
-from enums import labMapper
-from Abstree import Abstree
-from SymTable import VarItem
-from SymTable import Scope
-from SymTable import ScopeList
-from SymTable import DataTypes
+from enums import *
+from Abstree import *
+from SymTable import *
 
 
 tree = []

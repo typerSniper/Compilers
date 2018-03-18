@@ -28,6 +28,10 @@ class Scope:
 		self.retType = retType
 	def defined(self):
 		self.isDefined = True
+	def printScope(self):
+		for c in self.varTable:
+			print(c, end = '')
+			print(self.varTable[c].type)
 	def isSameScope(self, scope):
 		return self.name == scope.name and self.name == scope.name and self.paramTypes == scope.paramTypes and self.retType == scope.retType
 
@@ -42,6 +46,11 @@ class ScopeList:
 					return False
 		self.scopeList[scope.name] = scope
 		return True
+	def printScopeList(self):
+		for x in self.scopeList:
+			print(x)
+			self.scopeList[x].printScope()
+
 
 class DataTypes:
 	def __init__(self, dataType, indirection):

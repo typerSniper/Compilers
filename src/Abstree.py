@@ -1,4 +1,4 @@
-from enums import Label
+from enums import *
 import SymTable
 
 def nameMapper(x):
