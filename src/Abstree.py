@@ -1,6 +1,8 @@
 from enums import *
 import SymTable
 
+
+
 def nameMapper(x):
 	y = {
 		Label.PLUS :  ' + '  ,
@@ -36,16 +38,28 @@ class Abstree:
 		self.label = label
 		self.children = children
 		self.isTerminal = isTerminal
-		if self.label != Label.FUNCDECL:
+		if self.label != Label.FUNCDECL and self.label != Label.FUNCTION:
 			self.value = str(value)
 		else:
 			self.value = value
 	def print_without(self, s) :
 		print(s, end='')
 	def print_tree(self, depth):
-		if self.label==Label.FUNCDECL:
-			# print("HERE")
-			# self.value.printScope()
+		if(self.label==Label.FUNCTION):
+			p = self.value
+			self.print_without("FUNCTION ")
+			print(p.name)
+			self.print_without("PARAMS {")
+			for k in range(len(p.paramIds)):
+				self.print_without('\''+p.paramIds[k] + '\'' +': ')
+				self.print_without(p.paramTypes[k])
+				if(k!=len(p.paramIds)-1):
+					self.print_without(", ")
+			print("}")
+			self.print_without("RETURNS ")
+			print(p.retType)
+			self.children[0].print_tree(depth)
+			return
 		if(self.label==Label.BLOCK):
 			for x in self.children:
 				x.print_tree(depth)
@@ -56,7 +70,10 @@ class Abstree:
 		for i in range(depth):
 			s = s+"\t"
 		if(self.isTerminal):
-			print(s+self.label.name + "(" + self.value + ")")
+			disLabel = self.label.name
+			if(self.label==Label.INTCONST or self.label==Label.FLOATCONST):
+				disLabel = Label.CONST.name
+			print(s+ disLabel + "(" + self.value + ")")
 			return
 		self.print_without(s)
 		print(self.label.name)
@@ -109,6 +126,26 @@ class Abstree:
 				q = q and k.valid_tree(availVars, parent, i)
 				i+=1
 			return q
+	def valid_tree(self, scope):
+		global scopeList
+		if self.label== LABEL.GLOBAL or self.label == Label.FUNCTION:
+			scopeCurr = self.value
+			q = scopeList.addScope(scopeCurr)
+			scopeCurr.setParent(scope)
+			for k in self.children and q:
+				q = q and k.valid_tree(scopeCurr)
+			return q			
+		elif self.label == Label.DECL:
+			tup = k.children[1].get_name_ind()
+			return scope.addVarItem(VarItem(tup[0], DataTypes(typeMapper(k.children[0].label.name.lower()), tup[1])))
+		elif self.label == Label.FUNCDECL:
+			return scopeList.addScope(self.value)
+		elif self.label==BLOCK or self.label==Label.WHILE or self.label==Label.IF:
+			q = True
+			for k in self.children and q:
+				q = q and k.valid_tree(scopeCurr)
+			return q
+		elif 
 
 	def update_vars(self):
 		vars_ = []
@@ -241,7 +278,7 @@ class Abstree:
 		elif self.label == Label.DEREF:
 			print("*", end='')
 			self.children[0].print_statement()
-		elif self.label == Label.CONST:
+		elif self.label == Label.FLOATCONST or self.label == Label.INTCONST:
 			print(self.value, end='')
 		elif self.label == Label.UMINUS:
 			rhs = self.children[0]

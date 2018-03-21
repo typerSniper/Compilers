@@ -11,12 +11,15 @@ class DataTypeEnum(enum.Enum):
 	FLOAT = 2
 	VOID = 3
 
+
+# //int a -> -1, direct0[x]
+# //int * -> 0, -1, +ve max == indirection @everypointx
 class Label(enum.Enum):
 	VAR = 1
 	DEREF = 2
 	ADDR = 3
 	UMINUS= 4
-	CONST = 5
+	INTCONST = 5
 	ASGN = 6 
 	MINUS = 7
 	PLUS  = 8
@@ -42,6 +45,10 @@ class Label(enum.Enum):
 	GLOBAL = 31
 	FUNCDECL = 32
 	FLOAT = 33
+	FUNCTION = 34
+	FLOATCONST = 35
+	CONST = 36
+	RETURN = 37
 	DEFAULT = 1000
 def opMapper(x):
 	return {

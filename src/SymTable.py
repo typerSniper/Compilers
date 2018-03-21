@@ -5,6 +5,8 @@ from enums import Label
 from enums import opMapper
 from enums import typeMapper
 from enums import labMapper
+from collections import OrderedDict
+
 
 class VarItem:
 	def __init__(self, name, dataType):
@@ -14,10 +16,16 @@ class VarItem:
 class Scope: 
 	def __init__(self, name):
 		self.name = name
-		self.varTable = {}
+		self.varTable = OrderedDict()
 		self.isDefined = False
+	def setParent(self, parent):
+		self.parent = parent
 	def addVarItem(self, varItem):
+		if varItem.name in varTable:
+			print("DEBUG_VARIABLE REDECLARATION")
+			return False
 		self.varTable[varItem.name] = varItem
+		return True
 	def defineFunc(self, paramList, retType):
 		self.paramIds = []
 		self.paramTypes = []
@@ -38,13 +46,12 @@ class Scope:
 
 class ScopeList:
 	def __init__(self):
-		self.scopeList = {}
+		self.scopeList = OrderedDict()
 	def addScope(self, scope):
 		if scope.name in self.scopeList:
-			if self.scopeList[scope.name].isSameScope(scope):
-				if self.scopeList[scope.name].isDefined or (not scope.isDefined):
-					print("DEBUG_REDECLARATION")
-					return False
+			if self.scopeList[scope.name].isDefined or (not scope.isDefined):
+				print("DEBUG_REDECLARATION")
+				return False
 		self.scopeList[scope.name] = scope
 		return True
 	def printScopeList(self):
@@ -61,3 +68,20 @@ class DataTypes:
 			print("INVALID DATATYPE")
 	def isSameType(dataType):
 		return self.indirection == dataType.indirection and self.type == dataType.type
+
+	def __repr__(self):
+		s = self.type.name.lower()
+		for k in range(self.indirection):
+			s = s+"*"
+		return '\''+ s + '\''
+
+
+
+
+
+
+
+
+
+
+

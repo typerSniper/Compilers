@@ -13,10 +13,11 @@ numStatic= 0
 numPointer = 0
 numAssign =0
 correct  = 1
+scopeList = ScopeList()
 tokens = ('EQUALS', 'LPAREN', 'RPAREN', 'LCPAREN', 'RCPAREN', 
 		  'SEMICOL', 'COMMA', 'AMP', 'WORD', 'REF', 'NUMBER',
 			'PLUS', 'MINUS', 'DIV', 'IF', 'WHILE', 'ELSE', 'LESSTHAN', 'GREATERTHAN', 'OR', 'NOT'
-			, 'INT', 'FLOAT', 'VOID', 'RETURN')
+			, 'INT', 'FLOAT', 'VOID', 'RETURN', 'FLOATNUM')
 
 t_ignore = " \t"
 t_ignore_comment = "//[^\n]*\n"
@@ -56,10 +57,15 @@ reserved = {
 	'return' : 'RETURN'
 }
 
+def t_FLOATNUM(t):
+	r'\d+\.\d+'
+	t.value = (float(t.value), Label.FLOATCONST)
+	return t
 
 def t_newline(t):
     r'\n+'
     t.lexer.lineno =  t.lexer.lineno + len(t.value)
+
 
 def increaseNumAssign(k):
 	global numAssign
@@ -68,7 +74,7 @@ def increaseNumAssign(k):
 def t_NUMBER(t):
     r'\d+'
     try:
-        t.value = int(t.value)
+        t.value = (int(t.value), Label.INTCONST)
     except ValueError:
         print("Integer value too large %d", t.value)
         t.value = 0
@@ -98,16 +104,17 @@ def p_expression_prog(p):
 		 |
 	"""
 	if(len(p)==1):
-		p[0] = Abstree([], Label.GLOBAL, False, -1)
+		scope = Scope("GLOBAL")
+		p[0] = Abstree([], Label.GLOBAL, False, scope)
 	elif(len(p)==3):
 		p[2].prepend(p[1])
 		p[0] = p[2]
-
 
 def p_expression_var(p):
 	"""
 	var_decl : DECL SEMICOL  
 	"""
+
 	p[0] = p[1]
 
 def p_expression_procDecl(p):
@@ -130,7 +137,7 @@ def p_expression_procs(p):
 	tup = p[2].get_name_ind()
 	scope = Scope(tup[0])
 	scope.defineFunc(p[4], DataTypes(typeMapper(p[1]), tup[1]))
-	p[0] = Abstree([p[7]], Label.FUNCDECL, False, scope)	
+	p[0] = Abstree([p[7]], Label.FUNCTION, False, scope)	
 
 def p_expression_param(p):
 	"""
@@ -142,7 +149,7 @@ def p_expression_param(p):
 	else :
 		tup = p[2].get_name_ind()
 		item = DataTypes(typeMapper(p[1]), tup[1])
-		p[0] =  p[3] + [(tup[0] , item)]
+		p[0] =   [(tup[0] , item)] + p[3]
 def p_expression_eparam(p):
 	"""
 	EPARAM : COMMA PTYPE ID EPARAM
@@ -153,7 +160,7 @@ def p_expression_eparam(p):
 	else :
 		tup = p[3].get_name_ind()
 		item = DataTypes(typeMapper(p[2]), tup[1])
-		p[0] =  p[4] + [(tup[0] , item)]
+		p[0] =   [(tup[0] , item)] + p[4] 
 
 def p_expression_ptype(p):
 	"""
@@ -184,6 +191,7 @@ def p_expression_body(p) :
 			| ASSIGN SEMICOL BODY
 			| COMPLETEIF BODY
 			| WHILExpr BODY
+			| RETURNSTMT SEMICOL BODY
 			| 
 	"""
 	if(len(p)==1):
@@ -275,17 +283,26 @@ def p_expression_Wrhs3(p):
 		Wrhs : MINUS Wrhs %prec UMINUS
 	"""
 	p[0]= Abstree([p[2]], Label.UMINUS, False, -1)
+
 def p_expression_Natom(p) :
 	"""
-	Natom : NUMBER
+	Natom : NUMBER 
+		  | FLOATNUM
 	"""
-	p[0] = Abstree([], Label.CONST, True, p[1])
+	p[0] = Abstree([], p[1][1], True, p[1][0])
+
+def p_expression_return(p):
+	"""
+	RETURNSTMT : RETURN Wrhs
+	"""
+	p[0] = Abstree([p[2]], Label.RETURN, False, -1)
 
 def p_expression_ifBlock(p) :
 	"""
 	IFBLOCK : IFBLOCK ASSIGN SEMICOL 
 			| IFBLOCK  COMPLETEIF
 			| IFBLOCK WHILExpr
+			| IFBLOCK RETURNSTMT SEMICOL
 			|
 	"""
 	if(len(p)!=1):
@@ -299,6 +316,7 @@ def p_expression_whileBlock(p) :
 	WHILEBLOCK : WHILEBLOCK ASSIGN SEMICOL 
 			| WHILEBLOCK COMPLETEIF  
 			| WHILEBLOCK WHILExpr
+			| WHILEBLOCK RETURNSTMT SEMICOL
 			| 
 
 	"""
@@ -414,7 +432,11 @@ def p_error(p):
 		print("Syntax error at EOF")
 
 def process(data):
+
 	lex.lex()
+	# lexer.input(data)
+	# for tok in lexer:
+	# 	print(tok)
 	yacc.yacc()
 	yacc.parse(data)
 
