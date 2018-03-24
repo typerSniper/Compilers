@@ -21,7 +21,7 @@ class Scope:
 	def setParent(self, parent):
 		self.parent = parent
 	def addVarItem(self, varItem):
-		if varItem.name in varTable:
+		if varItem.name in self.varTable:
 			print("DEBUG_VARIABLE REDECLARATION")
 			return False
 		self.varTable[varItem.name] = varItem
@@ -40,6 +40,14 @@ class Scope:
 		for c in self.varTable:
 			print(c, end = ' ')
 			print(self.varTable[c].type)
+	def getType(self, x):
+		current = self
+		while x not in current.varTable:
+			if(current.parent==None):
+				return None
+			current = current.parent
+		return current.varTable[x].type
+
 
 	def isSameScope(self, scope):
 		return self.name == scope.name and self.name == scope.name and self.paramTypes == scope.paramTypes and self.retType == scope.retType
@@ -50,25 +58,25 @@ class ScopeList:
 	def addScope(self, scope):
 		if scope.name in self.scopeList:
 			if self.scopeList[scope.name].isDefined or (not scope.isDefined):
-				print("DEBUG_REDECLARATION")
+				print("DEBUG_FUNCTION REDECLARATION")
 				return False
 		self.scopeList[scope.name] = scope
 		return True
 	def printScopeList(self):
 		for x in self.scopeList:
 			print(x)
-			self.scopeList[x].printScope()
+			self.scopeList[x].printScope()	
 
 
 class DataTypes:
-	def __init__(self, dataType, indirection):
-		self.indirection = indirection
+	def __init__(self, dataType, indirection, addressable):
+		self.indirection = -1*indirection
 		self.type = dataType
+		self.addressable = True
 		if(dataType not in DataTypeEnum):
 			print("INVALID DATATYPE")
-	def isSameType(dataType):
+	def isSameType(self, dataType):
 		return self.indirection == dataType.indirection and self.type == dataType.type
-
 	def __repr__(self):
 		s = self.type.name.lower()
 		for k in range(self.indirection):

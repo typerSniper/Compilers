@@ -1,8 +1,8 @@
 from enums import *
-import SymTable
+from SymTable import * 
 
 
-
+scopeList = ScopeList()
 def nameMapper(x):
 	y = {
 		Label.PLUS :  ' + '  ,
@@ -27,6 +27,8 @@ def nameMapper(x):
 
 
 CONDS = [Label.LT, Label.LE, Label.GT, Label.GE, Label.EQ, Label.NE, Label.AND, Label.OR, Label.NOT]
+BINOPS = [Label.PLUS, Label.MINUS, Label.MUL, Label.DIV, Label.ASGN]
+UNOPS = [Label.UMINUS, Label.DEREF, Label.ADDR] 
 class Abstree:
 	label = Label.DEFAULT
 	children = []
@@ -38,12 +40,31 @@ class Abstree:
 		self.label = label
 		self.children = children
 		self.isTerminal = isTerminal
-		if self.label != Label.FUNCDECL and self.label != Label.FUNCTION:
+		if self.label != Label.FUNCDECL and self.label != Label.FUNCTION and self.label!=Label.GLOBAL:
 			self.value = str(value)
 		else:
 			self.value = value
+	def add_child(self, child):
+		self.children.append(child)
+	
+	def prepend(self, child):
+		self.children = [child] + self.children
+
+	def get_name_ind(self):
+		curr = self
+		depth = 0
+		while(curr.label!=Label.VAR):
+			if(curr.label==Label.DEREF):
+				depth = depth + 1
+			elif (curr.label==Label.ADDR):
+				depth = depth - 1
+			curr = curr.children[0]
+		t = (curr.value, depth)
+		return t
+	
 	def print_without(self, s) :
 		print(s, end='')
+	
 	def print_tree(self, depth):
 		if(self.label==Label.FUNCTION):
 			p = self.value
@@ -85,117 +106,181 @@ class Abstree:
 				break
 			print(s+"\t"+",")
 		print(s+")")
-	def valid_tree(self, availVars, parent, index):
-		if self.label==Label.ASGN :
-			return self.check_assign() and self.check_declaration(availVars)
-		elif self.label==Label.WHILE or self.label==Label.IF:
-			q = True
-			i=0
-			for k in self.children:
-				q = q and k.valid_tree(availVars, self, i)
-				if not q:
-					break
-				i+=1
-			return q
-		elif self.label in CONDS:
-			return self.check_declaration(availVars)
-		elif self.label == Label.BLOCK:
-			q = True
-			i=0
-			for k in self.children:
-				if(k.label==Label.DECL) :
-					q = q and k.valid_tree(availVars, self, i)
-					break
-				q = q and k.valid_tree(availVars, self, i)
-				i+=1
-			return q
-		elif self.label==Label.DECL :
-			q = True
-			i=index+1
-			new_vars = self.update_vars()
-			for x in new_vars:
-				if x[0] in [y[0] for y in availVars]:
-					print("ERROR: Double declaration for", x[0])
-					return False
-			availVars = availVars + new_vars
-			siblings = parent.children[(index+1):]
-			for k in siblings:
-				if(k.label==Label.DECL) :
-					q = q and k.valid_tree(availVars, parent, i)
-					break
-				q = q and k.valid_tree(availVars, parent, i)
-				i+=1
-			return q
+	# def valid_tree(self, availVars, parent, index):
+	# 	if self.label==Label.ASGN :
+	# 		return self.check_assign() and self.check_declaration(availVars)
+	# 	elif self.label==Label.WHILE or self.label==Label.IF:
+	# 		q = True
+	# 		i=0
+	# 		for k in self.children:
+	# 			q = q and k.valid_tree(availVars, self, i)
+	# 			if not q:
+	# 				break
+	# 			i+=1
+	# 		return q
+	# 	elif self.label in CONDS:
+	# 		return self.check_declaration(availVars)
+	# 	elif self.label == Label.BLOCK:
+	# 		q = True
+	# 		i=0
+	# 		for k in self.children:
+	# 			if(k.label==Label.DECL) :
+	# 				q = q and k.valid_tree(availVars, self, i)
+	# 				break
+	# 			q = q and k.valid_tree(availVars, self, i)
+	# 			i+=1
+	# 		return q
+	# 	elif self.label==Label.DECL :
+	# 		q = True
+	# 		i=index+1
+	# 		new_vars = self.update_vars()
+	# 		for x in new_vars:
+	# 			if x[0] in [y[0] for y in availVars]:
+	# 				print("ERROR: Double declaration for", x[0])
+	# 				return False
+	# 		availVars = availVars + new_vars
+	# 		siblings = parent.children[(index+1):]
+	# 		for k in siblings:
+	# 			if(k.label==Label.DECL) :
+	# 				q = q and k.valid_tree(availVars, parent, i)
+	# 				break
+	# 			q = q and k.valid_tree(availVars, parent, i)
+	# 			i+=1
+	# 		return q
 	def valid_tree(self, scope):
 		global scopeList
-		if self.label== LABEL.GLOBAL or self.label == Label.FUNCTION:
+		if self.label== Label.GLOBAL or self.label == Label.FUNCTION:
 			scopeCurr = self.value
 			q = scopeList.addScope(scopeCurr)
 			scopeCurr.setParent(scope)
-			for k in self.children and q:
+			for k in self.children:
+				if not q:
+					break
 				q = q and k.valid_tree(scopeCurr)
 			return q			
 		elif self.label == Label.DECL:
-			tup = k.children[1].get_name_ind()
-			return scope.addVarItem(VarItem(tup[0], DataTypes(typeMapper(k.children[0].label.name.lower()), tup[1])))
+			tup = self.children[1].get_name_ind()
+			return scope.addVarItem(VarItem(tup[0], DataTypes(typeMapper(self.children[0].label.name.lower()), tup[1], True)))
 		elif self.label == Label.FUNCDECL:
 			return scopeList.addScope(self.value)
-		elif self.label==BLOCK or self.label==Label.WHILE or self.label==Label.IF:
+		elif self.label==Label.BLOCK or self.label==Label.WHILE or self.label==Label.IF:
 			q = True
-			for k in self.children and q:
-				q = q and k.valid_tree(scopeCurr)
+			for k in self.children:
+				if not q:
+					break
+				q = q and k.valid_tree(scope)
+				#TUKKA
 			return q
-		elif 
+		elif self.label == Label.ASGN:
+			return self.check_assign() and self.getTypeAndCheck(scope)[1]
+		elif self.label in BINOPS + UNOPS + CONDS:
+			return self.getTypeAndCheck(scope)
 
-	def update_vars(self):
-		vars_ = []
-		for k in self.children:
-			if k.label == Label.DVAR:
-				c = k.children[0]
-				depth = 0
-				while True:
-					if c.label == Label.VAR:
-						vars_.append((c.value, depth))
-						break
-					else:
-						depth+=1
-						c=c.children[0]
-		return vars_
-	def check_declaration(self, availVars):
-		g = True
-		if self.label == Label.VAR:
-			if self.value in [x[0] for x in availVars]:
-				g = [True for x in availVars if x[0]==self.value and x[1]==0]
-				if len(g) > 0:
-					print("Direct use of non-pointer variable")
-					return False
-				return True
-			else:
-				print("ERROR:", self.value, "Not Defined")
-				return False
-		elif self.label == Label.DEREF or self.label == Label.ADDR:
-			curr = self
-			depth = 0
-			while(curr.label!=Label.VAR):
-				if(curr.label==Label.DEREF):
-					depth = depth + 1
-				elif (curr.label==Label.ADDR):
-					depth = depth - 1
-				curr = curr.children[0]
-			t = (curr.value, depth)
-			g = [True  for x in availVars if x[0]==t[0] and ((t[1] <= x[1] and x[1]!=0) or (x[1]==0 and t[1]<x[1])) ]
-			if len(g):
-				return True
-			else:
-				print("ERROR: TOO MUCH INDIRECTION")
-				return False
-		for k in self.children:
-			g = g and k.check_declaration(availVars)
-		return g
-	def add_child(self, child):
-		self.children.append(child)
-	def prepend(self, child):
-		self.children = [child] + self.children
+	def getTypeAndCheck(self, scope):
+		if self.label in BINOPS:
+			lhsType = self.children[0].getTypeAndCheck(scope)
+			rhsType = self.children[1].getTypeAndCheck(scope)
+			if(lhsType[1] and rhsType[1]):
+				if lhsType[0].isSameType(rhsType[0]) : 
+					if(lhsType[0].addressable and self.label==Label.ASGN):
+						return (lhsType[0], True)
+					elif(lhsType[0].indirection==0 and self.label!=Label.ASGN ):
+						return (lhsType[0], True)
+				print("DEBUG_TYPE_MISMATCH")
+				print(self.label)
+			return (None, False)
+		elif self.label in UNOPS:
+			childType = self.children[0].getTypeAndCheck(scope)
+			if childType[1]:
+				if self.label == Label.UMINUS and childType[0].indirection == 0:
+					return(childType[0], True)
+				elif self.label == Label.ADDR and childType[0].addressable:
+					childType[0].addressable = False
+					childType[0].indirection -= 1
+					return(childType[0], True)
+				elif self.label==Label.DEREF and childType[0].indirection<0:
+					childType[0].indirection+=1
+					return(childType[0], True)
+				print(childType[0].indirection)
+				print("#####DEBUG_CHUNK#######")
+				self.print_tree(0)
+			return (None, False)
+		elif self.label in CONDS:
+			lhsType = self.children[0].getTypeAndCheck(scope)
+			if self.label == Label.NOT and lhsType[1]:
+				return (lhsType[0], True)
+			rhsType = self.children[1].getTypeAndCheck(scope)
+			if(lhsType[1] and rhsType[1]):
+				if(self.label in [Label.OR, Label.AND] ):
+					return (None, True)
+				elif lhsType[0].isSameType(rhsType[0]) and lhsType[0].indirection==0:
+					return (None, True)
+				print("#####DEBUG_CHUNK#######")
+				self.print_tree(0)				
+			return (None, False)
+		elif self.label== Label.INTCONST:
+			return (DataTypes(DataTypeEnum.INT, 0, False), True)
+		elif self.label== Label.FLOATCONST:
+			return (DataTypes(DataTypeEnum.FLOAT, 0, False), True)
+		elif self.label == Label.VAR:
+			q = scope.getType(self.value)
+			if q is not None:
+				y = DataTypes(q.type, -1*q.indirection, q.addressable)
+				return (y, True)
+			print("VARIABLE", self.value, "NOT DEFINED IN THIS SCOPE")
+			return(None, False)
+			#lhsType(always addressable)-> if *  rhs anything with same type,  
+			#	otherwise, rhs must be addressable(that is already handled)
+			# uISNG NONE FOR BOOLS AS WELL ATM
+
+	# # def update_vars(self):
+	# 	vars_ = []
+	# 	for k in self.children:
+	# 		if k.label == Label.DVAR:
+	# 			c = k.children[0]
+	# 			depth = 0
+	# 			while True:
+	# 				if c.label == Label.VAR:
+	# 					vars_.append((c.value, depth))
+	# 					break
+	# 				else:
+	# 					depth+=1
+	# 					c=c.children[0]
+	# 	return vars_
+	
+	# def check_declaration(self, availVars):
+	# 	g = True
+	# 	if self.label == Label.VAR:
+	# 		if self.value in [x[0] for x in availVars]:
+	# 			g = [True for x in availVars if x[0]==self.value and x[1]==0]
+	# 			if len(g) > 0:
+	# 				print("Direct use of non-pointer variable")
+	# 				return False
+	# 			return True
+	# 		else:
+	# 			print("ERROR:", self.value, "Not Defined")
+	# 			return False
+	# 	elif self.label == Label.DEREF or self.label == Label.ADDR:
+	# 		curr = self
+	# 		depth = 0
+	# 		while(curr.label!=Label.VAR):
+	# 			if(curr.label==Label.DEREF):
+	# 				depth = depth + 1
+	# 			elif (curr.label==Label.ADDR):
+	# 				depth = depth - 1
+	# 			curr = curr.children[0]
+	# 		t = (curr.value, depth)
+	# 		g = [True  for x in availVars if x[0]==t[0] and ((t[1] <= x[1] and x[1]!=0) or (x[1]==0 and t[1]<x[1])) ]
+	# 		if len(g):
+	# 			return True
+	# 		else:
+	# 			print("ERROR: TOO MUCH INDIRECTION")
+	# 			return False
+	# 	for k in self.children:
+	# 		g = g and k.check_declaration(availVars)
+	# 	return g
+	
+	
 	def check_assign(self):
 		if self.children[0].label==Label.DEREF:
 			return True
@@ -221,6 +306,7 @@ class Abstree:
 				self.print_statement()
 				print()
 			return found
+	
 	def print_error(self, lineno):
 		print("Syntax error at '{1}' on line number {0}".format(str(lineno), str(self.children[0].value) + " ="))
 
@@ -261,7 +347,6 @@ class Abstree:
 			print("<bb", str(b_curr)+">")
 			print("End")
 		return t_curr
-
 
 	def print_statement(self):
 		if self.label == Label.ASGN:
@@ -408,14 +493,3 @@ class Abstree:
 		elif self.label == Label.WHILE:
 			self.goto_num = goto
 			self.children[1].assign_goto_num(self.block_num)
-	def get_name_ind(self):
-		curr = self
-		depth = 0
-		while(curr.label!=Label.VAR):
-			if(curr.label==Label.DEREF):
-				depth = depth + 1
-			elif (curr.label==Label.ADDR):
-				depth = depth - 1
-			curr = curr.children[0]
-		t = (curr.value, depth)
-		return t

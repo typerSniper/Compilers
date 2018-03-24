@@ -13,7 +13,6 @@ numStatic= 0
 numPointer = 0
 numAssign =0
 correct  = 1
-scopeList = ScopeList()
 tokens = ('EQUALS', 'LPAREN', 'RPAREN', 'LCPAREN', 'RCPAREN', 
 		  'SEMICOL', 'COMMA', 'AMP', 'WORD', 'REF', 'NUMBER',
 			'PLUS', 'MINUS', 'DIV', 'IF', 'WHILE', 'ELSE', 'LESSTHAN', 'GREATERTHAN', 'OR', 'NOT'
@@ -95,6 +94,7 @@ def p_expression_progS(p):
 	'progS : prog'
 	p[0] = p[1]
 	p[0].print_tree(0)
+	print(p[0].valid_tree(None))
 
 def p_expression_prog(p):
 	"""
@@ -125,7 +125,7 @@ def p_expression_procDecl(p):
 	"""
 	tup = p[2].get_name_ind()
 	scope = Scope(tup[0])
-	scope.defineFunc(p[4], DataTypes(typeMapper(p[1]), tup[1]))
+	scope.defineFunc(p[4], DataTypes(typeMapper(p[1]), tup[1], True))
 	p[0] = Abstree([], Label.FUNCDECL, False, scope)
 
 def p_expression_procs(p):
@@ -136,7 +136,7 @@ def p_expression_procs(p):
 	"""
 	tup = p[2].get_name_ind()
 	scope = Scope(tup[0])
-	scope.defineFunc(p[4], DataTypes(typeMapper(p[1]), tup[1]))
+	scope.defineFunc(p[4], DataTypes(typeMapper(p[1]), tup[1], True))
 	p[0] = Abstree([p[7]], Label.FUNCTION, False, scope)	
 
 def p_expression_param(p):
@@ -148,7 +148,7 @@ def p_expression_param(p):
 		p[0] = []
 	else :
 		tup = p[2].get_name_ind()
-		item = DataTypes(typeMapper(p[1]), tup[1])
+		item = DataTypes(typeMapper(p[1]), tup[1], True)
 		p[0] =   [(tup[0] , item)] + p[3]
 def p_expression_eparam(p):
 	"""
@@ -159,7 +159,7 @@ def p_expression_eparam(p):
 		p[0] = []
 	else :
 		tup = p[3].get_name_ind()
-		item = DataTypes(typeMapper(p[2]), tup[1])
+		item = DataTypes(typeMapper(p[2]), tup[1], True)
 		p[0] =   [(tup[0] , item)] + p[4] 
 
 def p_expression_ptype(p):
