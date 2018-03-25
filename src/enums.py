@@ -49,6 +49,7 @@ class Label(enum.Enum):
 	FLOATCONST = 35
 	CONST = 36
 	RETURN = 37
+	FUNCALL = 38
 	DEFAULT = 1000
 def opMapper(x):
 	return {

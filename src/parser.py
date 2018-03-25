@@ -95,6 +95,7 @@ def p_expression_progS(p):
 	p[0] = p[1]
 	p[0].print_tree(0)
 	print(p[0].valid_tree(None))
+	p[0].print_cfg(-1)
 
 def p_expression_prog(p):
 	"""
@@ -136,6 +137,7 @@ def p_expression_procs(p):
 	"""
 	tup = p[2].get_name_ind()
 	scope = Scope(tup[0])
+	scope.defined()
 	scope.defineFunc(p[4], DataTypes(typeMapper(p[1]), tup[1], True))
 	p[0] = Abstree([p[7]], Label.FUNCTION, False, scope)	
 
@@ -268,10 +270,35 @@ def p_expression_Wrhs1(p):
 			 | Wrhs DIV Wrhs
 	"""
 	p[0]= Abstree([p[1], p[3]], opMapper(p[2]), False, p[2])
+
+def p_expression_arglist(p):
+	"""
+		ARGLIST : Wrhs COMMA ARGLIST 
+			 	| Wrhs
+	"""
+	if len(p) == 2:
+		p[0] = [p[1]]
+	else:
+		p[0] = [p[1]] + p[3]
+
+def p_expression_functionCalls(p):
+	"""
+	FUNCALL : WORD LPAREN ARGLIST RPAREN
+			| WORD LPAREN RPAREN
+			| REF FUNCALL
+	"""
+	if len(p) == 3:
+		p[0] = Abstree([p[2]], Label.DEREF, False, -1)
+	elif len(p) == 4:
+		p[0] = Abstree([], Label.FUNCALL, False, p[1])
+	else:
+		p[0] = Abstree(p[3], Label.FUNCALL, False, p[1])
+
 def p_expression_Wrhs2(p):
 	"""
 		Wrhs : aID
 			 | Natom
+			 | FUNCALL
 			 | LPAREN Wrhs RPAREN
 	"""
 	if len(p) == 4:
@@ -294,8 +321,13 @@ def p_expression_Natom(p) :
 def p_expression_return(p):
 	"""
 	RETURNSTMT : RETURN Wrhs
+			   | RETURN 
 	"""
-	p[0] = Abstree([p[2]], Label.RETURN, False, -1)
+	if(len(p)==2):
+		p[0] = Abstree([], Label.RETURN, False, -1)
+		
+	else:
+		p[0] = Abstree([p[2]], Label.RETURN, False, -1)
 
 def p_expression_ifBlock(p) :
 	"""

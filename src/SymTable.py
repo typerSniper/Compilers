@@ -1,10 +1,4 @@
-from enums import Label
-from enums import ParseType
-from enums import DataTypeEnum
-from enums import Label
-from enums import opMapper
-from enums import typeMapper
-from enums import labMapper
+from enums import *
 from collections import OrderedDict
 
 
@@ -33,7 +27,9 @@ class Scope:
 			self.varTable[k[0]] = VarItem(k[0], k[1])
 			self.paramIds.append(k[0])
 			self.paramTypes.append(k[1])
+		retType.addressable = False
 		self.retType = retType
+		self.retType.setUsable()
 	def defined(self):
 		self.isDefined = True
 	def printScope(self):
@@ -47,10 +43,8 @@ class Scope:
 				return None
 			current = current.parent
 		return current.varTable[x].type
-
-
 	def isSameScope(self, scope):
-		return self.name == scope.name and self.name == scope.name and self.paramTypes == scope.paramTypes and self.retType == scope.retType
+		return self.name == scope.name  and self.paramTypes == scope.paramTypes and self.retType == scope.retType
 
 class ScopeList:
 	def __init__(self):
@@ -58,8 +52,17 @@ class ScopeList:
 	def addScope(self, scope):
 		if scope.name in self.scopeList:
 			if self.scopeList[scope.name].isDefined or (not scope.isDefined):
-				print("DEBUG_FUNCTION REDECLARATION")
+				print("DEBUG_FUNCTION_REDECLARATION")
 				return False
+			if(not scope.isSameScope(self.scopeList[scope.name])):
+				print("DEBUG_FUNCTION_OVERLOADED")
+				return False
+		if scope.name!="GLOBAL" and scope.retType.type == DataTypeEnum.VOID and scope.retType.indirection!=0:
+			print("DEBUG_VOID*_NOT_ALLOWED")
+			return False
+		if  scope.name!="GLOBAL" and (len(scope.paramIds)>len(set(scope.paramIds))):
+			print("DEBUG_TWO_PARAMS_WITH_SAME_ID_IN_", scope.name)
+			return False;
 		self.scopeList[scope.name] = scope
 		return True
 	def printScopeList(self):
@@ -73,15 +76,27 @@ class DataTypes:
 		self.indirection = -1*indirection
 		self.type = dataType
 		self.addressable = True
+		self.usable = False
+		if self.indirection!=0:
+			self.usable = True
 		if(dataType not in DataTypeEnum):
 			print("INVALID DATATYPE")
 	def isSameType(self, dataType):
 		return self.indirection == dataType.indirection and self.type == dataType.type
+	def setUsable(self):
+		self.usable = True
+	def getCopy(self):
+		newType = DataTypes(self.type, self.indirection, self.addressable)
+		newType.addressable = self.addressable
+		newType.usable = self.usable
+		return newType
 	def __repr__(self):
 		s = self.type.name.lower()
-		for k in range(self.indirection):
+		for k in range(abs(self.indirection)):
 			s = s+"*"
 		return '\''+ s + '\''
+	def __eq__(self, other):
+		return self.isSameType(other)
 
 
 

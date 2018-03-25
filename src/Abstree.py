@@ -40,7 +40,7 @@ class Abstree:
 		self.label = label
 		self.children = children
 		self.isTerminal = isTerminal
-		if self.label != Label.FUNCDECL and self.label != Label.FUNCTION and self.label!=Label.GLOBAL:
+		if self.label != Label.FUNCDECL and self.label != Label.FUNCTION and self.label!=Label.GLOBAL and self.label != Label.FUNCALL:
 			self.value = str(value)
 		else:
 			self.value = value
@@ -66,6 +66,10 @@ class Abstree:
 		print(s, end='')
 	
 	def print_tree(self, depth):
+		if self.label == Label.GLOBAL:
+			for x in self.children:
+				x.print_tree(0)
+			return
 		if(self.label==Label.FUNCTION):
 			p = self.value
 			self.print_without("FUNCTION ")
@@ -101,6 +105,9 @@ class Abstree:
 		lbrack = s + "("
 		print(lbrack)
 		for x in self.children:
+			# print("HERE")
+			# print(x)
+			# print("HERE")
 			x.print_tree(depth+1)
 			if x == self.children[len(self.children)-1] :
 				break
@@ -175,31 +182,58 @@ class Abstree:
 			return self.check_assign() and self.getTypeAndCheck(scope)[1]
 		elif self.label in BINOPS + UNOPS + CONDS:
 			return self.getTypeAndCheck(scope)
+		elif self.label == Label.FUNCALL:
+			return self.getTypeAndCheck(scope)[1]
+		elif self.label == Label.RETURN:
+			if(scope.retType.type==DataTypeEnum.VOID):
+				return len(self.children)==0
+			elif len(self.children) == 1:
+				retType = self.children[0].getTypeAndCheck(scope)
+				if(retType[1]):
+					if (retType[0].isSameType(scope.retType)):
+						if(retType[0].usable):
+							return True
+						else :
+							print("DEBUG_DIRECT_USE_NON_POINTER")
+					else:
+						print("DEBUG_RETURN_TYPE_MISMATCH")
+		return False
 
 	def getTypeAndCheck(self, scope):
+		global scopeList
 		if self.label in BINOPS:
 			lhsType = self.children[0].getTypeAndCheck(scope)
 			rhsType = self.children[1].getTypeAndCheck(scope)
 			if(lhsType[1] and rhsType[1]):
 				if lhsType[0].isSameType(rhsType[0]) : 
-					if(lhsType[0].addressable and self.label==Label.ASGN):
-						return (lhsType[0], True)
-					elif(lhsType[0].indirection==0 and self.label!=Label.ASGN ):
-						return (lhsType[0], True)
-				print("DEBUG_TYPE_MISMATCH")
-				print(self.label)
+					if rhsType[0].usable and lhsType[0].usable:
+						if(lhsType[0].addressable and self.label==Label.ASGN):
+							return (lhsType[0], True)
+						elif(lhsType[0].indirection==0 and self.label!=Label.ASGN):
+							return (lhsType[0], True)
+						else :
+							print("DEBUG_INVALID_OPERANDS")
+					else:
+						print("DEBUG_DIRECT_USE_NON_POINTER")
+				else:
+					print("DEBUG_TYPE_MISMATCH")
 			return (None, False)
 		elif self.label in UNOPS:
 			childType = self.children[0].getTypeAndCheck(scope)
 			if childType[1]:
-				if self.label == Label.UMINUS and childType[0].indirection == 0:
+				if self.label == Label.UMINUS and childType[0].indirection == 0 and childType[0].usable:
 					return(childType[0], True)
 				elif self.label == Label.ADDR and childType[0].addressable:
 					childType[0].addressable = False
+					childType[0].usable = True
 					childType[0].indirection -= 1
+					if(self.children[0].label!=Label.VAR):
+						print("DEBUG_CANNOT_USE_AMP_DIRECTLY")
+						return(None, False)
 					return(childType[0], True)
 				elif self.label==Label.DEREF and childType[0].indirection<0:
 					childType[0].indirection+=1
+					childType[0].usable = True
 					return(childType[0], True)
 				print(childType[0].indirection)
 				print("#####DEBUG_CHUNK#######")
@@ -207,9 +241,15 @@ class Abstree:
 			return (None, False)
 		elif self.label in CONDS:
 			lhsType = self.children[0].getTypeAndCheck(scope)
+			if not lhsType[0].usable:
+				print("DEBUG_DIRECT_USE_NON_POINTER")
+				return (None, False)
 			if self.label == Label.NOT and lhsType[1]:
 				return (lhsType[0], True)
 			rhsType = self.children[1].getTypeAndCheck(scope)
+			if not rhsType[0].usable:
+				print("DEBUG_DIRECT_USE_NON_POINTER")
+				return (None, False)
 			if(lhsType[1] and rhsType[1]):
 				if(self.label in [Label.OR, Label.AND] ):
 					return (None, True)
@@ -218,10 +258,34 @@ class Abstree:
 				print("#####DEBUG_CHUNK#######")
 				self.print_tree(0)				
 			return (None, False)
+		elif self.label == Label.FUNCALL:
+			funcName = str(self.value)
+			if(funcName in scopeList.scopeList):
+				funcScope = scopeList.scopeList[funcName]
+				if len(self.children) == len(funcScope.paramIds):
+					q = True
+					for k in range(len(self.children)):
+						argType = self.children[k].getTypeAndCheck(scope)
+						if(argType[1] and argType[0].isSameType(funcScope.paramTypes[k])):
+							q = q and True
+						else :
+							return (None, False)
+					y = funcScope.retType.getCopy()
+					y.indirection = -1*y.indirection
+					return (y, q)
+				else :
+					print("DEBUG_NUMBER_OF_ARGS_MISMATCH")
+			else :
+				print("DEBUG_FUNCNAME_NOT_DEFINED")
+			return (None, False)
 		elif self.label== Label.INTCONST:
-			return (DataTypes(DataTypeEnum.INT, 0, False), True)
+			p = DataTypes(DataTypeEnum.INT, 0, False)
+			p.setUsable()
+			return (p, True)
 		elif self.label== Label.FLOATCONST:
-			return (DataTypes(DataTypeEnum.FLOAT, 0, False), True)
+			p = DataTypes(DataTypeEnum.FLOAT, 0, False)
+			p.setUsable()
+			return (p, True)
 		elif self.label == Label.VAR:
 			q = scope.getType(self.value)
 			if q is not None:
@@ -311,7 +375,13 @@ class Abstree:
 		print("Syntax error at '{1}' on line number {0}".format(str(lineno), str(self.children[0].value) + " ="))
 
 	def print_cfg(self, t_curr):
-		if self.label == Label.BLOCK:
+		if self.label == Label.GLOBAL or self.label == Label.BLOCK:
+			for x in self.children:
+				t_curr = x.print_cfg(t_curr)
+		if self.label == Label.FUNCTION:
+			print("function ", self.value.name, "()")
+			self.assign_blocks(0)
+			self.assign_goto_num(0)
 			for x in self.children:
 				t_curr = x.print_cfg(t_curr)
 		elif self.label == Label.WHILE:
