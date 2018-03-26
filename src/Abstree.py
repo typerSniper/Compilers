@@ -74,13 +74,9 @@ class Abstree:
 			p = self.value
 			self.print_without("FUNCTION ")
 			print(p.name)
-			self.print_without("PARAMS {")
-			for k in range(len(p.paramIds)):
-				self.print_without('\''+p.paramIds[k] + '\'' +': ')
-				self.print_without(p.paramTypes[k])
-				if(k!=len(p.paramIds)-1):
-					self.print_without(", ")
-			print("}")
+			self.print_without("PARAMS")
+			p.printParams()
+			print()
 			self.print_without("RETURNS ")
 			print(p.retType)
 			self.children[0].print_tree(depth)
@@ -387,7 +383,7 @@ class Abstree:
 			print("<bb", str(b_curr)+">")
 			t_curr = self.children[0].unroll_and_print(t_curr)
 			print("if(t"+str(t_curr),end='')
-			print(") goto <bb", str(b_curr+1)+">")
+			print(") goto <bb", str(self.children[0].goto_num)+">")
 			print("else goto <bb", str(self.goto_num)+">")
 			print()
 			for x in self.children[1:]:
@@ -414,6 +410,8 @@ class Abstree:
 			b_curr = self.block_num
 			print("<bb", str(b_curr)+">")
 			print("End")
+			scopeList.printScopeList()
+			scopeList.printVarTable()
 		return t_curr
 
 	def print_statement(self):
@@ -562,7 +560,7 @@ class Abstree:
 			if len(self.children[1].children) == 0:
 				self.children[0].goto_num = goto
 			else:
-				self.children[0].goto_num = self.block_num + 1
+				self.children[0].goto_num = self.children[1].block_num
 			self.children[1].assign_goto_num(goto)
 			if(len(self.children)>=3):
 				self.children[2].assign_goto_num(goto)
@@ -570,6 +568,10 @@ class Abstree:
 			else :
 				self.goto_num = goto
 		elif self.label == Label.WHILE:
+			if len(self.children[1].children) == 0:
+				self.children[0].goto_num = self.block_num
+			else:
+				self.children[0].goto_num = self.children[1].block_num
 			self.goto_num = goto
 			self.children[1].assign_goto_num(self.block_num)
 

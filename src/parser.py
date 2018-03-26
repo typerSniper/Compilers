@@ -95,7 +95,7 @@ def p_expression_progS(p):
 	p[0] = p[1]
 	p[0].print_tree(0)
 	print(p[0].valid_tree(None))
-	# p[0].add_child(Abstree([], Label.END, True, -1))
+	p[0].add_child(Abstree([], Label.END, True, -1))
 	p[0].assign_blocks(-1)
 	p[0].assign_goto_num(-1)
 	p[0].print_cfg(-1)

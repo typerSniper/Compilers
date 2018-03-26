@@ -43,8 +43,28 @@ class Scope:
 				return None
 			current = current.parent
 		return current.varTable[x].type
+	def print_without(self, s):
+		print(s, end='')
 	def isSameScope(self, scope):
 		return self.name == scope.name  and self.paramTypes == scope.paramTypes and self.retType == scope.retType
+	def printParams(self):	
+		self.print_without("{")		
+		for k in range(len(self.paramIds)):
+			self.print_without('\''+self.paramIds[k] + '\'' +': ')
+			self.print_without(self.paramTypes[k])
+			if(k!=len(self.paramIds)-1):
+				self.print_without(", ")
+		self.print_without("}")
+	def printVarTable(self):
+		for x in self.varTable:
+			var = self.varTable[x]
+			print(var.name, end='')
+			if self.name == "GLOBAL":
+				print("global")
+			else:
+				print("procedure", self.name, end='')
+			print(var.type.type, var.type.indirection)
+
 
 class ScopeList:
 	def __init__(self):
@@ -66,9 +86,29 @@ class ScopeList:
 		self.scopeList[scope.name] = scope
 		return True
 	def printScopeList(self):
-		for x in self.scopeList:
-			print(x)
-			self.scopeList[x].printScope()	
+		s = ""
+		for i in range(4):
+			s = s+"\t"
+		print("Name", s,  "|   Return Type", s, "|	Parameter List")
+		for x in self.scopeList.keys():
+			if(x=="GLOBAL"):
+				continue
+			scope = self.scopeList[x]
+			print(scope.name, s, end='')
+			print(scope.retType, end='')
+			print(s, end='')
+			scope.printParams()
+			print()
+
+	def printVarTable(self):
+		s = ""
+		for i in range(4):
+			s = s+"\t"
+		print("Name", s, "|   Scope", s, "       |   Base Type  |  Derived Type")
+		for x in self.scopeList.keys():
+			self.scopeList[x].printVarTable()
+
+
 
 
 class DataTypes:
