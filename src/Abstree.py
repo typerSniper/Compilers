@@ -181,7 +181,7 @@ class Abstree:
 		elif self.label == Label.ASGN:
 			return self.check_assign() and self.getTypeAndCheck(scope)[1]
 		elif self.label in BINOPS + UNOPS + CONDS:
-			return self.getTypeAndCheck(scope)
+			return self.getTypeAndCheck(scope)[1]
 		elif self.label == Label.FUNCALL:
 			return self.getTypeAndCheck(scope)[1]
 		elif self.label == Label.RETURN:
@@ -253,7 +253,7 @@ class Abstree:
 			if(lhsType[1] and rhsType[1]):
 				if(self.label in [Label.OR, Label.AND] ):
 					return (None, True)
-				elif lhsType[0].isSameType(rhsType[0]) and lhsType[0].indirection==0:
+				elif lhsType[0].isSameType(rhsType[0]):
 					return (None, True)
 				print("#####DEBUG_CHUNK#######")
 				self.print_tree(0)				
@@ -380,8 +380,6 @@ class Abstree:
 				t_curr = x.print_cfg(t_curr)
 		if self.label == Label.FUNCTION:
 			print("function ", self.value.name, "()")
-			self.assign_blocks(0)
-			self.assign_goto_num(0)
 			for x in self.children:
 				t_curr = x.print_cfg(t_curr)
 		elif self.label == Label.WHILE:
@@ -504,7 +502,14 @@ class Abstree:
 		return t_curr
 
 	def assign_blocks(self, num):
-		if self.label == Label.BLOCK:
+		if self.label == Label.GLOBAL:
+			for x in self.children:
+				num = x.assign_blocks(num)
+		elif self.label == Label.FUNCDECL:
+			return num
+		elif self.label == Label.FUNCTION:
+			return self.children[0].assign_blocks(num)
+		elif self.label == Label.BLOCK:
 			self.block_num = num+1
 			g = False
 			for x in self.children:
@@ -533,7 +538,11 @@ class Abstree:
 		return num
 
 	def assign_goto_num(self, goto):
-		if self.label == Label.BLOCK:
+		if self.label == Label.GLOBAL or self.label == Label.FUNCTION:
+			for x in self.children:
+				x.assign_goto_num(goto)
+
+		elif self.label == Label.BLOCK:
 			for y in range(len(self.children)):
 				x = self.children[y]
 				if x.label == Label.ASGN:
@@ -563,3 +572,15 @@ class Abstree:
 		elif self.label == Label.WHILE:
 			self.goto_num = goto
 			self.children[1].assign_goto_num(self.block_num)
+
+
+
+
+
+
+
+
+
+
+
+
