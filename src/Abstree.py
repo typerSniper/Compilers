@@ -74,20 +74,38 @@ class Abstree:
 			p = self.value
 			self.print_without("FUNCTION ")
 			print(p.name)
-			self.print_without("PARAMS")
+			self.print_without("PARAMS (")
 			p.printParams()
-			print()
+			print(")")
 			self.print_without("RETURNS ")
-			print(p.retType)
-			self.children[0].print_tree(depth)
+			for i in range(abs(p.retType.indirection)):
+				print("*", end='')
+			print(p.retType.type.name.lower())
+			self.children[0].print_tree(depth+1)
 			return
+		if (self.label==Label.FUNCALL):
+			s = ""
+			for i in range(depth):
+				s = s+"\t"
+			self.print_without(s)
+			self.print_without("call "+ self.value+"(")
+			print()
+			for x in self.children:
+				x.print_tree(depth+1)
+				if x == self.children[len(self.children)-1] :
+					break
+				print(s+"\t"+",")
+			print(s+" )")
+			return	
 		if(self.label==Label.BLOCK):
 			for x in self.children:
 				x.print_tree(depth)
 			return
-		# if(self.label==Label.DECL):
-		# 	return
+		if(self.label==Label.DECL or self.label==Label.FUNCDECL):
+			return
 		s = ""
+		if(self.label==Label.RETURN):
+			depth-=1
 		for i in range(depth):
 			s = s+"\t"
 		if(self.isTerminal):

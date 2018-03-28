@@ -174,22 +174,6 @@ def p_expression_ptype(p):
 	"""
 	p[0] = p[1]
 
-# def p_expression_rettype(p):
-# 	"""
-# 	RETTYPE : INT
-# 			| FLOAT
-# 			| VOID
-# 			| RETTYPE REF
-# 	"""
-
-
-
-# def p_expression_prog(p):
-#         'expression : RETTYPE FUNCNAME LPAREN RPAREN LCPAREN BODY RCPAREN'
-
-#         global tree
-#         tree = p[6]
-
 def p_expression_body(p) :
 	"""
 	BODY : DECL SEMICOL BODY 

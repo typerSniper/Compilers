@@ -48,34 +48,50 @@ class Scope:
 	def isSameScope(self, scope):
 		return self.name == scope.name  and self.paramTypes == scope.paramTypes and self.retType == scope.retType
 	def printParams(self):	
-		self.print_without("{")		
 		for k in range(len(self.paramIds)):
-			self.print_without('\''+self.paramIds[k] + '\'' +': ')
 			self.print_without(self.paramTypes[k])
+			self.print_without(" "+self.paramIds[k])
 			if(k!=len(self.paramIds)-1):
 				self.print_without(", ")
-		self.print_without("}")
 	def printVarTable(self):
+		s = ''
+		for i in range(3):
+			s = s+"\t"
+		s+="|"
 		for x in self.varTable:
 			var = self.varTable[x]
-			print(var.name, end='')
+			print(var.name, s, end=' ')
 			if self.name == "GLOBAL":
-				print("global")
+				print("global 	", s, end=' ')
 			else:
-				print("procedure", self.name, end='')
-			print(var.type.type, var.type.indirection)
+				print("procedure", self.name, s, end=' ')
+			print(var.type.type.name.lower(), s, end=' ')
+			for i in range(-1*var.type.indirection):
+				print("*", end='')
+			print()
 
 
 class ScopeList:
 	def __init__(self):
 		self.scopeList = OrderedDict()
-	def addScope(self, scope):
+	def  addScope(self, scope):
 		if scope.name in self.scopeList:
-			if self.scopeList[scope.name].isDefined or (not scope.isDefined):
-				print("DEBUG_FUNCTION_REDECLARATION")
-				return False
+			prevScope = self.scopeList[scope.name]
 			if(not scope.isSameScope(self.scopeList[scope.name])):
 				print("DEBUG_FUNCTION_OVERLOADED")
+				return False
+			if not scope.isDefined:
+				if prevScope.isDefined:
+					print("FUNCTION_ALREADY_DEFINED", scope.name)
+				else:
+					print("FUNCTION_ALREADY_DECLARED", scope.name)
+				return False
+			elif prevScope.isDefined:
+				print("FUNCTION_BEING_REDFINED", scope.name)
+				return False
+		else :
+			if scope.isDefined:
+				print("DEFINITION_WITHOUT_DECLARATION", scope.name)
 				return False
 		if scope.name!="GLOBAL" and scope.retType.type == DataTypeEnum.VOID and scope.retType.indirection!=0:
 			print("DEBUG_VOID*_NOT_ALLOWED")
@@ -86,27 +102,43 @@ class ScopeList:
 		self.scopeList[scope.name] = scope
 		return True
 	def printScopeList(self):
+		print("Procedure Table :-")
 		s = ""
-		for i in range(4):
+		for i in range(3):
 			s = s+"\t"
-		print("Name", s,  "|   Return Type", s, "|	Parameter List")
+		s+="|"
+		l = ""
+		for i in range(90):
+			l = l + "-"
+		print(l)
+		print("Name", s,  "Return Type", s, "Parameter List")
 		for x in self.scopeList.keys():
 			if(x=="GLOBAL"):
 				continue
 			scope = self.scopeList[x]
-			print(scope.name, s, end='')
+			print(scope.name, s, end='  ')
 			print(scope.retType, end='')
-			print(s, end='')
+			print(s, end='  ')
 			scope.printParams()
 			print()
+		print(l)
 
 	def printVarTable(self):
+		print("Variable Table :-")
+		l = ""
+		for i in range(90):
+			l = l + "-"
+		print(l)
 		s = ""
-		for i in range(4):
+		for i in range(3):
 			s = s+"\t"
-		print("Name", s, "|   Scope", s, "       |   Base Type  |  Derived Type")
+		s+="|"
+		print("Name", s, "Scope", s, "Base Type", s,   "Derived Type")
+		print(l)
 		for x in self.scopeList.keys():
 			self.scopeList[x].printVarTable()
+		print(l)
+		print(l)
 
 
 
@@ -134,7 +166,7 @@ class DataTypes:
 		s = self.type.name.lower()
 		for k in range(abs(self.indirection)):
 			s = s+"*"
-		return '\''+ s + '\''
+		return s
 	def __eq__(self, other):
 		return self.isSameType(other)
 
