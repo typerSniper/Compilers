@@ -82,13 +82,14 @@ class Abstree:
 				print("*", end='')
 			print(p.retType.type.name.lower())
 			self.children[0].print_tree(depth+1)
+			print()
 			return
 		if (self.label==Label.FUNCALL):
 			s = ""
 			for i in range(depth):
 				s = s+"\t"
 			self.print_without(s)
-			self.print_without("call "+ self.value+"(")
+			self.print_without("CALL "+ self.value+"(")
 			print()
 			for x in self.children:
 				x.print_tree(depth+1)
@@ -119,9 +120,6 @@ class Abstree:
 		lbrack = s + "("
 		print(lbrack)
 		for x in self.children:
-			# print("HERE")
-			# print(x)
-			# print("HERE")
 			x.print_tree(depth+1)
 			if x == self.children[len(self.children)-1] :
 				break
@@ -180,8 +178,13 @@ class Abstree:
 				q = q and k.valid_tree(scopeCurr)
 			return q			
 		elif self.label == Label.DECL:
-			tup = self.children[1].get_name_ind()
-			return scope.addVarItem(VarItem(tup[0], DataTypes(typeMapper(self.children[0].label.name.lower()), tup[1], True)))
+			q = True
+			for k in self.children[1:]:
+				if not q:
+					break
+				tup = k.get_name_ind()
+				q = q and scope.addVarItem(VarItem(tup[0], DataTypes(typeMapper(self.children[0].label.name.lower()), tup[1], True)))
+			return q
 		elif self.label == Label.FUNCDECL:
 			return scopeList.addScope(self.value)
 		elif self.label==Label.BLOCK or self.label==Label.WHILE or self.label==Label.IF:
@@ -392,10 +395,24 @@ class Abstree:
 		if self.label == Label.GLOBAL or self.label == Label.BLOCK:
 			for x in self.children:
 				t_curr = x.print_cfg(t_curr)
-		if self.label == Label.FUNCTION:
-			print("function ", self.value.name, "()")
+		elif self.label == Label.FUNCTION:
+			print("function "+ self.value.name+ "(", end='')
+			self.value.printParams()
+			print(")")
 			for x in self.children:
 				t_curr = x.print_cfg(t_curr)
+			print()
+		elif self.label == Label.RETURN:
+			b_curr = self.block_num
+			print("<bb", str(b_curr)+">")
+			if len(self.children) > 0:
+				if self.children[0].will_unroll():
+					t_curr = self.children[0].unroll_and_print(t_curr)
+					print("return t"+str(t_curr))
+				else:
+					print("return "+str(self.children[0].value))
+			else:
+				print("return")
 		elif self.label == Label.WHILE:
 			b_curr = self.block_num
 			print("<bb", str(b_curr)+">")
@@ -439,6 +456,13 @@ class Abstree:
 			lhs.print_statement()
 			print(" = ", end='')
 			rhs.print_statement()
+		elif self.label == Label.FUNCALL:
+			print(self.value, end='(')
+			for x in self.children[:-1]:
+				x.print_statement()
+				print(", ", end='')
+			self.children[-1].print_statement()
+			print(")", end='')
 		elif self.label == Label.VAR:
 			print(self.value, end='')
 		elif self.label == Label.ADDR:
@@ -469,17 +493,25 @@ class Abstree:
 			for x in self.children:
 				if (nameMapper(self.label)[0]):
 					return True
+		if self.label == Label.FUNCALL:
+			for x in self.children:
+				if x.will_unroll():
+					return True
 		return False
 	def unroll_and_print(self, t_curr):
 		if self.label==Label.ASGN :
 			if self.children[1].will_unroll():
 				t_curr = self.children[1].unroll_and_print(t_curr)
 				self.children[0].print_statement()
+				# if self.children[1].label == Label.FUNCALL:
+					# print(" = "+)
 				print(" = "+"t"+str(t_curr))
 				return t_curr
 			self.children[0].print_statement()
 			print(' = ', end = '')
 			self.children[1].print_statement()
+		# elif self.label == Label.FUNCALL:
+			# print()
 		elif nameMapper(self.label)[0]:
 			if self.label == Label.UMINUS or self.label == Label.NOT:
 				if self.children[0].will_unroll():
@@ -524,6 +556,8 @@ class Abstree:
 		elif self.label == Label.FUNCDECL:
 			return num
 		elif self.label == Label.FUNCTION:
+			if self.value.name == "main": #BAAD
+				self.children[0].children.append(Abstree([], Label.RETURN, False, -1))
 			return self.children[0].assign_blocks(num)
 		elif self.label == Label.BLOCK:
 			self.block_num = num+1
@@ -548,6 +582,9 @@ class Abstree:
 			num+=1
 			self.block_num = num
 			num = self.children[1].assign_blocks(num)
+		elif self.label == Label.RETURN:
+			num+=1
+			self.block_num = num
 		elif self.label == Label.END:
 			num+=1
 			self.block_num = num
@@ -557,7 +594,6 @@ class Abstree:
 		if self.label == Label.GLOBAL or self.label == Label.FUNCTION:
 			for x in self.children:
 				x.assign_goto_num(goto)
-
 		elif self.label == Label.BLOCK:
 			for y in range(len(self.children)):
 				x = self.children[y]
