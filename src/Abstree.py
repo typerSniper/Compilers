@@ -203,7 +203,11 @@ class Abstree:
 			return self.getTypeAndCheck(scope)[1]
 		elif self.label == Label.RETURN:
 			if(scope.retType.type==DataTypeEnum.VOID):
-				return len(self.children)==0
+				if len(self.children) == 0:
+					return True
+				else:
+					print("DEBUG_WRONG_RETURN_TYPE")
+					return False
 			elif len(self.children) == 1:
 				retType = self.children[0].getTypeAndCheck(scope)
 				if(retType[1]):
@@ -372,6 +376,9 @@ class Abstree:
 				if len(frontier) == 0:
 					break
 				curr = frontier[0]
+				if curr.label == Label.FUNCALL:
+					found = True
+					break
 				if curr.isTerminal:
 					if curr.label == Label.VAR:
 						found = True
@@ -442,6 +449,11 @@ class Abstree:
 			if self.goto_num != -1:
 					print("goto <bb", str(self.goto_num)+">")
 					print()
+		elif self.label == Label.FUNCALL:
+			if self.will_unroll():
+				t_curr = self.unroll_and_print(t_curr)
+			else:
+				self.print_statement()
 		return t_curr
 
 	def print_statement(self):
@@ -494,7 +506,7 @@ class Abstree:
 					return True
 		return False
 
-	def unroll_and_print_funcall(self, t_curr):
+	def unroll_funcall(self, t_curr):
 		a = []
 		for x in self.children:
 			if x.will_unroll():
@@ -504,24 +516,40 @@ class Abstree:
 				a.append(-1)
 		return a, t_curr
 
+	def print_funcall(self, rhs_array):
+		print(self.value + "(", end='')
+		for x in range(len(rhs_array)-1):
+			if rhs_array[x] == -1:
+				self.children[x].print_statement()
+				print(", ", end='')
+			else:
+				print(rhs_array[x], end=', ')
+		if rhs_array[-1] == -1:
+			self.children[-1].print_statement()
+		else:
+			print(rhs_array[-1], end='')
+		print(")")
+
 	def unroll_and_print(self, t_curr):
 		if self.label==Label.ASGN :
 			if self.children[1].will_unroll():
-				t_curr = self.children[1].unroll_and_print(t_curr)
-				self.children[0].print_statement()
-				print(' = ', end = '')
-				# if self.children[1].label == Label.FUNCALL:
-				# 	rhs, t_curr = self.children[1].unroll_and_print_funcall(t_curr)
-				# 	self.children[0].print_statement()
-				# 	print(' =', y, end = '')
-				# 	# print(" = "+)
-				print("t"+str(t_curr))
+				if self.children[1].label == Label.FUNCALL:
+					rhs_array, t_curr = self.children[1].unroll_funcall(t_curr)
+					self.children[0].print_statement()
+					print(' = ', end = '')
+					self.children[1].print_funcall(rhs_array)
+				else:
+					t_curr = self.children[1].unroll_and_print(t_curr)
+					self.children[0].print_statement()
+					print(' = ', end = '')
+					print("t"+str(t_curr))
 				return t_curr
 			self.children[0].print_statement()
 			print(' = ', end = '')
 			self.children[1].print_statement()
-		# elif self.label == Label.FUNCALL:
-			# print()
+		elif self.label == Label.FUNCALL:
+			rhs_array, t_curr = self.unroll_funcall(t_curr)
+			self.print_funcall(rhs_array)
 		elif nameMapper(self.label)[0]:
 			if self.label == Label.UMINUS or self.label == Label.NOT:
 				if self.children[0].will_unroll():
@@ -593,9 +621,6 @@ class Abstree:
 			self.block_num = num
 			num = self.children[1].assign_blocks(num)
 		elif self.label == Label.RETURN:
-			num+=1
-			self.block_num = num
-		elif self.label == Label.END:
 			num+=1
 			self.block_num = num
 		return num
