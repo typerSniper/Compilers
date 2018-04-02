@@ -81,6 +81,8 @@ class Abstree:
 			for i in range(abs(p.retType.indirection)):
 				print("*", end='')
 			print(p.retType.type.name.lower())
+			if self.children[0].children[-1].label != Label.RETURN and self.value.name != "main" : #BAAD
+				self.children[0].children.append(Abstree([], Label.RETURN, False, -1))
 			self.children[0].print_tree(depth+1)
 			print()
 			return
@@ -410,7 +412,8 @@ class Abstree:
 					t_curr = self.children[0].unroll_and_print(t_curr)
 					print("return t"+str(t_curr))
 				else:
-					print("return "+str(self.children[0].value))
+					print("return ", end='')
+					self.children[0].print_statement()
 			else:
 				print("return")
 		elif self.label == Label.WHILE:
@@ -441,12 +444,6 @@ class Abstree:
 			if self.goto_num != -1:
 					print("goto <bb", str(self.goto_num)+">")
 					print()
-		elif self.label == Label.END:
-			b_curr = self.block_num
-			print("<bb", str(b_curr)+">")
-			print("End")
-			scopeList.printScopeList()
-			scopeList.printVarTable()
 		return t_curr
 
 	def print_statement(self):
@@ -498,14 +495,29 @@ class Abstree:
 				if x.will_unroll():
 					return True
 		return False
+
+	def unroll_and_print_funcall(self, t_curr):
+		a = []
+		for x in self.children:
+			if x.will_unroll():
+				t_curr = x.unroll_and_print(t_curr)
+				a.append("t"+str(t_curr))
+			else:
+				a.append(-1)
+		return a, t_curr
+
 	def unroll_and_print(self, t_curr):
 		if self.label==Label.ASGN :
 			if self.children[1].will_unroll():
 				t_curr = self.children[1].unroll_and_print(t_curr)
 				self.children[0].print_statement()
+				print(' = ', end = '')
 				# if self.children[1].label == Label.FUNCALL:
-					# print(" = "+)
-				print(" = "+"t"+str(t_curr))
+				# 	rhs, t_curr = self.children[1].unroll_and_print_funcall(t_curr)
+				# 	self.children[0].print_statement()
+				# 	print(' =', y, end = '')
+				# 	# print(" = "+)
+				print("t"+str(t_curr))
 				return t_curr
 			self.children[0].print_statement()
 			print(' = ', end = '')

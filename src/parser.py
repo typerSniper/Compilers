@@ -16,7 +16,7 @@ correct  = 1
 tokens = ('EQUALS', 'LPAREN', 'RPAREN', 'LCPAREN', 'RCPAREN', 
 		  'SEMICOL', 'COMMA', 'AMP', 'WORD', 'REF', 'NUMBER',
 			'PLUS', 'MINUS', 'DIV', 'IF', 'WHILE', 'ELSE', 'LESSTHAN', 'GREATERTHAN', 'OR', 'NOT'
-			, 'INT', 'FLOAT', 'VOID', 'RETURN', 'FLOATNUM')
+			, 'INT', 'FLOAT', 'VOID', 'RETURN', 'FLOATNUM', 'MAIN')
 
 t_ignore = " \t"
 t_ignore_comment = "//[^\n]*\n"
@@ -53,7 +53,8 @@ reserved = {
 	'int' : 'INT',
 	'float' : 'FLOAT',
 	'void' : 'VOID',
-	'return' : 'RETURN'
+	'return' : 'RETURN',
+	'main' : 'MAIN'
 }
 
 def t_FLOATNUM(t):
@@ -98,6 +99,8 @@ def p_expression_progS(p):
 	p[0].assign_blocks(-1)
 	p[0].assign_goto_num(-1)
 	p[0].print_cfg(-1)
+	scopeList.printScopeList()
+	scopeList.printVarTable()
 
 def p_expression_prog(p):
 	"""
@@ -135,13 +138,20 @@ def p_expression_procs(p):
 	"""
 	procs : INT ID LPAREN PARAM RPAREN LCPAREN BODY RCPAREN  
 		   | FLOAT ID LPAREN PARAM RPAREN LCPAREN BODY RCPAREN
-		   | VOID ID LPAREN PARAM RPAREN LCPAREN BODY RCPAREN   
+		   | VOID ID LPAREN PARAM RPAREN LCPAREN BODY RCPAREN 
+		   | VOID MAIN LPAREN RPAREN LCPAREN BODY RCPAREN  
 	"""
-	tup = p[2].get_name_ind()
-	scope = Scope(tup[0])
-	scope.defined()
-	scope.defineFunc(p[4], DataTypes(typeMapper(p[1]), tup[1], True))
-	p[0] = Abstree([p[7]], Label.FUNCTION, False, scope)	
+	if len(p) == 8:
+		scope = Scope("main")
+		scope.defined()
+		scope.defineFunc([], DataTypes(typeMapper(p[1]), 0, True))
+		p[0] = Abstree([p[6]], Label.FUNCTION, False, scope)
+	else:
+		tup = p[2].get_name_ind()
+		scope = Scope(tup[0])
+		scope.defined()
+		scope.defineFunc(p[4], DataTypes(typeMapper(p[1]), tup[1], True))
+		p[0] = Abstree([p[7]], Label.FUNCTION, False, scope)	
 
 def p_expression_param(p):
 	"""
