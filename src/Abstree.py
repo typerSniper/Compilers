@@ -81,8 +81,6 @@ class Abstree:
 			for i in range(abs(p.retType.indirection)):
 				print("*", end='')
 			print(p.retType.type.name.lower())
-			if self.children[0].children[-1].label != Label.RETURN and self.value.name != "main" : #BAAD
-				self.children[0].children.append(Abstree([], Label.RETURN, False, -1))
 			self.children[0].print_tree(depth+1)
 			print()
 			return

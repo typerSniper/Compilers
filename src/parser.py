@@ -136,7 +136,10 @@ def p_expression_procDecl(p):
 
 def p_expression_procs(p):
 	"""
-	procs : INT ID LPAREN PARAM RPAREN LCPAREN BODY RCPAREN  
+	procs : INT ID LPAREN PARAM RPAREN LCPAREN BODY RETURNSTMT SEMICOL RCPAREN  
+		   | FLOAT ID LPAREN PARAM RPAREN LCPAREN BODY RETURNSTMT SEMICOL RCPAREN
+		   | VOID ID LPAREN PARAM RPAREN LCPAREN BODY RETURNSTMT SEMICOL RCPAREN 
+		   | INT ID LPAREN PARAM RPAREN LCPAREN BODY RCPAREN  
 		   | FLOAT ID LPAREN PARAM RPAREN LCPAREN BODY RCPAREN
 		   | VOID ID LPAREN PARAM RPAREN LCPAREN BODY RCPAREN 
 		   | VOID MAIN LPAREN RPAREN LCPAREN BODY RCPAREN  
@@ -147,11 +150,16 @@ def p_expression_procs(p):
 		scope.defineFunc([], DataTypes(typeMapper(p[1]), 0, True))
 		p[0] = Abstree([p[6]], Label.FUNCTION, False, scope)
 	else:
+		if len(p) == 9:
+			p[7].add_child(Abstree([], Label.RETURN, False, -1))
+		else:
+			p[7].add_child(p[8])
 		tup = p[2].get_name_ind()
 		scope = Scope(tup[0])
 		scope.defined()
 		scope.defineFunc(p[4], DataTypes(typeMapper(p[1]), tup[1], True))
-		p[0] = Abstree([p[7]], Label.FUNCTION, False, scope)	
+		p[0] = Abstree([p[7]], Label.FUNCTION, False, scope)
+			
 
 def p_expression_param(p):
 	"""
@@ -189,7 +197,6 @@ def p_expression_body(p) :
 			| ASSIGN SEMICOL BODY
 			| COMPLETEIF BODY
 			| WHILExpr BODY
-			| RETURNSTMT SEMICOL BODY
 			| 
 	"""
 	if(len(p)==1):
@@ -330,7 +337,6 @@ def p_expression_ifBlock(p) :
 	IFBLOCK : IFBLOCK ASSIGN SEMICOL 
 			| IFBLOCK  COMPLETEIF
 			| IFBLOCK WHILExpr
-			| IFBLOCK RETURNSTMT SEMICOL
 			|
 	"""
 	if(len(p)!=1):
@@ -344,7 +350,6 @@ def p_expression_whileBlock(p) :
 	WHILEBLOCK : WHILEBLOCK ASSIGN SEMICOL 
 			| WHILEBLOCK COMPLETEIF  
 			| WHILEBLOCK WHILExpr
-			| WHILEBLOCK RETURNSTMT SEMICOL
 			| 
 
 	"""
