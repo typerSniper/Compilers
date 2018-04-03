@@ -81,23 +81,13 @@ class ScopeList:
 				return False
 		else:
 			if scope.name in self.scopeList:
-				prevScope = self.scopeList[scope.name]
+				if self.scopeList[scope.name].isDefined or (not scope.isDefined):
+					print("DEBUG_FUNCTION_REDECLARATION")
+					return False
 				if(not scope.isSameScope(self.scopeList[scope.name])):
 					print("DEBUG_FUNCTION_OVERLOADED")
 					return False
-				if not scope.isDefined:
-					if prevScope.isDefined:
-						print("FUNCTION_ALREADY_DEFINED", scope.name)
-					else:
-						print("FUNCTION_ALREADY_DECLARED", scope.name)
-					return False
-				elif prevScope.isDefined:
-					print("FUNCTION_BEING_REDFINED", scope.name)
-					return False
-			else :
-				if scope.isDefined:
-					print("DEFINITION_WITHOUT_DECLARATION", scope.name)
-					return False
+				scope.paramIds = self.scopeList[scope.name].paramIds
 			if scope.name!="GLOBAL" and scope.retType.type == DataTypeEnum.VOID and scope.retType.indirection!=0:
 				print("DEBUG_VOID*_NOT_ALLOWED")
 				return False
@@ -106,8 +96,36 @@ class ScopeList:
 				return False;
 		self.scopeList[scope.name] = scope
 		return True
+		# else:
+		# 	if scope.name in self.scopeList:
+		# 		prevScope = self.scopeList[scope.name]
+		# 		if(not scope.isSameScope(self.scopeList[scope.name])):
+		# 			print("DEBUG_FUNCTION_OVERLOADED")
+		# 			return False
+		# 		if not scope.isDefined:
+		# 			if prevScope.isDefined:
+		# 				print("FUNCTION_ALREADY_DEFINED", scope.name)
+		# 			else:
+		# 				print("FUNCTION_ALREADY_DECLARED", scope.name)
+		# 			return False
+		# 		elif prevScope.isDefined:
+		# 			print("FUNCTION_BEING_REDFINED", scope.name)
+		# 			return False
+		# 		scope.paramIds = self.scopeList[scope.name].paramIds
+		# 	else :
+		# 		if scope.isDefined:
+		# 			print("DEFINITION_WITHOUT_DECLARATION", scope.name)
+		# 			return False
+		# 	if scope.name!="GLOBAL" and scope.retType.type == DataTypeEnum.VOID and scope.retType.indirection!=0:
+		# 		print("DEBUG_VOID*_NOT_ALLOWED")
+		# 		return False
+		# 	if  scope.name!="GLOBAL" and (len(scope.paramIds)>len(set(scope.paramIds))):
+		# 		print("DEBUG_TWO_PARAMS_WITH_SAME_ID_IN_", scope.name)
+		# 		return False;
+		# self.scopeList[scope.name] = scope
+		# return True
 	def printScopeList(self):
-		print("Procedure Table :-")
+		print("Procedure table :-")
 		s = ""
 		for i in range(3):
 			s = s+"\t"
@@ -129,7 +147,7 @@ class ScopeList:
 		print(l)
 
 	def printVarTable(self):
-		print("Variable Table :-")
+		print("Variable table :-")
 		l = ""
 		for i in range(90):
 			l = l + "-"

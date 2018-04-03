@@ -94,13 +94,8 @@ precedence = (
 def p_expression_progS(p):
 	'progS : prog'
 	p[0] = p[1]
-	p[0].print_tree(0)
-	print(p[0].valid_tree(None))
-	p[0].assign_blocks(-1)
-	p[0].assign_goto_num(-1)
-	p[0].print_cfg(-1)
-	scopeList.printScopeList()
-	scopeList.printVarTable()
+	global tree
+	tree = p[0]
 
 def p_expression_prog(p):
 	"""
@@ -478,21 +473,24 @@ data = ""
 if __name__ == "__main__":
 	k = sys.argv[1]
 	f = open(k, 'r')
-	outFile1 = (k.split('/'))[-1] + ".ast"
-	outFile2 = (k.split('/'))[-1] + ".cfg"
+	outFile1 = k + ".ast"
+	outFile2 = k + ".cfg"
+	outFile3 = k + ".sym"
 	data = f.read()
 	process(data)
-	# done = 1
-	# if correct:
-	# 	if not tree.valid_tree([], None, None):
-	# 		done = 0
-	# 	if done :
-	# 		sys.stdout = open(outFile1, 'w')
-	# 		tree.print_tree(0)
-	# 		print()
-	# 		sys.stdout = open(outFile2, 'w')
-	# 		print()
-	# 		tree.add_child(Abstree([], Label.END, True, -1))
-	# 		tree.assign_blocks(0)
-	# 		tree.assign_goto_num(0)
-	# 		tree.print_cfg(-1)
+	done = 1
+	if correct:
+		if not tree.valid_tree(None):
+			done = 0
+		if done :
+			sys.stdout = open(outFile1, 'w')
+			tree.print_tree(0)
+			print()
+			sys.stdout = open(outFile2, 'w')
+			print()
+			tree.assign_blocks(-1)
+			tree.assign_goto_num(-1)
+			tree.print_cfg(-1)
+			sys.stdout = open(outFile3, 'w')
+			scopeList.printScopeList()
+			scopeList.printVarTable()
