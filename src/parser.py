@@ -481,6 +481,7 @@ if __name__ == "__main__":
 	done = 1
 	if correct:
 		if not tree.valid_tree(None):
+			print("ERROR_DETECTED")
 			done = 0
 		if done :
 			sys.stdout = open(outFile1, 'w')

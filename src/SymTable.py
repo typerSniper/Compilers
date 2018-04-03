@@ -22,11 +22,13 @@ class Scope:
 		return True
 	def defineFunc(self, paramList, retType):
 		self.paramIds = []
+		self.paramIdsSym = []
 		self.paramTypes = []
 		for k in paramList :
 			self.varTable[k[0]] = VarItem(k[0], k[1])
 			self.paramIds.append(k[0])
 			self.paramTypes.append(k[1])
+			self.paramIdsSym.append(k[0])
 		retType.addressable = False
 		self.retType = retType
 		self.retType.setUsable()
@@ -87,7 +89,7 @@ class ScopeList:
 				if(not scope.isSameScope(self.scopeList[scope.name])):
 					print("DEBUG_FUNCTION_OVERLOADED")
 					return False
-				scope.paramIds = self.scopeList[scope.name].paramIds
+				scope.paramIdsSym = self.scopeList[scope.name].paramIdsSym
 			if scope.name!="GLOBAL" and scope.retType.type == DataTypeEnum.VOID and scope.retType.indirection!=0:
 				print("DEBUG_VOID*_NOT_ALLOWED")
 				return False
@@ -142,7 +144,11 @@ class ScopeList:
 			print(scope.name, s, end='  ')
 			print(scope.retType, end='')
 			print(s, end='  ')
-			scope.printParams()
+			for k in range(len(scope.paramIdsSym)):
+				scope.print_without(scope.paramTypes[k])
+				scope.print_without(" "+scope.paramIdsSym[k])
+				if(k!=len(scope.paramIdsSym)-1):
+					scope.print_without(", ")
 			print()
 		print(l)
 
