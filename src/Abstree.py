@@ -218,6 +218,9 @@ class Abstree:
 							print("DEBUG_DIRECT_USE_NON_POINTER")
 					else:
 						print("DEBUG_RETURN_TYPE_MISMATCH")
+			else:
+				print("DEBUG_RETURN_TYPE_MISMATCH")
+				return False
 		return False
 
 	def getTypeAndCheck(self, scope):
@@ -290,6 +293,7 @@ class Abstree:
 						if(argType[1] and argType[0].isSameType(funcScope.paramTypes[k])):
 							q = q and True
 						else :
+							print("DEBUG_TYPE_MISMATCH")
 							return (None, False)
 					y = funcScope.retType.getCopy()
 					y.indirection = -1*y.indirection
@@ -530,19 +534,34 @@ class Abstree:
 			print(rhs_array[-1], end='')
 		print(")")
 
+	def funcall_helper_and_unroll(self, index, t_curr):
+		if self.children[index].label == Label.FUNCALL:
+			rhs_array, t_curr = self.children[index].unroll_funcall(t_curr)
+			return True, t_curr, rhs_array
+		else:
+			t_curr = self.children[index].unroll_and_print(t_curr)
+		return False, t_curr, None
+
 	def unroll_and_print(self, t_curr):
 		if self.label==Label.ASGN :
 			if self.children[1].will_unroll():
-				if self.children[1].label == Label.FUNCALL:
-					rhs_array, t_curr = self.children[1].unroll_funcall(t_curr)
-					self.children[0].print_statement()
-					print(' = ', end = '')
-					self.children[1].print_funcall(rhs_array)
+				f_h = self.funcall_helper_and_unroll(1, t_curr)
+				t_curr = f_h[1]
+				self.children[0].print_statement()
+				print(' = ', end = '')
+				if f_h[0]:
+					self.children[1].print_funcall(f_h[2])
 				else:
-					t_curr = self.children[1].unroll_and_print(t_curr)
-					self.children[0].print_statement()
-					print(' = ', end = '')
 					print("t"+str(t_curr))
+				# if self.children[1].label == Label.FUNCALL:
+				# 	rhs_array, t_curr = self.children[1].unroll_funcall(t_curr)
+					
+					
+				# else:
+				# 	t_curr = self.children[1].unroll_and_print(t_curr)
+				# 	self.children[0].print_statement()
+				# 	print(' = ', end = '')
+					
 				return t_curr
 			self.children[0].print_statement()
 			print(' = ', end = '')
@@ -553,37 +572,63 @@ class Abstree:
 		elif nameMapper(self.label)[0]:
 			if self.label == Label.UMINUS or self.label == Label.NOT:
 				if self.children[0].will_unroll():
-					t1 = self.children[0].unroll_and_print(t_curr)
+					f_h = self.funcall_helper_and_unroll(0, t_curr)
+					t1 = f_h[1]
 					t_curr = t1+1
-					print("t"+str(t_curr)+" = "+nameMapper(self.label)[1]+"t"+str(t1), end='')
+					print("t"+str(t_curr)+" = ", end='')
+					if f_h[0]:
+						self.children[0].print_funcall(f_h[2])
+					else:
+						print(nameMapper(self.label)[1]+"t"+str(t1), end='')
 				else:
 					t_curr = t_curr+1
 					print("t"+str(t_curr)+" = "+nameMapper(self.label)[1], end='')
 					self.children[0].print_statement()
 			elif(self.children[0].will_unroll() and self.children[1].will_unroll()):
-				t1 = self.children[0].unroll_and_print(t_curr)
+				f_h_1 = self.funcall_helper_and_unroll(0, t_curr)
+				t1 = f_h_1[1]
 				t_curr = t1
-				t2 = self.children[1].unroll_and_print(t_curr)
+				f_h_2 = self.funcall_helper_and_unroll(1, t_curr)
+				t2 = f_h_2[1]
 				t_curr = t2+1
-				print("t"+str(t_curr)+" = "+"t"+str(t1)+nameMapper(self.label)[1]+"t"+str(t2), end='')
+				print("t"+str(t_curr)+" = ", end='')
+				if f_h_1[0]:
+					self.children[0].print_funcall(f_h_1[2])
+				else:
+					print("t"+str(t1), end='')
+				print(nameMapper(self.label)[1], end='')
+				if f_h_2[0]:
+					self.children[1].print_funcall(f_h_2[2])
+				else:
+					print("t"+str(t2), end='')
 			elif(not self.children[0].will_unroll() and not self.children[1].will_unroll()):
 				t_curr+=1
 				print("t"+str(t_curr)+" = ", end='')
 				self.children[0].print_statement()
 				print(nameMapper(self.label)[1], end='')
 				self.children[1].print_statement()
-
 			elif(self.children[0].will_unroll() and not self.children[1].will_unroll()):
-				t1 = self.children[0].unroll_and_print(t_curr)
+				f_h_1 = self.funcall_helper_and_unroll(0, t_curr)
+				t1 = f_h_1[1]
 				t_curr = t1 + 1
-				print("t"+str(t_curr)+" = "+"t"+str(t1)+nameMapper(self.label)[1], end='')
+				print("t"+str(t_curr)+" = ", end='')
+				if f_h_1[0]:
+					self.children[0].print_funcall(f_h_1[2])
+				else:
+					print("t"+str(t1), end='')
+				print(nameMapper(self.label)[1], end='')
 				self.children[1].print_statement()
 			elif(not self.children[0].will_unroll() and self.children[1].will_unroll()):
-				t2 = self.children[1].unroll_and_print(t_curr)
+				f_h_2 = self.funcall_helper_and_unroll(1, t_curr)
+				t2 = f_h_2[1]
 				t_curr = t2 + 1
 				print("t"+str(t_curr)+" = ", end='')
 				self.children[0].print_statement()
-				print(nameMapper(self.label)[1]+"t"+str(t2), end='')
+				print(nameMapper(self.label)[1], end='')
+				if f_h_2[0]:
+					self.children[1].print_funcall(f_h_2[2])
+				else:
+					print("t"+str(t2), end='')
 		print()
 		return t_curr
 
