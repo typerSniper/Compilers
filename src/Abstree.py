@@ -532,7 +532,7 @@ class Abstree:
 			self.children[-1].print_statement()
 		else:
 			print(rhs_array[-1], end='')
-		print(")")
+		print(")", end='')
 
 	def funcall_helper_and_unroll(self, index, t_curr):
 		if self.children[index].label == Label.FUNCALL:
@@ -551,6 +551,7 @@ class Abstree:
 				print(' = ', end = '')
 				if f_h[0]:
 					self.children[1].print_funcall(f_h[2])
+					print()
 				else:
 					print("t"+str(t_curr))
 				# if self.children[1].label == Label.FUNCALL:
@@ -569,6 +570,7 @@ class Abstree:
 		elif self.label == Label.FUNCALL:
 			rhs_array, t_curr = self.unroll_funcall(t_curr)
 			self.print_funcall(rhs_array)
+			print()
 		elif nameMapper(self.label)[0]:
 			if self.label == Label.UMINUS or self.label == Label.NOT:
 				if self.children[0].will_unroll():
