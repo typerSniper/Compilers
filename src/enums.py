@@ -50,6 +50,9 @@ class Label(enum.Enum):
 	CONST = 36
 	RETURN = 37
 	FUNCALL = 38
+	BLOCK_NUM = 39
+	TEMP = 40
+	ELSE = 41
 	DEFAULT = 1000
 def opMapper(x):
 	return {

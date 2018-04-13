@@ -1,8 +1,9 @@
 from enums import *
 from SymTable import * 
-
+from cfg import *
 
 scopeList = ScopeList()
+cfg = []
 def nameMapper(x):
 	y = {
 		Label.PLUS :  ' + '  ,
@@ -29,6 +30,14 @@ def nameMapper(x):
 CONDS = [Label.LT, Label.LE, Label.GT, Label.GE, Label.EQ, Label.NE, Label.AND, Label.OR, Label.NOT]
 BINOPS = [Label.PLUS, Label.MINUS, Label.MUL, Label.DIV, Label.ASGN]
 UNOPS = [Label.UMINUS, Label.DEREF, Label.ADDR] 
+funcIndices = {}
+def addToCfg(x):
+	global cfg
+	cfg.append(x)
+def getCFGIndex():
+	global cfg
+	return len(cfg)-1
+
 class Abstree:
 	label = Label.DEFAULT
 	children = []
@@ -193,7 +202,6 @@ class Abstree:
 				if not q:
 					break
 				q = q and k.valid_tree(scope)
-				#TUKKA
 			return q
 		elif self.label == Label.ASGN:
 			return self.check_assign() and self.getTypeAndCheck(scope)[1]
@@ -321,54 +329,6 @@ class Abstree:
 			#lhsType(always addressable)-> if *  rhs anything with same type,  
 			#	otherwise, rhs must be addressable(that is already handled)
 			# uISNG NONE FOR BOOLS AS WELL ATM
-
-	# # def update_vars(self):
-	# 	vars_ = []
-	# 	for k in self.children:
-	# 		if k.label == Label.DVAR:
-	# 			c = k.children[0]
-	# 			depth = 0
-	# 			while True:
-	# 				if c.label == Label.VAR:
-	# 					vars_.append((c.value, depth))
-	# 					break
-	# 				else:
-	# 					depth+=1
-	# 					c=c.children[0]
-	# 	return vars_
-	
-	# def check_declaration(self, availVars):
-	# 	g = True
-	# 	if self.label == Label.VAR:
-	# 		if self.value in [x[0] for x in availVars]:
-	# 			g = [True for x in availVars if x[0]==self.value and x[1]==0]
-	# 			if len(g) > 0:
-	# 				print("Direct use of non-pointer variable")
-	# 				return False
-	# 			return True
-	# 		else:
-	# 			print("ERROR:", self.value, "Not Defined")
-	# 			return False
-	# 	elif self.label == Label.DEREF or self.label == Label.ADDR:
-	# 		curr = self
-	# 		depth = 0
-	# 		while(curr.label!=Label.VAR):
-	# 			if(curr.label==Label.DEREF):
-	# 				depth = depth + 1
-	# 			elif (curr.label==Label.ADDR):
-	# 				depth = depth - 1
-	# 			curr = curr.children[0]
-	# 		t = (curr.value, depth)
-	# 		g = [True  for x in availVars if x[0]==t[0] and ((t[1] <= x[1] and x[1]!=0) or (x[1]==0 and t[1]<x[1])) ]
-	# 		if len(g):
-	# 			return True
-	# 		else:
-	# 			print("ERROR: TOO MUCH INDIRECTION")
-	# 			return False
-	# 	for k in self.children:
-	# 		g = g and k.check_declaration(availVars)
-	# 	return g
-	
 	
 	def check_assign(self):
 		if self.children[0].label==Label.DEREF:
@@ -407,30 +367,45 @@ class Abstree:
 			for x in self.children:
 				t_curr = x.print_cfg(t_curr)
 		elif self.label == Label.FUNCTION:
+			addToCfg(CFG([], Label.FUNCTION, False, self.value.name)) 
 			print("function "+ self.value.name+ "(", end='')
 			self.value.printParams()
 			print(")")
+			funcStart = getCFGIndex()
 			for x in self.children:
 				t_curr = x.print_cfg(t_curr)
+			funcEnd = getCFGIndex()
+			funcIndices[self.value.name] = (funcStart, funcEnd)
 			print()
 		elif self.label == Label.RETURN:
 			b_curr = self.block_num
+			addToCfg(CFG([], Label.BLOCK_NUM, False, b_curr))
 			print("<bb", str(b_curr)+">")
 			if len(self.children) > 0:
+				node = None
 				if self.children[0].will_unroll():
 					t_curr = self.children[0].unroll_and_print(t_curr)
+					node = CFG([], Label.TEMP, True, t_curr)
 					print("return t"+str(t_curr))
 				else:
 					print("return ", end='')
-					self.children[0].print_statement()
+					node = self.children[0].print_statement()
+				addToCfg(CFG([node], Label.RETURN, False, -1))
 			else:
 				print("return")
+				addToCfg(CFG([], Label.RETURN, False, -1))
 		elif self.label == Label.WHILE:
 			b_curr = self.block_num
 			print("<bb", str(b_curr)+">")
+			addToCfg(CFG([], Label.BLOCK_NUM, False, b_curr))
 			t_curr = self.children[0].unroll_and_print(t_curr)
+			node1 = CFG([], Label.TEMP, False, t_curr)
+			node2 = CFG([], Label.BLOCK_NUM, False, self.children[0].goto_num)
+			addToCfg(CFG([node1, node2], Label.IF, False, -1))
 			print("if(t"+str(t_curr),end='')
 			print(") goto <bb", str(self.children[0].goto_num)+">")
+			node = CFG([], Label.BLOCK_NUM, False, self.goto_num)
+			addToCfg(CFG([node], Label.ELSE, False, -1))
 			print("else goto <bb", str(self.goto_num)+">")
 			print()
 			for x in self.children[1:]:
@@ -438,9 +413,15 @@ class Abstree:
 		elif self.label == Label.IF:
 			b_curr = self.block_num
 			print("<bb", str(b_curr)+">")
+			addToCfg(CFG([], Label.BLOCK_NUM, False, b_curr))
 			t_curr = self.children[0].unroll_and_print(t_curr)
+			node1 = CFG([], Label.TEMP, False, t_curr)
+			node2 = CFG([], Label.BLOCK_NUM, False, self.children[0].goto_num)
+			addToCfg(CFG([node1, node2], Label.IF, False, -1))
 			print("if(t"+str(t_curr),end='')
 			print(") goto <bb", str(self.children[0].goto_num)+">")
+			node = CFG([], Label.BLOCK_NUM, False, self.goto_num)
+			addToCfg(CFG([node], Label.ELSE, False, -1))
 			print("else goto <bb", str(self.goto_num)+">")
 			print()
 			for x in self.children[1:]:
@@ -448,56 +429,69 @@ class Abstree:
 		elif self.label == Label.ASGN:
 			if self.block_num != -1:
 				b_curr = self.block_num
+				addToCfg(CFG([], Label.BLOCK_NUM, False, b_curr))
 				print("<bb", str(b_curr)+">")
 			t_curr = self.unroll_and_print(t_curr)
 			if self.goto_num != -1:
+					addToCfg(CFG([], Label.BLOCK_NUM, False, self.goto_num))
 					print("goto <bb", str(self.goto_num)+">")
 					print()
 		elif self.label == Label.FUNCALL:
 			if self.will_unroll():
 				t_curr = self.unroll_and_print(t_curr)
 			else:
-				self.print_statement()
+				node = self.print_statement()
+				addToCfg(node)
 		return t_curr
 
 	def print_statement(self):
 		if self.label == Label.ASGN:
 			lhs = self.children[0]
 			rhs = self.children[1]
-			lhs.print_statement()
+			lhs_node = lhs.print_statement()
 			print(" = ", end='')
-			rhs.print_statement()
+			rhs_node = rhs.print_statement()
+			return CFG([lhs_node, rhs_node], Label.ASGN, False, -1)
 		elif self.label == Label.FUNCALL:
 			print(self.value, end='(')
+			child_nodes = []
 			for x in self.children[:-1]:
-				x.print_statement()
+				child_nodes.append(x.print_statement())
 				print(", ", end='')
-			self.children[-1].print_statement()
+			child_nodes.append(self.children[-1].print_statement())
 			print(")", end='')
+			return CFG(child_nodes, Label.FUNCALL, False, self.value)
 		elif self.label == Label.VAR:
 			print(self.value, end='')
+			return CFG([], Label.VAR, False, self.value)
 		elif self.label == Label.ADDR:
 			print("&", end='')
-			self.children[0].print_statement()
+			node = self.children[0].print_statement()
+			return CFG([node], Label.ADDR, False, -1)
 		elif self.label == Label.DEREF:
 			print("*", end='')
-			self.children[0].print_statement()
+			node = self.children[0].print_statement()
+			return CFG([node], Label.DEREF, False, -1)
 		elif self.label == Label.FLOATCONST or self.label == Label.INTCONST:
 			print(self.value, end='')
+			return CFG([], self.label, False, -1)
 		elif self.label == Label.UMINUS:
 			rhs = self.children[0]
 			print(nameMapper(self.label)[1], end='')
-			rhs.print_statement()
+			node = rhs.print_statement()
+			return CFG([node], Label.UMINUS, False, -1)
 		elif self.label == Label.NOT:
 			rhs = self.children[0]
 			print(nameMapper(self.label)[1], end='')
-			rhs.print_statement()
+			node = rhs.print_statement()
+			return CFG([node], Label.NOT, False, -1)
 		elif nameMapper(self.label)[0]:
 			lhs = self.children[0]
 			rhs = self.children[1]
-			lhs.print_statement()
+			lhs_node = lhs.print_statement()
 			print(nameMapper(self.label)[1], end='')
-			rhs.print_statement()
+			rhs_node = rhs.print_statement()
+			return CFG([lhs_node, rhs_node], self.label, False, -1)
 
 	def will_unroll(self):
 		if nameMapper(self.label)[0] :
@@ -521,18 +515,26 @@ class Abstree:
 		return a, t_curr
 
 	def print_funcall(self, rhs_array):
+		child_nodes = []
 		print(self.value + "(", end='')
 		for x in range(len(rhs_array)-1):
 			if rhs_array[x] == -1:
-				self.children[x].print_statement()
+				node = self.children[x].print_statement()
+				child_nodes.append(node)
 				print(", ", end='')
 			else:
+				node = CFG([], Label.TEMP, False, rhs_array[x])
+				child_nodes.append(node)
 				print(rhs_array[x], end=', ')
 		if rhs_array[-1] == -1:
-			self.children[-1].print_statement()
+			node = self.children[-1].print_statement()
+			child_nodes.append(node)
 		else:
+			node = CFG([], Label.TEMP, False, rhs_array[-1])
+			child_nodes.append(node)
 			print(rhs_array[-1], end='')
 		print(")", end='')
+		return CFG(child_nodes, Label.FUNCALL, False, self.value)
 
 	def funcall_helper_and_unroll(self, index, t_curr):
 		if self.children[index].label == Label.FUNCALL:
@@ -547,29 +549,26 @@ class Abstree:
 			if self.children[1].will_unroll():
 				f_h = self.funcall_helper_and_unroll(1, t_curr)
 				t_curr = f_h[1]
-				self.children[0].print_statement()
+				lhs_node = self.children[0].print_statement()
 				print(' = ', end = '')
+				rhs_node = None
 				if f_h[0]:
-					self.children[1].print_funcall(f_h[2])
+					rhs_node = self.children[1].print_funcall(f_h[2])
 					print()
 				else:
+					rhs_node = CFG([], Label.TEMP, False, t_curr)
 					print("t"+str(t_curr))
-				# if self.children[1].label == Label.FUNCALL:
-				# 	rhs_array, t_curr = self.children[1].unroll_funcall(t_curr)
-					
-					
-				# else:
-				# 	t_curr = self.children[1].unroll_and_print(t_curr)
-				# 	self.children[0].print_statement()
-				# 	print(' = ', end = '')
-					
+				addToCfg(CFG([lhs_node, rhs_node], Label.ASGN, False, -1))
 				return t_curr
-			self.children[0].print_statement()
-			print(' = ', end = '')
-			self.children[1].print_statement()
+			else:
+				lhs_node = self.children[0].print_statement()
+				print(' = ', end = '')
+				rhs_node = self.children[1].print_statement()
+				addToCfg(CFG([lhs_node, rhs_node], Label.ASGN, False, -1))
 		elif self.label == Label.FUNCALL:
 			rhs_array, t_curr = self.unroll_funcall(t_curr)
-			self.print_funcall(rhs_array)
+			node = self.print_funcall(rhs_array)
+			addToCfg(node)
 			print()
 		elif nameMapper(self.label)[0]:
 			if self.label == Label.UMINUS or self.label == Label.NOT:
@@ -578,14 +577,23 @@ class Abstree:
 					t1 = f_h[1]
 					t_curr = t1+1
 					print("t"+str(t_curr)+" = ", end='')
+					lhs_node = CFG([], Label.TEMP, False, t_curr)
+					node = None
+					print(nameMapper(self.label)[1], end='')
 					if f_h[0]:
-						self.children[0].print_funcall(f_h[2])
+						node = self.children[0].print_funcall(f_h[2])
 					else:
-						print(nameMapper(self.label)[1]+"t"+str(t1), end='')
+						print("t"+str(t1), end='')
+						node = CFG([], Label.TEMP, False, t_curr)
+					rhs_node = CFG([node], Label.UMINUS, False, -1)
+					addToCfg(CFG([lhs_node, rhs_node], Label.ASGN, False, -1))
 				else:
 					t_curr = t_curr+1
+					lhs_node = CFG([], Label.TEMP, False, t_curr)
 					print("t"+str(t_curr)+" = "+nameMapper(self.label)[1], end='')
-					self.children[0].print_statement()
+					node = self.children[0].print_statement()
+					rhs_node = CFG([node], Label.UMINUS, False, -1)
+					addToCfg(CFG([lhs_node, rhs_node], Label.ASGN, False, -1))
 			elif(self.children[0].will_unroll() and self.children[1].will_unroll()):
 				f_h_1 = self.funcall_helper_and_unroll(0, t_curr)
 				t1 = f_h_1[1]
@@ -594,43 +602,64 @@ class Abstree:
 				t2 = f_h_2[1]
 				t_curr = t2+1
 				print("t"+str(t_curr)+" = ", end='')
+				lhs_node = CFG([], Label.TEMP, False, t_curr)
+				rhs_1 = None
+				rhs_2 = None
 				if f_h_1[0]:
-					self.children[0].print_funcall(f_h_1[2])
+					rhs_1 = self.children[0].print_funcall(f_h_1[2])
 				else:
 					print("t"+str(t1), end='')
+					rhs_1 = CFG([], Label.TEMP, False, t1)
 				print(nameMapper(self.label)[1], end='')
 				if f_h_2[0]:
-					self.children[1].print_funcall(f_h_2[2])
+					rhs_2 = self.children[1].print_funcall(f_h_2[2])
 				else:
 					print("t"+str(t2), end='')
+					rhs_2 = CFG([], Label.TEMP, False, t2)
+
+				rhs = CFG([rhs_1, rhs_2], self.label, False, -1)
+				addToCfg(CFG([lhs, rhs], Label.ASGN, False, -1))
 			elif(not self.children[0].will_unroll() and not self.children[1].will_unroll()):
 				t_curr+=1
 				print("t"+str(t_curr)+" = ", end='')
-				self.children[0].print_statement()
+				lhs = CFG([], Label.TEMP, False, t_curr)
+				rhs_1 = self.children[0].print_statement()
 				print(nameMapper(self.label)[1], end='')
-				self.children[1].print_statement()
+				rhs_2 = self.children[1].print_statement()
+				rhs = CFG([rhs_1, rhs_2], self.label, False, -1)
+				addToCfg(CFG([lhs, rhs], Label.ASGN, False, -1))
 			elif(self.children[0].will_unroll() and not self.children[1].will_unroll()):
 				f_h_1 = self.funcall_helper_and_unroll(0, t_curr)
 				t1 = f_h_1[1]
 				t_curr = t1 + 1
 				print("t"+str(t_curr)+" = ", end='')
+				lhs = CFG([], Label.TEMP, False, t_curr)
+				rhs_1 = None
 				if f_h_1[0]:
-					self.children[0].print_funcall(f_h_1[2])
+					rhs_1 = self.children[0].print_funcall(f_h_1[2])
 				else:
 					print("t"+str(t1), end='')
+					rhs_1 = CFG([], Label.TEMP, False, t1)
 				print(nameMapper(self.label)[1], end='')
-				self.children[1].print_statement()
+				rhs_2 = self.children[1].print_statement()
+				rhs = CFG([rhs_1, rhs_2], self.label, False, -1)
+				addToCfg(CFG([lhs, rhs], Label.ASGN, False, -1))
 			elif(not self.children[0].will_unroll() and self.children[1].will_unroll()):
 				f_h_2 = self.funcall_helper_and_unroll(1, t_curr)
 				t2 = f_h_2[1]
 				t_curr = t2 + 1
 				print("t"+str(t_curr)+" = ", end='')
-				self.children[0].print_statement()
+				lhs = CFG([], Label.TEMP, False, t_curr)
+				rhs_1 = self.children[0].print_statement()
 				print(nameMapper(self.label)[1], end='')
+				rhs_2 = None
 				if f_h_2[0]:
-					self.children[1].print_funcall(f_h_2[2])
+					rhs_2 = self.children[1].print_funcall(f_h_2[2])
 				else:
 					print("t"+str(t2), end='')
+					rhs_2 = CFG([], Label.TEMP, False, t2)
+				rhs = CFG([rhs_1, rhs_2], self.label, False, -1)
+				addToCfg(CFG([lhs, rhs], Label.ASGN, False, -1))
 		print()
 		return t_curr
 

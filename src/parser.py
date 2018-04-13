@@ -492,6 +492,8 @@ if __name__ == "__main__":
 			tree.assign_blocks(-1)
 			tree.assign_goto_num(-1)
 			tree.print_cfg(-1)
+			for x in cfg:
+				x.print_tree()
 			sys.stdout = open(outFile3, 'w')
 			scopeList.printScopeList()
 			scopeList.printVarTable()
