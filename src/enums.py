@@ -71,6 +71,34 @@ def opMapper(x):
 		'!' : Label.NOT,
 	}[x]
 
+def instMapper(x):
+	if x == Label.LE:
+		return ['slt', 'not'] #rev
+	if x == Label.GT:
+		return ['slt'] #rev
+	if x == Label.GE:
+		return ['slt', 'not']
+
+	return {
+		Label.PLUS : ['add']
+		Label.MINUS : ['sub']
+		Label.MUL : ['mul']
+		Label.DIV, : ['div']
+		Label.LT : ['slt']
+		Label.EQ : ['seq']
+		Label.AND : ['and']
+		Label.OR : ['or']
+		Label.NE : ['sne']
+		Label.NOT: ['not']
+	}[x]
+
+def sizeMapper(x): 
+	return {
+		DataTypeEnum.INT : 4,
+		DataTypeEnum.FLOAT : 4
+	}[x]
+
+
 def typeMapper(x):
 	return {
 	'int' : DataTypeEnum.INT,
