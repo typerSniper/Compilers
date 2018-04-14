@@ -56,12 +56,13 @@ class CFG:
 			x.print_tree()
 			i= i + 1
 		print()
-	def printPrologue(self):
+	def printPrologue(self, funcName):
 		self.pSet.printLoadStore(False, regStringMapper(-3), regStringMapper(-1), 0)
 		self.pSet.printLoadStore(False, regStringMapper(-2), regStringMapper(-1), -4)
 		self.pSet.printOps("sub", regStringMapper(-2), regStringMapper(-1), 8)
 		localSpace =  global_.scopeList.scopeList[self.value].getLocalSpace()
 		self.pSet.printOps("sub", regStringMapper(-1), regStringMapper(-1), localSpace+8)
+		global_.scopeList.scopeList[funcName].scope_width = localSpace
 	def printEpilogue(self):
 		print("epilogue_"+self.value+":")
 		localSpace =  global_.scopeList.scopeList[self.value].getLocalSpace()
@@ -74,7 +75,7 @@ class CFG:
 		if offset is None:
 			return True
 		regNum = varMapping.addMapping(self.value)
-		self.pSet.printLoadStore(True, regStringMapper(regNum), regStringMapper(-1), offset+4) ##BAAD
+		self.pSet.printLoadStore(True, regStringMapper(regNum), regStringMapper(-1), offset)
 		return False
 	def getTerminal(self, funcName):
 		name = ""
@@ -102,31 +103,49 @@ class CFG:
 		elif self.label == Label.FUNCTION:
 			print(self.value, ":")
 		elif self.label == Label.ASGN:
-			rhs = self.children[1]
 			lhs = self.children[0]
+			rhs = self.children[1]
 			finReg = self.resolve_reg(rhs, funcName)
-
 			if len(lhs.children) == 0:
 				if lhs.label == Label.TEMP:
-					rhsReg = varMapping.addMapping(lhs.value)
-					self.pSet.printMove(regStringMapper(rhsReg), finReg)
+					lhsReg = varMapping.addMapping(lhs.value)
+					self.pSet.printMove(regStringMapper(lhsReg), finReg)
 					varMapping.freeNamedReg(finReg)
 				else:
-					rhs_name, isGlobal = rhs.getTerminal(funcName)
-					self.pSet.printMove(rhs_name, finReg)
+					offset = global_.scopeList.scopeList[funcName].getOffset(lhs.value)
+					if offset is None:
+						lhsString = "global_"+self.value
+						print("Stored in Global") #TODO
+					else:
+						self.pSet.printLoadStore(False, finReg, regStringMapper(-1), offset)
 					varMapping.freeNamedReg(finReg)
+					# lhs_name, isGlobal = rhs.getTerminal(funcName)
+					# self.pSet.printMove(rhs_name, finReg)
+					# varMapping.freeNamedReg(finReg)
 			else:
-				print("\tLINE WRITTEN")
+				curr = lhs
+				while len(curr.children) > 0:
+					curr = curr.children[0]
+				lhs = curr
+				if lhs.label == Label.VAR:
+					name, isGlobal = lhs.getTerminal(funcName)
+					if isGlobal:
+						self.pSet.printLoadStore(False, finReg, "global_"+name, 0)
+					else:
+						self.pSet.printLoadStore(False, finReg, name, 0)
+				else:
+					print("\tIDK") #TODO
+				# print("\tLINE WRITTEN") 
 				
 		elif self.label == Label.RETURN:
-			finReg = self.resolve_reg(self.children[0], funcName)
-			self.pSet.printMove(regStringMapper(-4), finReg)
-			varMapping.freeNamedReg(finReg)
+			if len(self.children) > 0:
+				finReg = self.resolve_reg(self.children[0], funcName)
+				self.pSet.printMove(regStringMapper(-4), finReg)
+				varMapping.freeNamedReg(finReg)
 		elif self.label == Label.GOTO_NUM:
 			print("\tj", "label"+str(self.value))
 		# elif self.label == Label.IF:
 		# 	condReg = tempToReg(self.children[0].value)
-	
 	def resolve_reg(self, rhs, funcName):
 		finReg = -1
 		if rhs.label == Label.FUNCALL:
@@ -191,13 +210,13 @@ class CFG:
 				if not isGlobal:
 					varMapping.freeNamedReg(lhs_name)
 			elif rhs.label == Label.ADDR:
-				print("HERE")
+				# print("HERE")
 				tempReg = varMapping.getMinUsable()
 				assert(lhs_1.label == Label.VAR)
 				offset = global_.scopeList.scopeList[funcName].getOffset(lhs_1.value)
-				print(lhs_1.value)
+				# print(global_.scopeList.scopeList[funcName].scope_width)
 				# tempReg2 = self.getImm(offset)[0]
-				self.pSet.printOps("addi", regStringMapper(tempReg), regStringMapper(-1), offset+4) ##BAAD
+				self.pSet.printOps("addi", regStringMapper(tempReg), regStringMapper(-1), offset)
 				# varMapping.freeNamedReg(tempReg2)
 			elif rhs.label == Label.UMINUS:
 				tempReg = varMapping.getMinUsable()
@@ -248,7 +267,7 @@ def printMips(index, funcName):
 		funcName = currNode.value
 		funcEnd = global_.funcIndices[currNode.value][1]
 		j = index + 1
-		currNode.printPrologue()
+		currNode.printPrologue(funcName)
 		#Add Prologue
 		while j <= funcEnd:
 			printMips(j, funcName)

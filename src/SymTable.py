@@ -13,6 +13,7 @@ class Scope:
 		self.name = name
 		self.varTable = OrderedDict()
 		self.isDefined = False
+		self.stack_width = 0
 	def getLocalSpace(self):
 		offset = 0
 		paramNames = [x for x in self.paramIds]##ASSUMPTION THIS IS THE CURRENT THING
@@ -28,7 +29,7 @@ class Scope:
 		return offset
 	def getOffset(self, x):
 		if x in self.varTable:
-			return self.varTable[x].offset
+			return self.scope_width - self.varTable[x].offset
 		return None
 	def setParent(self, parent):
 		self.parent = parent
