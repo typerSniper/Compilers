@@ -53,6 +53,7 @@ class Label(enum.Enum):
 	BLOCK_NUM = 39
 	TEMP = 40
 	ELSE = 41
+	GOTO_NUM = 42
 	DEFAULT = 1000
 def opMapper(x):
 	return {
@@ -80,15 +81,15 @@ def instMapper(x):
 		return ['slt', 'not']
 
 	return {
-		Label.PLUS : ['add']
-		Label.MINUS : ['sub']
-		Label.MUL : ['mul']
-		Label.DIV, : ['div']
-		Label.LT : ['slt']
-		Label.EQ : ['seq']
-		Label.AND : ['and']
-		Label.OR : ['or']
-		Label.NE : ['sne']
+		Label.PLUS : ['add'],
+		Label.MINUS : ['sub'],
+		Label.MUL : ['mul'],
+		Label.DIV : ['div'],
+		Label.LT : ['slt'],
+		Label.EQ : ['seq'],
+		Label.AND : ['and'],
+		Label.OR : ['or'],
+		Label.NE : ['sne'],
 		Label.NOT: ['not']
 	}[x]
 

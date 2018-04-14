@@ -6,6 +6,7 @@ import ply.yacc as yacc
 from enums import *
 from Abstree import *
 from SymTable import *
+import global_
 
 
 tree = []
@@ -476,6 +477,7 @@ if __name__ == "__main__":
 	outFile1 = k + ".ast"
 	outFile2 = k + ".cfg"
 	outFile3 = k + ".sym"
+	outFile4 = k + ".s"
 	data = f.read()
 	process(data)
 	done = 1
@@ -492,8 +494,10 @@ if __name__ == "__main__":
 			tree.assign_blocks(-1)
 			tree.assign_goto_num(-1)
 			tree.print_cfg(-1)
-			for x in cfg:
-				x.print_tree()
 			sys.stdout = open(outFile3, 'w')
-			scopeList.printScopeList()
-			scopeList.printVarTable()
+			global_.scopeList.printScopeList()
+			global_.scopeList.printVarTable()
+			sys.stdout = open(outFile4, 'w')
+			j = 0
+			while j < len(global_.cfg):
+				j = printMips(j, -1)

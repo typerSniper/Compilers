@@ -15,19 +15,20 @@ class Scope:
 		self.isDefined = False
 	def getLocalSpace(self):
 		offset = 0
-		paramNames = [x.name for x in self.paramIds]##ASSUMPTION THIS IS THE CURRENT THING
+		paramNames = [x for x in self.paramIds]##ASSUMPTION THIS IS THE CURRENT THING
 		for x in self.varTable:
 			if x not in paramNames:
 				self.varTable[x].offset = offset
-				offset = offset + sizeMapper(self.varTable[x].type)
+				offset = offset + 4 ##BAAD
 		parOffset = 0
-		for x in paramNames.reverse():
-			parOffset = parOffset - sizeMapper(self.varTable[x].type)
+		paramNames.reverse()
+		for x in paramNames:
+			parOffset = parOffset - 4 ##BAAD
 			self.varTable[x].offset = parOffset
 		return offset
 	def getOffset(self, x):
-		if x in varTable:
-			return varTable[x].offset
+		if x in self.varTable:
+			return self.varTable[x].offset
 		return None
 	def setParent(self, parent):
 		self.parent = parent

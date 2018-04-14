@@ -1,9 +1,8 @@
 from enums import *
 from SymTable import * 
 from cfg import *
+import global_
 
-scopeList = ScopeList()
-cfg = []
 def nameMapper(x):
 	y = {
 		Label.PLUS :  ' + '  ,
@@ -30,13 +29,12 @@ def nameMapper(x):
 CONDS = [Label.LT, Label.LE, Label.GT, Label.GE, Label.EQ, Label.NE, Label.AND, Label.OR, Label.NOT]
 BINOPS = [Label.PLUS, Label.MINUS, Label.MUL, Label.DIV, Label.ASGN]
 UNOPS = [Label.UMINUS, Label.DEREF, Label.ADDR] 
-funcIndices = {}
+
 def addToCfg(x):
-	global cfg
-	cfg.append(x)
+	global_.cfg.append(x)
 def getCFGIndex():
-	global cfg
-	return len(cfg)-1
+	global_.cfg
+	return len(global_.cfg)-1
 
 class Abstree:
 	label = Label.DEFAULT
@@ -134,52 +132,10 @@ class Abstree:
 				break
 			print(s+"\t"+",")
 		print(s+")")
-	# def valid_tree(self, availVars, parent, index):
-	# 	if self.label==Label.ASGN :
-	# 		return self.check_assign() and self.check_declaration(availVars)
-	# 	elif self.label==Label.WHILE or self.label==Label.IF:
-	# 		q = True
-	# 		i=0
-	# 		for k in self.children:
-	# 			q = q and k.valid_tree(availVars, self, i)
-	# 			if not q:
-	# 				break
-	# 			i+=1
-	# 		return q
-	# 	elif self.label in CONDS:
-	# 		return self.check_declaration(availVars)
-	# 	elif self.label == Label.BLOCK:
-	# 		q = True
-	# 		i=0
-	# 		for k in self.children:
-	# 			if(k.label==Label.DECL) :
-	# 				q = q and k.valid_tree(availVars, self, i)
-	# 				break
-	# 			q = q and k.valid_tree(availVars, self, i)
-	# 			i+=1
-	# 		return q
-	# 	elif self.label==Label.DECL :
-	# 		q = True
-	# 		i=index+1
-	# 		new_vars = self.update_vars()
-	# 		for x in new_vars:
-	# 			if x[0] in [y[0] for y in availVars]:
-	# 				print("ERROR: Double declaration for", x[0])
-	# 				return False
-	# 		availVars = availVars + new_vars
-	# 		siblings = parent.children[(index+1):]
-	# 		for k in siblings:
-	# 			if(k.label==Label.DECL) :
-	# 				q = q and k.valid_tree(availVars, parent, i)
-	# 				break
-	# 			q = q and k.valid_tree(availVars, parent, i)
-	# 			i+=1
-	# 		return q
 	def valid_tree(self, scope):
-		global scopeList
 		if self.label== Label.GLOBAL or self.label == Label.FUNCTION:
 			scopeCurr = self.value
-			q = scopeList.addScope(scopeCurr)
+			q = global_.scopeList.addScope(scopeCurr)
 			scopeCurr.setParent(scope)
 			for k in self.children:
 				if not q:
@@ -195,7 +151,7 @@ class Abstree:
 				q = q and scope.addVarItem(VarItem(tup[0], DataTypes(typeMapper(self.children[0].label.name.lower()), tup[1], True)))
 			return q
 		elif self.label == Label.FUNCDECL:
-			return scopeList.addScope(self.value)
+			return global_.scopeList.addScope(self.value)
 		elif self.label==Label.BLOCK or self.label==Label.WHILE or self.label==Label.IF:
 			q = True
 			for k in self.children:
@@ -232,7 +188,6 @@ class Abstree:
 		return False
 
 	def getTypeAndCheck(self, scope):
-		global scopeList
 		if self.label in BINOPS:
 			lhsType = self.children[0].getTypeAndCheck(scope)
 			rhsType = self.children[1].getTypeAndCheck(scope)
@@ -292,8 +247,8 @@ class Abstree:
 			return (None, False)
 		elif self.label == Label.FUNCALL:
 			funcName = str(self.value)
-			if(funcName in scopeList.scopeList):
-				funcScope = scopeList.scopeList[funcName]
+			if(funcName in global_.scopeList.scopeList):
+				funcScope = global_.scopeList.scopeList[funcName]
 				if len(self.children) == len(funcScope.paramIds):
 					q = True
 					for k in range(len(self.children)):
@@ -375,7 +330,7 @@ class Abstree:
 			for x in self.children:
 				t_curr = x.print_cfg(t_curr)
 			funcEnd = getCFGIndex()
-			funcIndices[self.value.name] = (funcStart, funcEnd)
+			global_.funcIndices[self.value.name] = (funcStart, funcEnd)
 			print()
 		elif self.label == Label.RETURN:
 			b_curr = self.block_num
@@ -400,11 +355,11 @@ class Abstree:
 			addToCfg(CFG([], Label.BLOCK_NUM, False, b_curr))
 			t_curr = self.children[0].unroll_and_print(t_curr)
 			node1 = CFG([], Label.TEMP, False, t_curr)
-			node2 = CFG([], Label.BLOCK_NUM, False, self.children[0].goto_num)
+			node2 = CFG([], Label.GOTO_NUM, False, self.children[0].goto_num)
 			addToCfg(CFG([node1, node2], Label.IF, False, -1))
 			print("if(t"+str(t_curr),end='')
 			print(") goto <bb", str(self.children[0].goto_num)+">")
-			node = CFG([], Label.BLOCK_NUM, False, self.goto_num)
+			node = CFG([], Label.GOTO_NUM, False, self.goto_num)
 			addToCfg(CFG([node], Label.ELSE, False, -1))
 			print("else goto <bb", str(self.goto_num)+">")
 			print()
@@ -416,11 +371,11 @@ class Abstree:
 			addToCfg(CFG([], Label.BLOCK_NUM, False, b_curr))
 			t_curr = self.children[0].unroll_and_print(t_curr)
 			node1 = CFG([], Label.TEMP, False, t_curr)
-			node2 = CFG([], Label.BLOCK_NUM, False, self.children[0].goto_num)
+			node2 = CFG([], Label.GOTO_NUM, False, self.children[0].goto_num)
 			addToCfg(CFG([node1, node2], Label.IF, False, -1))
 			print("if(t"+str(t_curr),end='')
 			print(") goto <bb", str(self.children[0].goto_num)+">")
-			node = CFG([], Label.BLOCK_NUM, False, self.goto_num)
+			node = CFG([], Label.GOTO_NUM, False, self.goto_num)
 			addToCfg(CFG([node], Label.ELSE, False, -1))
 			print("else goto <bb", str(self.goto_num)+">")
 			print()
@@ -433,7 +388,7 @@ class Abstree:
 				print("<bb", str(b_curr)+">")
 			t_curr = self.unroll_and_print(t_curr)
 			if self.goto_num != -1:
-					addToCfg(CFG([], Label.BLOCK_NUM, False, self.goto_num))
+					addToCfg(CFG([], Label.GOTO_NUM, False, self.goto_num))
 					print("goto <bb", str(self.goto_num)+">")
 					print()
 		elif self.label == Label.FUNCALL:
@@ -474,7 +429,7 @@ class Abstree:
 			return CFG([node], Label.DEREF, False, -1)
 		elif self.label == Label.FLOATCONST or self.label == Label.INTCONST:
 			print(self.value, end='')
-			return CFG([], self.label, False, -1)
+			return CFG([], self.label, False, self.value)
 		elif self.label == Label.UMINUS:
 			rhs = self.children[0]
 			print(nameMapper(self.label)[1], end='')
@@ -523,14 +478,14 @@ class Abstree:
 				child_nodes.append(node)
 				print(", ", end='')
 			else:
-				node = CFG([], Label.TEMP, False, rhs_array[x])
+				node = CFG([], Label.TEMP, False, rhs_array[x][1:])
 				child_nodes.append(node)
 				print(rhs_array[x], end=', ')
 		if rhs_array[-1] == -1:
 			node = self.children[-1].print_statement()
 			child_nodes.append(node)
 		else:
-			node = CFG([], Label.TEMP, False, rhs_array[-1])
+			node = CFG([], Label.TEMP, False, rhs_array[-1][1:])
 			child_nodes.append(node)
 			print(rhs_array[-1], end='')
 		print(")", end='')
