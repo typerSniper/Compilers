@@ -114,8 +114,8 @@ class CFG:
 				else:
 					offset = global_.scopeList.scopeList[funcName].getOffset(lhs.value)
 					if offset is None:
-						lhsString = "global_"+self.value
-						print("Stored in Global") #TODO
+						lhsString = "global_"+lhs.value
+						print("\tStored in Global") #TODO
 					else:
 						self.pSet.printLoadStore(False, finReg, regStringMapper(-1), offset)
 					varMapping.freeNamedReg(finReg)
@@ -150,7 +150,7 @@ class CFG:
 		finReg = -1
 		if rhs.label == Label.FUNCALL:
 			num_args = len(rhs.children) #ASSUMPTION SIZE ARG IS ALWAYS 4
-			p_offset = -4*(num_args-1)
+			p_offset = 0 ##TUKKA
 			for x in range(num_args):
 				x_name, isGlobal = rhs.children[x].getTerminal(funcName)
 				self.pSet.printLoadStore(False, x_name, regStringMapper(-1), p_offset)
@@ -165,6 +165,9 @@ class CFG:
 			self.pSet.printOps("add", regStringMapper(-1), regStringMapper(-1), liReg)
 			varMapping.freeNamedReg(liReg)
 			tempReg = varMapping.getMinUsable()
+			self.pSet.printMove(regStringMapper(tempReg), regStringMapper(-4))
+			# varMapping.freeNamedReg()
+			finReg = regStringMapper(tempReg)
 		elif len(rhs.children)==2:
 			lhs_1 = rhs.children[0]
 			rhs_1 = rhs.children[1]
