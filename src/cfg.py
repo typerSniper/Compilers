@@ -1,6 +1,9 @@
 import global_
 from enums import *
 
+# if global on rhs -> lw
+# on lhs -> 
+
 class VarMaps:
 	def __init__(self):
 		self.maps = {} #var to register
@@ -25,7 +28,7 @@ class VarMaps:
 	def freeTempReg(self, x):
 		self.regUsed.remove(x)
 	def freeNamedReg(self, x):
-		self.freeTempReg(int(''.join(filter(str.isdigit, x))))
+		self.freeTempReg(int(''.join(filter(str.isdigit, str(x)))))
 
 varMapping = VarMaps()
 
@@ -49,7 +52,7 @@ class CFG:
 		self.value = value
 		self.pSet = InstructionSet()
 	def print_tree(self):
-		print(self.label, end = ' ')
+		print(self.label, self.value,end = ' ')
 		i = 0
 		for x in self.children:
 			print("CHILD ", i, end = ' ')
@@ -73,35 +76,71 @@ class CFG:
 	def getVar(self, funcName):
 		offset = global_.scopeList.scopeList[funcName].getOffset(self.value)
 		if offset is None:
-			return True
-		regNum = varMapping.addMapping(self.value)
+			return True, None
+		regNum = varMapping.getMinUsable()
 		self.pSet.printLoadStore(True, regStringMapper(regNum), regStringMapper(-1), offset)
-		return False
-	def getTerminal(self, funcName):
+		return False, regStringMapper(regNum)
+	def getAtom(self, funcName):
 		name = ""
 		isGlobal = False
-		if self.label != Label.TEMP and self.label != Label.FLOATCONST and self.label != Label.INTCONST:
-			isGlobal = self.getVar(funcName)
+		if self.label==Label.VAR:
+			# print("DEBUG++", isGlobal)
+			isGlobal, name = self.getVar(funcName)
+			# print("DEBUG++", isGlobal)
+		elif self.label == Label.TEMP:
+			name = regStringMapper(varMapping.maps[self.value])
+		elif self.label == Label.FLOATCONST or self.label == Label.INTCONST:
+			name = self.getImm(self.value)
 		if isGlobal:
-			print(self.label)
 			name = "global_"+self.value
-		else:
-			if self.label in [Label.FLOATCONST, Label.INTCONST]:
-				return self.getImm(self.value)
+			temp = varMapping.getMinUsable()
+			self.pSet.printLoadStoreGlobal(True, regStringMapper(temp), name)
+			name = regStringMapper(temp)
+		return name
+	def getTerminal(self, funcName):
+		curr = self
+		ind = 0
+		while len(curr.children) > 0:
+			if curr.label == Label.DEREF:
+				ind +=1
 			else:
-				name = regStringMapper(varMapping.maps[self.value])
-		return (name, isGlobal)
+				ind -=1
+			curr = curr.children[0]
+		if ind == 0:
+			return curr.getAtom(funcName)		
+		elif ind < 0:
+			offset = global_.scopeList.scopeList[funcName].getOffset(curr.value)
+			if offset is None:
+				name = "global_"+curr.value
+				tempReg = varMapping.getMinUsable()
+				self.pSet.printLoadAddress(regStringMapper(tempReg), name)
+				return regStringMapper(tempReg)
+			else:
+				tempReg = varMapping.getMinUsable()
+				self.pSet.printOps("addi", regStringMapper(tempReg), regStringMapper(-1), offset)
+				return regStringMapper(tempReg)
+		elif ind > 0:
+			name = curr.getAtom(funcName)
+			curr_name = name
+			while ind != 0:
+				tempReg = varMapping.getMinUsable()
+				self.pSet.printLoadStore(True, regStringMapper(tempReg), curr_name, 0)
+				varMapping.freeNamedReg(curr_name)
+				curr_name = regStringMapper(tempReg)
+				ind -= 1
+			return curr_name
+
 	def getImm(self, x):
 		reg = varMapping.getMinUsable()
 		self.pSet.printLoadImm(regStringMapper(reg), x)
-		return regStringMapper(reg), False
+		return regStringMapper(reg)
 	def printNode(self, funcName):
 		p = "\t"
 		if self.label == Label.BLOCK_NUM:
 			print()
-			print("label"+str(self.value), ":")
+			print("label"+str(self.value)+":")
 		elif self.label == Label.FUNCTION:
-			print(self.value, ":")
+			print(self.value+":")
 		elif self.label == Label.ASGN:
 			lhs = self.children[0]
 			rhs = self.children[1]
@@ -115,55 +154,42 @@ class CFG:
 					offset = global_.scopeList.scopeList[funcName].getOffset(lhs.value)
 					if offset is None:
 						lhsString = "global_"+lhs.value
-						print("\tStored in Global") #TODO
+						self.pSet.printLoadStoreGlobal(False, finReg, lhsString) #he sure
 					else:
 						self.pSet.printLoadStore(False, finReg, regStringMapper(-1), offset)
 					varMapping.freeNamedReg(finReg)
-					# lhs_name, isGlobal = rhs.getTerminal(funcName)
-					# self.pSet.printMove(rhs_name, finReg)
-					# varMapping.freeNamedReg(finReg)
 			else:
-				curr = lhs
-				while len(curr.children) > 0:
-					curr = curr.children[0]
-				lhs = curr
-				if lhs.label == Label.VAR:
-					name, isGlobal = lhs.getTerminal(funcName)
-					if isGlobal:
-						self.pSet.printLoadStore(False, finReg, "global_"+name, 0)
-					else:
-						self.pSet.printLoadStore(False, finReg, name, 0)
-				else:
-					print("\tIDK") #TODO
-				# print("\tLINE WRITTEN") 
-				
+				tempReg = lhs.children[0].getTerminal(funcName)
+				self.pSet.printLoadStore(False, finReg, tempReg, 0)
+				varMapping.freeNamedReg(finReg)
+				varMapping.freeNamedReg(tempReg)
 		elif self.label == Label.RETURN:
 			if len(self.children) > 0:
 				finReg = self.resolve_reg(self.children[0], funcName)
 				self.pSet.printMove(regStringMapper(-4), finReg)
 				varMapping.freeNamedReg(finReg)
 		elif self.label == Label.GOTO_NUM:
-			print("\tj", "label"+str(self.value))
-		# elif self.label == Label.IF:
-		# 	condReg = tempToReg(self.children[0].value)
+			self.pSet.printJump(self.value)
+		elif self.label == Label.IF:
+			j_label = self.children[1].value
+			t_reg = self.children[0].getTerminal(funcName)
+			self.pSet.printBNE(t_reg, "$0", j_label)
+			varMapping.freeNamedReg(t_reg)
+		elif self.label == Label.ELSE:
+			self.children[0].printNode(funcName)
 	def resolve_reg(self, rhs, funcName):
 		finReg = -1
-		if rhs.label == Label.FUNCALL:
+		if rhs.label == Label.FUNCALL: # he says
 			num_args = len(rhs.children) #ASSUMPTION SIZE ARG IS ALWAYS 4
 			p_offset = 0 ##TUKKA
 			for x in range(num_args):
-				x_name, isGlobal = rhs.children[x].getTerminal(funcName)
+				x_name = rhs.children[x].getTerminal(funcName)
 				self.pSet.printLoadStore(False, x_name, regStringMapper(-1), p_offset)
-				if not isGlobal:
-					varMapping.freeNamedReg(x_name)
+				varMapping.freeNamedReg(x_name)
 				p_offset+=4
-			liReg = self.getImm(num_args*4)[0]
-			self.pSet.printOps("sub", regStringMapper(-1), regStringMapper(-1), liReg)
-			varMapping.freeNamedReg(liReg)
+			self.pSet.printOps("sub", regStringMapper(-1), regStringMapper(-1), num_args*4)
 			self.pSet.printJal(rhs.value)
-			liReg = self.getImm(num_args*4)[0]
-			self.pSet.printOps("add", regStringMapper(-1), regStringMapper(-1), liReg)
-			varMapping.freeNamedReg(liReg)
+			self.pSet.printOps("add", regStringMapper(-1), regStringMapper(-1), num_args*4)
 			tempReg = varMapping.getMinUsable()
 			self.pSet.printMove(regStringMapper(tempReg), regStringMapper(-4))
 			# varMapping.freeNamedReg()
@@ -171,73 +197,53 @@ class CFG:
 		elif len(rhs.children)==2:
 			lhs_1 = rhs.children[0]
 			rhs_1 = rhs.children[1]
-			lhs_name, isGlobalL = lhs_1.getTerminal(funcName) 
-			rhs_name, isGlobalR = rhs_1.getTerminal(funcName)
+			lhs_name = lhs_1.getTerminal(funcName) 
+			rhs_name = rhs_1.getTerminal(funcName)
 			operator_ = instMapper(rhs.label)
 			tempReg = -1
 			if len(operator_)==1 and rhs.label!=Label.GT:
 				tempReg = varMapping.getMinUsable()
 				self.pSet.printOps(operator_[0], regStringMapper(tempReg), lhs_name, rhs_name)
-				if not isGlobalL:
-					varMapping.freeNamedReg(lhs_name)
-				if not isGlobalR:
-					varMapping.freeNamedReg(rhs_name)
+				varMapping.freeNamedReg(lhs_name)
+				varMapping.freeNamedReg(rhs_name)
 			elif rhs.label==Label.GT:
 				tempReg = varMapping.getMinUsable()
 				self.pSet.printOps(operator_[0], regStringMapper(tempReg), rhs_name, lhs_name)
-				if not isGlobalL:
-					varMapping.freeNamedReg(lhs_name)
-				if not isGlobalR:
-					varMapping.freeNamedReg(rhs_name)
+				varMapping.freeNamedReg(lhs_name)
+				varMapping.freeNamedReg(rhs_name)
 			else :
+				tempReg = varMapping.getMinUsable()
 				if rhs.label==Label.LE:
-					tempReg = varMapping.getMinUsable()
 					self.pSet.printOps(operator_[0], regStringMapper(tempReg), rhs_name, lhs_name)
-					if not isGlobalL:
-						varMapping.freeNamedReg(lhs_name)
-					if not isGlobalR:
-						varMapping.freeNamedReg(rhs_name)
-					tempReg2 = varMapping.getMinUsable()
-					self.pSet.printNot(regStringMapper(tempReg2), regStringMapper(tempReg))
-					varMapping.freeTempReg(tempReg)
-					tempReg = tempReg2
+				else :
+					assert(rhs.label==Label.GE)
+					self.pSet.printOps(operator_[0], regStringMapper(tempReg), lhs_name, rhs_name)
+				varMapping.freeNamedReg(lhs_name)
+				varMapping.freeNamedReg(rhs_name)
+				tempReg2 = varMapping.getMinUsable()
+				self.pSet.printNot(regStringMapper(tempReg2), regStringMapper(tempReg))
+				varMapping.freeNamedReg(tempReg)
+				tempReg = tempReg2
 			finReg = regStringMapper(tempReg)
 		elif len(rhs.children) == 1:
-			lhs_1 = rhs.children[0]
 			tempReg = -1
-			if rhs.label != Label.ADDR:
-				lhs_name, isGlobal = lhs_1.getTerminal(funcName)
-			if rhs.label == Label.DEREF:
+			if rhs.label == Label.UMINUS:
+				lhs_name = rhs.children[0].getTerminal()
 				tempReg = varMapping.getMinUsable()
-				self.pSet.printLoadStore(True, regStringMapper(tempReg), lhs_name, 0)
-				if not isGlobal:
-					varMapping.freeNamedReg(lhs_name)
-			elif rhs.label == Label.ADDR:
-				# print("HERE")
-				tempReg = varMapping.getMinUsable()
-				assert(lhs_1.label == Label.VAR)
-				offset = global_.scopeList.scopeList[funcName].getOffset(lhs_1.value)
-				# print(global_.scopeList.scopeList[funcName].scope_width)
-				# tempReg2 = self.getImm(offset)[0]
-				self.pSet.printOps("addi", regStringMapper(tempReg), regStringMapper(-1), offset)
-				# varMapping.freeNamedReg(tempReg2)
-			elif rhs.label == Label.UMINUS:
-				tempReg = varMapping.getMinUsable()
-				tempReg2 = self.getImm(-1)[0]
+				tempReg2 = self.getImm(-1)
 				self.pSet.printOps("mul", regStringMapper(tempReg), lhs_name, tempReg2)
-				if not isGlobal:
-					varMapping.freeNamedReg(lhs_name)
+				varMapping.freeNamedReg(lhs_name)
 				varMapping.freeNamedReg(tempReg2)				
 			elif rhs.label == Label.NOT:
+				lhs_name = rhs.children[0].getTerminal()
 				tempReg = varMapping.getMinUsable()
 				self.pSet.printNot(regStringMapper(tempReg), lhs_name)
-				if not isGlobal:
-					varMapping.freeNamedReg(lhs_name)
+				varMapping.freeNamedReg(lhs_name)
+			else:
+				return rhs.getTerminal(funcName) 
 			finReg = regStringMapper(tempReg)
 		else :
-			# print("here")
-			rhs_name, isGlobal = rhs.getTerminal(funcName)
-			finReg = rhs_name
+			return rhs.getTerminal(funcName)
 		return finReg
 
 class InstructionSet:
@@ -254,14 +260,27 @@ class InstructionSet:
 		s = opLabel
 		s = "\t" + s
 		print(s, firstReg+ "," ,secondReg+",", thirdReg)
+	def printBNE(self, firstReg, secondReg, label_no):
+		print("\tbne", firstReg+",", secondReg+",", "label"+str(label_no))
 	def printJumpReg(self, regName):
 		print("\tjr", regName)
-	def printNot(self, reg1, reg2):
-		print("\tnot", reg1+",", reg2)
+	def printJump(self, label_no):
+		print("\tj", "label"+str(label_no))
 	def printJal(self, funcName):
 		print("\tjal", funcName)
+	def printNot(self, reg1, reg2):
+		print("\tnot", reg1+",", reg2)
 	def printMove(self, reg1, reg2):
 		print("\tmove", reg1+",", reg2)
+	def printLoadStoreGlobal(self, isLoad, reg, glob):
+		s = "\tsw"
+		if isLoad:
+			s = "\tlw"
+		print(s, reg+",", glob)
+	def printLoadAddress(self, reg, glob):
+		print("\tla", reg+",", glob)
+
+
 
 def printMips(index, funcName):
 	currNode = global_.cfg[index]

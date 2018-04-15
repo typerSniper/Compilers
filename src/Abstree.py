@@ -342,6 +342,22 @@ class Abstree:
 					t_curr = self.children[0].unroll_and_print(t_curr)
 					node = CFG([], Label.TEMP, True, t_curr)
 					print("return t"+str(t_curr))
+				# elif self.children[0].label == Label.DEREF or self.children[0].label == Label.ADDR:
+					
+				# 	f_h = self.funcall_helper_and_unroll(0, t_curr)
+				# 	t1 = f_h[1]
+				# 	t_curr = t1+1
+				# 	print("t"+str(t_curr)+" = ", end='')
+				# 	lhs_node = CFG([], Label.TEMP, False, t_curr)
+				# 	node = None
+				# 	print(nameMapper(self.label)[1], end='')
+				# 	if f_h[0]:
+				# 		node = self.children[0].print_funcall(f_h[2])
+				# 	else:
+				# 		print("t"+str(t1), end='')
+				# 		node = CFG([], Label.TEMP, False, t_curr)
+				# 	rhs_node = CFG([node], Label.UMINUS, False, -1)
+				# 	addToCfg(CFG([lhs_node, rhs_node], Label.ASGN, False, -1))
 				else:
 					print("return ", end='')
 					node = self.children[0].print_statement()
