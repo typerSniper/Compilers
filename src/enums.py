@@ -10,6 +10,7 @@ class DataTypeEnum(enum.Enum):
 	INT = 1
 	FLOAT = 2
 	VOID = 3
+	BOOLEAN = 4
 
 
 # //int a -> -1, direct0[x]

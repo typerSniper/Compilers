@@ -13,14 +13,19 @@ class Scope:
 		self.name = name
 		self.varTable = OrderedDict()
 		self.isDefined = False
-		self.stack_width = 0
+		self.scope_width = 0
 	def getLocalSpace(self):
 		offset = 0
 		paramNames = [x for x in self.paramIds]##ASSUMPTION THIS IS THE CURRENT THING
+		localNames = []
 		for x in self.varTable:
 			if x not in paramNames:
-				self.varTable[x].offset = offset
-				offset = offset + 4 ##BAAD
+				localNames.append(x)
+		localNames.sort()
+		localNames.reverse()
+		for x in localNames:
+			self.varTable[x].offset = offset
+			offset = offset + 4 ##BAAD
 		parOffset = 0
 		paramNames.reverse()
 		for x in paramNames:

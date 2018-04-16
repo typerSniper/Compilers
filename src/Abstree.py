@@ -238,10 +238,12 @@ class Abstree:
 				print("DEBUG_DIRECT_USE_NON_POINTER")
 				return (None, False)
 			if(lhsType[1] and rhsType[1]):
-				if(self.label in [Label.OR, Label.AND] ):
-					return (None, True)
+				p = DataTypes(DataTypeEnum.BOOLEAN, 0, False)
+				p.setUsable()
+				if(self.label in [Label.OR, Label.AND]):
+					return (p, True)
 				elif lhsType[0].isSameType(rhsType[0]):
-					return (None, True)
+					return (p, True)
 				print("#####DEBUG_CHUNK#######")
 				self.print_tree(0)				
 			return (None, False)
@@ -343,7 +345,7 @@ class Abstree:
 					node = CFG([], Label.TEMP, True, t_curr)
 					print("return t"+str(t_curr))
 				# elif self.children[0].label == Label.DEREF or self.children[0].label == Label.ADDR:
-					
+
 				# 	f_h = self.funcall_helper_and_unroll(0, t_curr)
 				# 	t1 = f_h[1]
 				# 	t_curr = t1+1
@@ -555,15 +557,15 @@ class Abstree:
 						node = self.children[0].print_funcall(f_h[2])
 					else:
 						print("t"+str(t1), end='')
-						node = CFG([], Label.TEMP, False, t_curr)
-					rhs_node = CFG([node], Label.UMINUS, False, -1)
+						node = CFG([], Label.TEMP, False, t1)
+					rhs_node = CFG([node], self.label, False, -1)
 					addToCfg(CFG([lhs_node, rhs_node], Label.ASGN, False, -1))
 				else:
 					t_curr = t_curr+1
 					lhs_node = CFG([], Label.TEMP, False, t_curr)
 					print("t"+str(t_curr)+" = "+nameMapper(self.label)[1], end='')
 					node = self.children[0].print_statement()
-					rhs_node = CFG([node], Label.UMINUS, False, -1)
+					rhs_node = CFG([node], self.label, False, -1)
 					addToCfg(CFG([lhs_node, rhs_node], Label.ASGN, False, -1))
 			elif(self.children[0].will_unroll() and self.children[1].will_unroll()):
 				f_h_1 = self.funcall_helper_and_unroll(0, t_curr)

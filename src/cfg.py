@@ -84,9 +84,7 @@ class CFG:
 		name = ""
 		isGlobal = False
 		if self.label==Label.VAR:
-			# print("DEBUG++", isGlobal)
 			isGlobal, name = self.getVar(funcName)
-			# print("DEBUG++", isGlobal)
 		elif self.label == Label.TEMP:
 			name = regStringMapper(varMapping.maps[self.value])
 		elif self.label == Label.FLOATCONST or self.label == Label.INTCONST:
@@ -181,7 +179,7 @@ class CFG:
 		finReg = -1
 		if rhs.label == Label.FUNCALL: # he says
 			num_args = len(rhs.children) #ASSUMPTION SIZE ARG IS ALWAYS 4
-			p_offset = 0 ##TUKKA
+			p_offset = -1*(len(rhs.children)-1)*4 ##TUKKA
 			for x in range(num_args):
 				x_name = rhs.children[x].getTerminal(funcName)
 				self.pSet.printLoadStore(False, x_name, regStringMapper(-1), p_offset)
@@ -192,7 +190,6 @@ class CFG:
 			self.pSet.printOps("add", regStringMapper(-1), regStringMapper(-1), num_args*4)
 			tempReg = varMapping.getMinUsable()
 			self.pSet.printMove(regStringMapper(tempReg), regStringMapper(-4))
-			# varMapping.freeNamedReg()
 			finReg = regStringMapper(tempReg)
 		elif len(rhs.children)==2:
 			lhs_1 = rhs.children[0]
@@ -228,14 +225,16 @@ class CFG:
 		elif len(rhs.children) == 1:
 			tempReg = -1
 			if rhs.label == Label.UMINUS:
-				lhs_name = rhs.children[0].getTerminal()
+				lhs_name = rhs.children[0].getTerminal(funcName)
 				tempReg = varMapping.getMinUsable()
 				tempReg2 = self.getImm(-1)
 				self.pSet.printOps("mul", regStringMapper(tempReg), lhs_name, tempReg2)
 				varMapping.freeNamedReg(lhs_name)
 				varMapping.freeNamedReg(tempReg2)				
 			elif rhs.label == Label.NOT:
-				lhs_name = rhs.children[0].getTerminal()
+				print("DEBUG+", rhs.children[0].label)
+				lhs_name = rhs.children[0].getTerminal(funcName)
+				print("DEBUG+", lhs_name)
 				tempReg = varMapping.getMinUsable()
 				self.pSet.printNot(regStringMapper(tempReg), lhs_name)
 				varMapping.freeNamedReg(lhs_name)
@@ -281,10 +280,28 @@ class InstructionSet:
 		print("\tla", reg+",", glob)
 
 
+def print_global():
+	print()
+	print("\t.data")
+	print_list = []
+	for var in global_.scopeList.scopeList["GLOBAL"].varTable.values():
+		print_list.append(var.name)
+	print_list.sort()
+	for x in print_list:
+		print("global_"+x+":\t", end='') 
+		p = global_.scopeList.scopeList["GLOBAL"].varTable[x].type
+		if p.type == DataTypeEnum.FLOAT and p.indirection != 0:
+			print(".space\t8")
+		else:
+			print(".word"+"\t0")
+	print()
+
 
 def printMips(index, funcName):
 	currNode = global_.cfg[index]
 	if currNode.label == Label.FUNCTION:
+		print("\t.text")
+		print("\t.globl", currNode.value)
 		currNode.printNode(currNode.value)
 		funcName = currNode.value
 		funcEnd = global_.funcIndices[currNode.value][1]
@@ -298,6 +315,7 @@ def printMips(index, funcName):
 		print("\tj epilogue_"+funcName)
 		print()
 		currNode.printEpilogue()
+		print()
 		return j
 	else :
 		currNode.printNode(funcName)

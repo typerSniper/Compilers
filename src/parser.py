@@ -500,6 +500,7 @@ if __name__ == "__main__":
 			sys.stdout = open(outFile4, 'w')
 			# for c in global_.cfg:
 			# 	c.print_tree()
+			print_global()
 			j = 0
 			while j < len(global_.cfg):
 				j = printMips(j, -1)
