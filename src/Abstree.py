@@ -97,6 +97,7 @@ class Abstree:
 				s = s+"\t"
 			self.print_without(s)
 			self.print_without("CALL "+ self.value+"(")
+			print(self.goto_num)
 			print()
 			for x in self.children:
 				x.print_tree(depth+1)
@@ -344,22 +345,6 @@ class Abstree:
 					t_curr = self.children[0].unroll_and_print(t_curr)
 					node = CFG([], Label.TEMP, True, t_curr)
 					print("return t"+str(t_curr))
-				# elif self.children[0].label == Label.DEREF or self.children[0].label == Label.ADDR:
-
-				# 	f_h = self.funcall_helper_and_unroll(0, t_curr)
-				# 	t1 = f_h[1]
-				# 	t_curr = t1+1
-				# 	print("t"+str(t_curr)+" = ", end='')
-				# 	lhs_node = CFG([], Label.TEMP, False, t_curr)
-				# 	node = None
-				# 	print(nameMapper(self.label)[1], end='')
-				# 	if f_h[0]:
-				# 		node = self.children[0].print_funcall(f_h[2])
-				# 	else:
-				# 		print("t"+str(t1), end='')
-				# 		node = CFG([], Label.TEMP, False, t_curr)
-				# 	rhs_node = CFG([node], Label.UMINUS, False, -1)
-				# 	addToCfg(CFG([lhs_node, rhs_node], Label.ASGN, False, -1))
 				else:
 					print("return ", end='')
 					node = self.children[0].print_statement()
@@ -406,15 +391,23 @@ class Abstree:
 				print("<bb", str(b_curr)+">")
 			t_curr = self.unroll_and_print(t_curr)
 			if self.goto_num != -1:
-					addToCfg(CFG([], Label.GOTO_NUM, False, self.goto_num))
-					print("goto <bb", str(self.goto_num)+">")
-					print()
+				addToCfg(CFG([], Label.GOTO_NUM, False, self.goto_num))
+				print("goto <bb", str(self.goto_num)+">")
+				print()
 		elif self.label == Label.FUNCALL:
+			if self.block_num != -1:
+				b_curr = self.block_num
+				addToCfg(CFG([], Label.BLOCK_NUM, False, b_curr))
+				print("<bb", str(b_curr)+">")
 			if self.will_unroll():
 				t_curr = self.unroll_and_print(t_curr)
 			else:
 				node = self.print_statement()
 				addToCfg(node)
+			if self.goto_num != -1:
+				addToCfg(CFG([], Label.GOTO_NUM, False, self.goto_num))
+				print("goto <bb", str(self.goto_num)+">")
+				print()
 		return t_curr
 
 	def print_statement(self):
@@ -496,14 +489,14 @@ class Abstree:
 				child_nodes.append(node)
 				print(", ", end='')
 			else:
-				node = CFG([], Label.TEMP, False, rhs_array[x][1:])
+				node = CFG([], Label.TEMP, False, int(rhs_array[x][1:]))
 				child_nodes.append(node)
 				print(rhs_array[x], end=', ')
 		if rhs_array[-1] == -1:
 			node = self.children[-1].print_statement()
 			child_nodes.append(node)
 		else:
-			node = CFG([], Label.TEMP, False, rhs_array[-1][1:])
+			node = CFG([], Label.TEMP, False, int(rhs_array[-1][1:]))
 			child_nodes.append(node)
 			print(rhs_array[-1], end='')
 		print(")", end='')
@@ -650,7 +643,7 @@ class Abstree:
 			self.block_num = num+1
 			g = False
 			for x in self.children:
-				if x.label == Label.ASGN:
+				if x.label == Label.ASGN or x.label == Label.FUNCALL:
 					if g:
 						x.block_num = -1
 					else:
@@ -681,9 +674,9 @@ class Abstree:
 		elif self.label == Label.BLOCK:
 			for y in range(len(self.children)):
 				x = self.children[y]
-				if x.label == Label.ASGN:
+				if x.label == Label.ASGN or x.label == Label.FUNCALL:
 					if y+1 < len(self.children) :
-						if self.children[y+1].label == Label.ASGN :
+						if self.children[y+1].label == Label.ASGN or self.children[y+1].label == Label.FUNCALL:
 							x.goto_num = -1
 						else :
 							x.goto_num = self.children[y+1].block_num
