@@ -236,7 +236,7 @@ class CFG:
 			print("\t# setting up activation record for called function")
 			num_args = len(rhs.children) #ASSUMPTION SIZE ARG IS ALWAYS 4
 			p_offset = global_.scopeList.scopeList[rhs.value].firstArgOff
-			print("TIPDEBUGTOP: ", p_offset)
+			# print("TIPDEBUGTOP: ", p_offset)
 			for x in range(num_args):
 				x_name, x_type = rhs.children[x].getTerminal(funcName)
 				self.pSet.printLoadStore(False, x_name, regStringMapper(-1, None), p_offset)
@@ -358,7 +358,7 @@ class InstructionSet:
 	def printJal(self, funcName):
 		print("\tjal", funcName, "# function call")
 	def printNot(self, reg1, reg2):
-		print("\tnot", reg1+",", reg2)
+		print("\txori", reg1+",", reg2+",", 1)
 	def printMove(self, reg1, reg2):
 		if isFloat(reg1) or isFloat(reg2):
 			print("\tmov.s", reg1+",", reg2)
@@ -398,7 +398,7 @@ def print_global():
 	for x in print_list:
 		print("global_"+x+":\t", end='') 
 		p = global_.scopeList.scopeList["GLOBAL"].varTable[x].type
-		if p.type == DataTypeEnum.FLOAT and p.indirection != 0:
+		if p.type == DataTypeEnum.FLOAT and p.indirection == 0:
 			print(".space\t8")
 		else:
 			print(".word"+"\t0")

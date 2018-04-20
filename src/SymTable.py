@@ -27,13 +27,13 @@ class Scope:
 		for x in localNames:
 			self.varTable[x].offset = offset
 			offset = offset + sizeMapper(self.varTable[x].type)
-		parOffset = 0
-		paramNames.reverse()
-		for x in paramNames:
-			parOffset = parOffset - sizeMapper(self.varTable[x].type)
-			self.varTable[x].offset = parOffset
-		if len(paramNames)!=0:
-			self.firstArgOff = parOffset + sizeMapper(self.varTable[paramNames[-1]].type) 
+		# parOffset = 0
+		# paramNames.reverse()
+		# for x in paramNames:
+		# 	parOffset = parOffset - sizeMapper(self.varTable[x].type)
+		# 	self.varTable[x].offset = parOffset
+		# if len(paramNames)!=0:
+		# 	self.firstArgOff = parOffset + sizeMapper(self.varTable[paramNames[-1]].type) 
 		return offset
 	def getSizeOfArg(self, i):
 		return sizeMapper(self.varTable[self.paramIds[i]].type)
@@ -61,6 +61,14 @@ class Scope:
 		retType.addressable = False
 		self.retType = retType
 		self.retType.setUsable()
+		parOffset = 0
+		paramNames= [x for x in self.paramIds]
+		paramNames.reverse()
+		for x in paramNames:
+			parOffset = parOffset - sizeMapper(self.varTable[x].type)
+			self.varTable[x].offset = parOffset
+		if len(paramNames)!=0:
+			self.firstArgOff = parOffset + sizeMapper(self.varTable[paramNames[-1]].type) 
 	def defined(self):
 		self.isDefined = True
 	def printScope(self):

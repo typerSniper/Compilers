@@ -97,7 +97,6 @@ class Abstree:
 				s = s+"\t"
 			self.print_without(s)
 			self.print_without("CALL "+ self.value+"(")
-			print(self.goto_num)
 			print()
 			for x in self.children:
 				x.print_tree(depth+1)

@@ -99,7 +99,6 @@ def instMapper(x, y):
 		Label.AND : ['and'],
 		Label.OR : ['or'],
 		Label.NE : ['sne'],
-		Label.NOT: ['not'], 
 		Label.LE: ['sle']
 	}[x]
 
