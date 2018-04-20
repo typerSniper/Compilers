@@ -14,6 +14,7 @@ class Scope:
 		self.varTable = OrderedDict()
 		self.isDefined = False
 		self.scope_width = 0
+		self.firstArgOff = 0
 	def getLocalSpace(self):
 		offset = 0
 		paramNames = [x for x in self.paramIds]##ASSUMPTION THIS IS THE CURRENT THING
@@ -25,13 +26,17 @@ class Scope:
 		localNames.reverse()
 		for x in localNames:
 			self.varTable[x].offset = offset
-			offset = offset + 4 ##BAAD
+			offset = offset + sizeMapper(self.varTable[x].type)
 		parOffset = 0
 		paramNames.reverse()
 		for x in paramNames:
-			parOffset = parOffset - 4 ##BAAD
+			parOffset = parOffset - sizeMapper(self.varTable[x].type)
 			self.varTable[x].offset = parOffset
+		if len(paramNames)!=0:
+			self.firstArgOff = parOffset + sizeMapper(self.varTable[paramNames[-1]].type) 
 		return offset
+	def getSizeOfArg(self, i):
+		return sizeMapper(self.varTable[self.paramIds[i]].type)
 	def getOffset(self, x):
 		if x in self.varTable:
 			return self.scope_width - self.varTable[x].offset
