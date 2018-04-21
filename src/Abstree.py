@@ -79,8 +79,12 @@ class Abstree:
 			return
 		if(self.label==Label.FUNCTION):
 			p = self.value
-			self.print_without("FUNCTION ")
-			print(p.name)
+			if p.name == "main":
+				self.print_without("Function ")
+				print("Main")
+			else:
+				self.print_without("FUNCTION ")
+				print(p.name)
 			self.print_without("PARAMS (")
 			p.printParams()
 			print(")")
@@ -214,9 +218,9 @@ class Abstree:
 					childType[0].addressable = False
 					childType[0].usable = True
 					childType[0].indirection -= 1
-					if(self.children[0].label!=Label.VAR):
-						print("DEBUG_CANNOT_USE_AMP_DIRECTLY")
-						return(None, False)
+					# if(self.children[0].label!=Label.VAR):
+					# 	print("DEBUG_CANNOT_USE_AMP_DIRECTLY")
+					# 	return(None, False)
 					return(childType[0], True)
 				elif self.label==Label.DEREF and childType[0].indirection<0:
 					childType[0].indirection+=1
@@ -228,24 +232,26 @@ class Abstree:
 			return (None, False)
 		elif self.label in CONDS:
 			lhsType = self.children[0].getTypeAndCheck(scope)
-			if not lhsType[0].usable:
-				print("DEBUG_DIRECT_USE_NON_POINTER")
-				return (None, False)
-			if self.label == Label.NOT and lhsType[1]:
-				return (lhsType[0], True)
-			rhsType = self.children[1].getTypeAndCheck(scope)
-			if not rhsType[0].usable:
-				print("DEBUG_DIRECT_USE_NON_POINTER")
-				return (None, False)
-			if(lhsType[1] and rhsType[1]):
-				p = DataTypes(DataTypeEnum.BOOLEAN, 0, False)
-				p.setUsable()
-				if(self.label in [Label.OR, Label.AND]):
-					return (p, True)
-				elif lhsType[0].isSameType(rhsType[0]):
-					return (p, True)
-				print("#####DEBUG_CHUNK#######")
-				self.print_tree(0)				
+			if lhsType[1]:
+				if not lhsType[0].usable:
+					print("DEBUG_DIRECT_USE_NON_POINTER")
+					return (None, False)
+				if self.label == Label.NOT and lhsType[1]:
+					return (lhsType[0], True)
+				rhsType = self.children[1].getTypeAndCheck(scope)
+				if rhsType[1]:
+					if not rhsType[0].usable:
+						print("DEBUG_DIRECT_USE_NON_POINTER")
+						return (None, False)
+					if(lhsType[1] and rhsType[1]):
+						p = DataTypes(DataTypeEnum.BOOLEAN, 0, False)
+						p.setUsable()
+						if(self.label in [Label.OR, Label.AND]):
+							return (p, True)
+						elif lhsType[0].isSameType(rhsType[0]):
+							return (p, True)
+						print("#####DEBUG_CHUNK#######")
+						self.print_tree(0)				
 			return (None, False)
 		elif self.label == Label.FUNCALL:
 			funcName = str(self.value)
@@ -583,7 +589,7 @@ class Abstree:
 					rhs_2 = CFG([], Label.TEMP, False, t2)
 
 				rhs = CFG([rhs_1, rhs_2], self.label, False, -1)
-				addToCfg(CFG([lhs, rhs], Label.ASGN, False, -1))
+				addToCfg(CFG([lhs_node, rhs], Label.ASGN, False, -1))
 			elif(not self.children[0].will_unroll() and not self.children[1].will_unroll()):
 				t_curr+=1
 				print("t"+str(t_curr)+" = ", end='')

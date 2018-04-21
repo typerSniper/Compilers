@@ -345,6 +345,10 @@ class InstructionSet:
 		s = "\t" + s
 		if isFloat(secondReg):
 			s+='.s'
+		if opLabel == "div":
+			print("\tdiv", secondReg+",", thirdReg)
+			print("\tmflo", firstReg)
+			return
 		if isCond(opLabel):
 			print(s,secondReg+",", thirdReg)
 			return
