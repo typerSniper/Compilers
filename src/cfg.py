@@ -189,7 +189,7 @@ class CFG:
 		if self.label == Label.BLOCK_NUM:
 			print("label"+str(self.value)+":")
 		elif self.label == Label.FUNCALL:
-			finReg, type_ = self.resolve_reg(self.funcName)
+			finReg, type_ = self.resolve_reg(self, funcName)
 		elif self.label == Label.FUNCTION:
 			print(self.value+":")
 		elif self.label == Label.ASGN:
