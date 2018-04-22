@@ -347,7 +347,7 @@ class InstructionSet:
 		s = "\t" + s
 		if isFloat(secondReg):
 			s+='.s'
-		if opLabel == "div":
+		elif opLabel == "div":
 			print("\tdiv", secondReg+",", thirdReg)
 			print("\tmflo", firstReg)
 			return
