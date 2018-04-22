@@ -286,7 +286,7 @@ class CFG:
 				varMapping.freeNamedReg(tempReg, type_rhs)
 				type_rhs = VarType(DataTypeEnum.INT, 0)
 				tempReg = varMapping.getMinUsable(type_rhs)
-				self.pSet.printFloatCond(regStringMapper(tempReg, type_rhs))
+				self.pSet.printFloatCond(regStringMapper(tempReg, type_rhs), rhs.label)
 			finReg = regStringMapper(tempReg, type_rhs)
 			type_fin = type_rhs
 		elif len(rhs.children) == 1:
@@ -383,15 +383,24 @@ class InstructionSet:
 		print(s, reg+",", glob)
 	def printLoadAddress(self, reg, glob):
 		print("\tla", reg+",", glob)
-	def printFloatCond(self, reg):
+	def printFloatCond(self, reg, label):
 		s = "\t"
 		global floatCondCount
-		print(s+"bc1f", "L_CondFalse_"+str(floatCondCount))
-		self.printLoadImm(reg, 1)
-		print(s+"j", "L_CondEnd_"+str(floatCondCount))
-		print("L_CondFalse_"+str(floatCondCount)+":")
-		self.printLoadImm(reg, 0)
-		print("L_CondEnd_"+str(floatCondCount)+":")
+		p=1
+		if label!=Label.NE:
+			print(s+"bc1f", "L_CondFalse_"+str(floatCondCount))
+			self.printLoadImm(reg, 1)
+			print(s+"j", "L_CondEnd_"+str(floatCondCount))
+			print("L_CondFalse_"+str(floatCondCount)+":")
+			self.printLoadImm(reg, 0)
+			print("L_CondEnd_"+str(floatCondCount)+":")
+		else:
+			print(s+"bc1f", "L_CondTrue_"+str(floatCondCount))
+			self.printLoadImm(reg, 0)
+			print(s+"j", "L_CondEnd_"+str(floatCondCount))
+			print("L_CondTrue_"+str(floatCondCount)+":")
+			self.printLoadImm(reg, 1)
+			print("L_CondEnd_"+str(floatCondCount)+":")
 		floatCondCount+=1
 
 def print_global():

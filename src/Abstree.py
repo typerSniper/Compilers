@@ -411,6 +411,7 @@ class Abstree:
 				addToCfg(node)
 			if self.goto_num != -1:
 				addToCfg(CFG([], Label.GOTO_NUM, False, self.goto_num))
+				print()
 				print("goto <bb", str(self.goto_num)+">")
 				print()
 		return t_curr

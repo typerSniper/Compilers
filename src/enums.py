@@ -85,6 +85,8 @@ def instMapper(x, y):
 			return ['c.le', 1]
 		elif x == Label.EQ:
 			return ['c.eq'] 
+		elif x == Label.NE:
+			return ['c.eq']
 	if x == Label.GT:
 		return ['slt', 1]  #rev
 	if x == Label.GE:
