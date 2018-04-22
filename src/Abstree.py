@@ -426,10 +426,11 @@ class Abstree:
 		elif self.label == Label.FUNCALL:
 			print(self.value, end='(')
 			child_nodes = []
-			for x in self.children[:-1]:
-				child_nodes.append(x.print_statement())
-				print(", ", end='')
-			child_nodes.append(self.children[-1].print_statement())
+			if len(self.children) > 0:
+				for x in self.children[:-1]:
+					child_nodes.append(x.print_statement())
+					print(", ", end='')
+				child_nodes.append(self.children[-1].print_statement())
 			print(")", end='')
 			return CFG(child_nodes, Label.FUNCALL, False, self.value)
 		elif self.label == Label.VAR:
@@ -488,22 +489,23 @@ class Abstree:
 	def print_funcall(self, rhs_array):
 		child_nodes = []
 		print(self.value + "(", end='')
-		for x in range(len(rhs_array)-1):
-			if rhs_array[x] == -1:
-				node = self.children[x].print_statement()
+		if len(rhs_array) > 0:
+			for x in range(len(rhs_array)-1):
+				if rhs_array[x] == -1:
+					node = self.children[x].print_statement()
+					child_nodes.append(node)
+					print(", ", end='')
+				else:
+					node = CFG([], Label.TEMP, False, int(rhs_array[x][1:]))
+					child_nodes.append(node)
+					print(rhs_array[x], end=', ')
+			if rhs_array[-1] == -1:
+				node = self.children[-1].print_statement()
 				child_nodes.append(node)
-				print(", ", end='')
 			else:
-				node = CFG([], Label.TEMP, False, int(rhs_array[x][1:]))
+				node = CFG([], Label.TEMP, False, int(rhs_array[-1][1:]))
 				child_nodes.append(node)
-				print(rhs_array[x], end=', ')
-		if rhs_array[-1] == -1:
-			node = self.children[-1].print_statement()
-			child_nodes.append(node)
-		else:
-			node = CFG([], Label.TEMP, False, int(rhs_array[-1][1:]))
-			child_nodes.append(node)
-			print(rhs_array[-1], end='')
+				print(rhs_array[-1], end='')
 		print(")", end='')
 		return CFG(child_nodes, Label.FUNCALL, False, self.value)
 

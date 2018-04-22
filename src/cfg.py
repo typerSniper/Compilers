@@ -235,20 +235,22 @@ class CFG:
 		if rhs.label == Label.FUNCALL: # he says
 			print("\t# setting up activation record for called function")
 			num_args = len(rhs.children) #ASSUMPTION SIZE ARG IS ALWAYS 4
-			p_offset = global_.scopeList.scopeList[rhs.value].firstArgOff
-			# print("TIPDEBUGTOP: ", p_offset)
-			for x in range(num_args):
-				x_name, x_type = rhs.children[x].getTerminal(funcName)
-				self.pSet.printLoadStore(False, x_name, regStringMapper(-1, None), p_offset)
-				varMapping.freeNamedReg(x_name, x_type)
-				if x==num_args-1:
-					continue
-				p_offset+=global_.scopeList.scopeList[rhs.value].getSizeOfArg(x+1)
-			p_offset = -1*global_.scopeList.scopeList[rhs.value].firstArgOff
-			p_offset = p_offset + global_.scopeList.scopeList[rhs.value].getSizeOfArg(0)
-			self.pSet.printOps("sub", regStringMapper(-1, None), regStringMapper(-1, None), p_offset)
+			if num_args > 0:
+				p_offset = global_.scopeList.scopeList[rhs.value].firstArgOff
+				# print("TIPDEBUGTOP: ", p_offset)
+				for x in range(num_args):
+					x_name, x_type = rhs.children[x].getTerminal(funcName)
+					self.pSet.printLoadStore(False, x_name, regStringMapper(-1, None), p_offset)
+					varMapping.freeNamedReg(x_name, x_type)
+					if x==num_args-1:
+						continue
+					p_offset+=global_.scopeList.scopeList[rhs.value].getSizeOfArg(x+1)
+				p_offset = -1*global_.scopeList.scopeList[rhs.value].firstArgOff
+				p_offset = p_offset + global_.scopeList.scopeList[rhs.value].getSizeOfArg(0)
+				self.pSet.printOps("sub", regStringMapper(-1, None), regStringMapper(-1, None), p_offset)
 			self.pSet.printJal(rhs.value)
-			print("\tadd $sp, $sp,"+str(p_offset), "# destroying activation record of called function")
+			if num_args > 0:
+				print("\tadd $sp, $sp,"+str(p_offset), "# destroying activation record of called function")
 			# self.pSet.printOps("add", regStringMapper(-1, None), regStringMapper(-1, None), num_args*4)
 			ret_type = global_.scopeList.scopeList[rhs.value].retType
 			ret_type = VarType(ret_type.type, ret_type.indirection) 
